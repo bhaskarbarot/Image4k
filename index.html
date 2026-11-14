@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20261114b">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114e">
 
   <script type="application/ld+json">
   {
@@ -539,11 +539,11 @@
 
   <!-- speed choice (CPU-only devices) -->
   <dialog class="speed" id="speedDialog" aria-labelledby="speedTitle">
-    <h2 id="speedTitle">Best quality will take a while here</h2>
-    <p>This device has no graphics acceleration available in the browser, so the most accurate AI runs on the processor. You can wait, or use the faster AI now.</p>
+    <h2 id="speedTitle">AI Best is slow on this device</h2>
+    <p>This device has no graphics acceleration in the browser, so AI Best runs on the processor and can take many minutes. AI Fast gives a sharp result in seconds.</p>
     <div class="speed-actions">
-      <button class="btn btn-primary btn-block" type="button" id="speedBest">Wait for best quality</button>
-      <button class="btn btn-ghost btn-block" type="button" id="speedFast">Use AI Fast</button>
+      <button class="btn btn-primary btn-block" type="button" id="speedFast">Use AI Fast (recommended)</button>
+      <button class="btn btn-ghost btn-block" type="button" id="speedBest">Wait for AI Best</button>
       <button class="btn btn-sm" type="button" id="speedCancel" style="color:var(--muted)">Cancel</button>
     </div>
     <p class="hint">Tip: Chrome or Edge on a computer with a graphics card runs AI Best in seconds.</p>
@@ -591,8 +591,8 @@
 
   <script src="/assets/vendor/pica.min.js" defer></script>
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script src="/assets/js/presets.js?v=20261114b" defer></script>
-  <script src="/assets/js/encoders.js?v=20261114b" defer></script>
-  <script src="/assets/js/app.js?v=20261114b" defer></script>
+  <script src="/assets/js/presets.js?v=20261114e" defer></script>
+  <script src="/assets/js/encoders.js?v=20261114e" defer></script>
+  <script src="/assets/js/app.js?v=20261114e" defer></script>
 </body>
 </html>

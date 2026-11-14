@@ -59,8 +59,8 @@
   // Settings
   // ======================================================================
   const DEFAULTS = {
-    hd:       { mode: 'original', presetId: null, w: 1920, h: 1080, scale: '4k', engine: 'best', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'balanced', colors: false, format: 'auto', quality: 95 },
-    resize:   { mode: 'preset', presetId: null, w: 1920, h: 1080, percent: 50, boost4k: false, engine: 'best', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'auto', format: 'auto', quality: 92 },
+    hd:       { mode: 'original', presetId: null, w: 1920, h: 1080, scale: '4k', engine: 'best', engineChosen: false, fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'balanced', colors: false, format: 'auto', quality: 95 },
+    resize:   { mode: 'preset', presetId: null, w: 1920, h: 1080, percent: 50, boost4k: false, engine: 'best', engineChosen: false, fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'auto', format: 'auto', quality: 92 },
     compress: { cmode: 'quality', quality: 75, targetKB: 200, maxDim: '0', format: 'auto' },
     bg:       { mode: 'original', presetId: null, w: 1080, h: 1080, model: 'object', bgType: 'transparent', bgColor: '#ffffff', edge: 'natural', fillHoles: true, cropSubject: false, fit: 'contain', position: 'center', format: 'auto', quality: 92 }
   };
@@ -537,7 +537,7 @@
       label: 'AI Best', size: 33834807,
       tile: { gpu: 192, cpu: 384 }, pad: { gpu: 32, cpu: 32 },
       maxIn: { gpu: 2_500_000, cpu: 1_000_000 },
-      secPerMP: { gpu: 30, cpu: 3300 }   // cpu figure is for one core; divided by threads
+      secPerMP: { gpu: 30, cpu: 4200 }   // cpu figure is for one core; divided by threads (measured: ~15x AI Fast)
     },
     fast: {
       parts: ['/assets/models/realesr-animevideov3.onnx'],
@@ -641,10 +641,31 @@
   }
 
   /** Rough processing-time estimate (seconds) for an AI upscale of `mp` input megapixels. */
+  // Real speed of THIS device (seconds per input megapixel), learned from finished runs.
+  const SPEED_KEY = 'image4k:speed:v1';
+  function readSpeeds() { try { return JSON.parse(localStorage.getItem(SPEED_KEY) || '{}'); } catch (e) { return {}; } }
+  function saveSpeed(kind, ep, secPerMP) {
+    if (!(secPerMP > 0) || !isFinite(secPerMP)) return;
+    const all = readSpeeds();
+    const k = kind + '|' + ep;
+    all[k] = all[k] ? all[k] * 0.5 + secPerMP * 0.5 : secPerMP;   // smooth over runs
+    try { localStorage.setItem(SPEED_KEY, JSON.stringify(all)); } catch (e) { /* ignore */ }
+  }
+
   async function estimateAISeconds(kind, mp) {
     const m = SR_MODELS[kind];
     const gpu = await probeGPU();
+    const ep = gpu ? 'webgpu' : 'wasm';
     const inMP = Math.min(mp, (gpu ? m.maxIn.gpu : m.maxIn.cpu) / 1e6);
+    const speeds = readSpeeds();
+    if (speeds[kind + '|' + ep]) return inMP * speeds[kind + '|' + ep];
+    // no run of this model yet: scale the other model's measured speed by their known cost ratio
+    const other = kind === 'best' ? 'fast' : 'best';
+    const o = SR_MODELS[other];
+    if (speeds[other + '|' + ep]) {
+      const ratio = gpu ? m.secPerMP.gpu / o.secPerMP.gpu : m.secPerMP.cpu / o.secPerMP.cpu;
+      return inMP * speeds[other + '|' + ep] * ratio;
+    }
     return gpu ? inMP * m.secPerMP.gpu : (inMP * m.secPerMP.cpu) / cpuThreads();
   }
 
@@ -685,6 +706,8 @@
     const tilesX = Math.ceil(sw / TILE), tilesY = Math.ceil(sh / TILE);
     const tw = Math.ceil(sw / tilesX), th = Math.ceil(sh / tilesY);
     const total = tilesX * tilesY;
+    const estTotal = (sw * sh / 1e6) * (gpu ? M.secPerMP.gpu : M.secPerMP.cpu / cpuThreads());
+    onProgress && onProgress(`${M.label} enhancing 0%${gpu ? ' · GPU' : ''}`, { frac: 0, eta: estTotal });
     let done = 0, worked = 0;
     const t0 = performance.now();
     for (let ty = 0; ty < tilesY; ty++) {
@@ -724,6 +747,7 @@
           if (big) octx.fillRect(x0 * SR_SCALE, y0 * SR_SCALE, w * SR_SCALE, h * SR_SCALE);
           else octx.fillRect(dx0, dy0, dx1 - dx0, dy1 - dy0);
           done++;
+          if (onProgress) onProgress(`${M.label} enhancing ${Math.round((done / total) * 100)}%${gpu ? ' · GPU' : ''}`, { frac: done / total });
           continue;
         }
 
@@ -775,12 +799,18 @@
         done++; worked++;
         if (onProgress) {
           const el = (performance.now() - t0) / 1000;
-          const eta = done > 1 ? Math.round((el / done) * (total - done)) : null;
-          const etaTxt = eta === null || eta <= 2 ? '' : eta >= 90 ? ` · about ${Math.round(eta / 60)} min left` : ` · about ${eta}s left`;
-          onProgress(`${M.label} enhancing ${Math.round((done / total) * 100)}%${etaTxt}${gpu ? ' · GPU' : ''}`);
+          // blend the measured pace with the up-front estimate so the countdown is sane from tile 1
+          const measured = (el / done) * (total - done);
+          const eta = done >= 2 ? measured : (measured + estTotal * (1 - done / total)) / 2;
+          onProgress(`${M.label} enhancing ${Math.round((done / total) * 100)}%${gpu ? ' · GPU' : ''}`, { frac: done / total, eta });
         }
         await new Promise((r) => setTimeout(r, 0)); // keep the page responsive
       }
+    }
+    if (worked > 0) {
+      // learn this device's real speed (only from tiles that ran the network)
+      const workedMP = (sw * sh / 1e6) * (worked / total);
+      saveSpeed(kind, rt.ep, ((performance.now() - t0) / 1000) / workedMP);
     }
     if (src !== from) freeCanvas(src);
     freeCanvas(tileCanvas);
@@ -1316,18 +1346,46 @@
     render();
 
     let ok = 0, failed = 0;
+    // live status: refreshed every second so long AI runs never look frozen
+    const live = { label: '', msg: '', frac: 0, deadline: 0, start: 0, index: 0 };
+    const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+    const paint = () => {
+      if (!live.label) return;
+      const el = (Date.now() - live.start) / 1000;
+      let txt = `${live.label}: ${live.msg}`;
+      if (el >= 3) txt += ` · ${mmss(el)} elapsed`;
+      if (live.deadline) {
+        const left = (live.deadline - Date.now()) / 1000;
+        txt += left > 90 ? ` · about ${Math.round(left / 60)} min left` : left > 5 ? ` · about ${Math.round(left)}s left` : ' · almost done';
+      }
+      ptxt.textContent = txt;
+      $('#mbarText').textContent = txt;
+      // between tile updates, advance smoothly with time (never past 97% of the estimate)
+      let frac = live.frac;
+      if (live.deadline) {
+        const left = Math.max(0, (live.deadline - Date.now()) / 1000);
+        frac = Math.max(frac, Math.min(0.97, el / (el + left)));
+      }
+      bar.style.width = (((live.index + Math.min(1, frac)) / queue.length) * 100).toFixed(1) + '%';
+    };
+    const ticker = setInterval(paint, 1000);
     for (let i = 0; i < queue.length; i++) {
       const item = queue[i];
       if (!state.items.includes(item)) continue;
       item.status = 'busy'; item.error = null;
       revokeResult(item);
       renderFiles();
-      const label = `Image ${i + 1} of ${queue.length}`;
-      ptxt.textContent = `${label}: ${item.name}`;
-      bar.style.width = ((i / queue.length) * 100).toFixed(1) + '%';
+      Object.assign(live, { label: `Image ${i + 1} of ${queue.length}`, msg: item.name, frac: 0, deadline: 0, start: Date.now(), index: i });
+      paint();
       await nextFrame();
       try {
-        const r = await processItem(item, tool, s, (m) => { ptxt.textContent = `${label}: ${m}`; $('#mbarText').textContent = `${label}: ${m}`; });
+        const r = await processItem(item, tool, s, (m, o) => {
+          live.msg = m;
+          if (o && typeof o.frac === 'number') live.frac = o.frac;
+          if (o && typeof o.eta === 'number' && isFinite(o.eta)) live.deadline = Date.now() + o.eta * 1000;
+          if (/^(Finishing|Saving)/.test(m)) live.deadline = 0;
+          paint();
+        });
         const fmt = FORMATS[r.fmt];
         const outW = r.canvas.width, outH = r.canvas.height;
         const suffix = tool === 'hd' ? (s.scale === '8k' ? '8k' : s.scale === '4k' ? '4k' : 'hd-' + s.scale + 'x')
@@ -1359,6 +1417,8 @@
       await nextFrame();
       if (state.cancel) break;
     }
+    clearInterval(ticker);
+    live.label = '';
     for (const it of queue) if (it.status === 'busy') it.status = 'ready';
     const cancelled = state.cancel;
     state.cancel = false;
@@ -1379,8 +1439,8 @@
   /** Ask whether to wait for AI Best on a CPU-only device. Resolves 'best' | 'fast' | 'cancel'. */
   function askSpeed(bestSec, fastSec) {
     const dlg = $('#speedDialog');
-    $('#speedBest').textContent = `Wait for best quality · about ${fmtDuration(bestSec)}`;
-    $('#speedFast').textContent = `Use AI Fast · about ${fmtDuration(fastSec)}`;
+    $('#speedFast').textContent = `Use AI Fast (recommended) · about ${fmtDuration(fastSec)}`;
+    $('#speedBest').textContent = `Wait for AI Best · about ${fmtDuration(bestSec)}`;
     return new Promise((resolve) => {
       const done = (v) => { cleanup(); if (dlg.open) dlg.close(); resolve(v); };
       const onBest = () => done('best'), onFast = () => done('fast'), onCancel = () => done('cancel');
@@ -1924,6 +1984,7 @@
         S()[key] = chip.dataset.value;
         if (key === 'mode' && chip.dataset.value === 'custom' && state.lock) syncLockedSize();
         if (key === 'model' && state.tool === 'bg') S().fillHoles = chip.dataset.value !== 'people';
+        if (key === 'engine') S().engineChosen = true;
         persist(); syncUI();
       }
     });
@@ -2077,6 +2138,14 @@
     const start = TOOL_TEXT[fromHash] ? fromHash : TOOL_TEXT[fromQuery] ? fromQuery : 'hd';
     state.tool = start;
     setTool(start);
+    probeGPU().then((gpu) => {
+      if (gpu) return;
+      let changed = false;
+      for (const t of ['hd', 'resize']) {
+        if (!settings[t].engineChosen && settings[t].engine === 'best') { settings[t].engine = 'fast'; changed = true; }
+      }
+      if (changed) syncUI();
+    });
     if (!picaInst) console.warn('[image4k] pica not loaded — using canvas resampling');
   }
 
