@@ -1,0 +1,12 @@
+// Cloudflare Workers static-assets config for Image4k.org (no server code — files only).
+{
+  "name": "image4k",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./",
+    // unknown URLs get our 404.html page with a real 404 status
+    "not_found_handling": "404-page",
+    // /privacy.html is served at /privacy (and redirected there)
+    "html_handling": "auto-trailing-slash"
+  }
+}

@@ -1,4 +1,6 @@
-# Netlify / Cloudflare Pages headers. For nginx/Apache see README.md.
+# Response headers for Cloudflare (Workers static assets / Pages) and Netlify.
+# Rules that match the same path are COMBINED, so each Cache-Control rule below
+# targets its own folder and never overlaps another one. For nginx/Apache see README.md.
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob: data: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Cross-Origin-Opener-Policy: same-origin
@@ -8,15 +10,18 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
-/assets/*
-  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
-
+# Code: always re-check (links also carry ?v= version stamps)
 /assets/js/*
   Cache-Control: public, max-age=0, must-revalidate
 
 /assets/css/*
   Cache-Control: public, max-age=0, must-revalidate
 
+# Images: one week
+/assets/img/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Libraries and AI models never change under the same file name
 /assets/vendor/*
   Cache-Control: public, max-age=31536000, immutable
 

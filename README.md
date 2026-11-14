@@ -42,6 +42,10 @@ python3 serve.py        # http://localhost:8080
 (Opening index.html directly from disk will not work — it needs to be served over HTTP.)
 
 ## Deploy
+**Live:** Cloudflare Workers (static assets) — `https://image4k.barotb076.workers.dev`, auto-deploys on every push to `main`.
+`wrangler.jsonc` serves `404.html` for unknown URLs and `/privacy.html` as `/privacy`; `.assetsignore` keeps repo-only files
+(README, serve.py, configs) off the website; `_headers` is applied automatically.
+
 Upload the folder as-is to any static host and point `image4k.org` at it.
 
 - **Cloudflare Pages / Netlify**: deploy the folder; `_headers` is applied automatically.

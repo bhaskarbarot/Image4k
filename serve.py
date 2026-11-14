@@ -36,6 +36,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
 
+    def translate_path(self, path):
+        # mirror Cloudflare: /privacy serves privacy.html
+        fs = super().translate_path(path)
+        if not os.path.exists(fs) and os.path.exists(fs + '.html'):
+            return fs + '.html'
+        return fs
+
     def end_headers(self):
         path = self.path.split('?')[0]
         if path == '/':
