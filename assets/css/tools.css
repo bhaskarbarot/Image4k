@@ -1,0 +1,55 @@
+/* Shared styles for standalone tool pages (OCR, Watermark) — builds on style.css. */
+.tool-main { min-height: calc(100dvh - 140px); }
+.tool-hero { text-align: center; padding: clamp(32px, 6vw, 64px) 16px clamp(16px, 3vw, 28px); }
+.tool-hero h1 { font-size: clamp(32px, 5.5vw, 56px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 12px; }
+.tool-hero h1 .grad { background: linear-gradient(90deg, var(--accent), #b77bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tool-hero .lead { color: var(--text-2); font-size: clamp(15px, 1.7vw, 18px); max-width: 640px; margin: 0 auto; }
+
+.tool-wrap { padding-bottom: 48px; }
+.tool-panes { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 900px) { .tool-panes { grid-template-columns: 1fr 1fr; align-items: start; } }
+
+.dropzone {
+  border: 2px dashed var(--line-2); border-radius: 18px; background: var(--card);
+  display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 20px; cursor: pointer;
+  transition: border-color .15s, background .15s; text-align: center;
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--accent); background: var(--card-2); }
+.dropzone svg { width: 54px; height: 54px; color: var(--accent); }
+.dz-hint { color: var(--muted); font-size: 13px; margin: 0; }
+
+.preview-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+.preview-box img { width: 100%; max-height: 420px; object-fit: contain; border-radius: 10px; background: #000; display: block; }
+.preview-actions { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 14px; }
+.tool-field { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.tool-field select, .tool-field input { background: var(--card-3); color: var(--text); border: 1px solid var(--line-2); border-radius: 9px; padding: 9px 10px; font: inherit; }
+
+.tool-progress { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+.tool-progress .bar { height: 8px; border-radius: 99px; background: var(--card-3); overflow: hidden; }
+.tool-progress .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-hover)); transition: width .25s; }
+.tool-progress span { font-size: 13px; color: var(--text-2); }
+
+.result-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.result-head h2 { margin: 0; font-size: 18px; }
+.result-actions { display: flex; gap: 8px; }
+.btn-sm { padding: 7px 12px; font-size: 13px; }
+.result-text {
+  width: 100%; min-height: 340px; resize: vertical; box-sizing: border-box;
+  background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 14px;
+  padding: 14px 16px; font: 14px/1.6 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+.result-text:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tool-note { font-size: 13px; color: var(--muted); margin: 8px 2px 0; min-height: 18px; }
+.tool-note.is-err { color: #ff6b6b; }
+
+.privacy-line { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; margin: 26px auto 0; max-width: 760px; text-align: center; }
+.privacy-line svg { width: 17px; height: 17px; color: #39d98a; flex: none; }
+
+/* watermark canvas workspace */
+.wm-stage { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px; overflow: auto; }
+.wm-stage canvas { max-width: 100%; display: block; margin: 0 auto; border-radius: 8px; background: #000; touch-action: none; }
+.wm-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 14px 0; }
+.wm-tools .tool-field { flex-direction: row; align-items: center; gap: 8px; }
+.wm-seg { display: inline-flex; background: var(--card-3); border-radius: 10px; padding: 3px; gap: 2px; }
+.wm-seg button { border: 0; background: transparent; color: var(--text-2); font-weight: 700; font-size: 13px; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+.wm-seg button.is-on { background: var(--accent); color: var(--accent-ink); }

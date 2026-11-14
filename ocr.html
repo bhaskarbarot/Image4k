@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Image to Text (OCR) – Free &amp; Private | Bhaskar Solution</title>
+  <meta name="description" content="Extract text from an image for free — drop a photo, screenshot or scan and copy the text. 100% private: the image never leaves your browser.">
+  <link rel="canonical" href="https://image4k.org/ocr">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta property="og:title" content="Image to Text (OCR) – free &amp; private">
+  <meta property="og:description" content="Pull text out of any image, right in your browser. Nothing is uploaded.">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/tools.css?v=ocr1">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Bhaskar Solution home"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <ul class="nav-links">
+        <li><a href="/image">Image tools</a></li>
+        <li><a href="/ocr" class="is-active" aria-current="page">Image to text</a></li>
+        <li><a href="/pdf">PDF tools</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>Image to <span class="grad">Text</span></h1>
+      <p class="lead">Drop an image — a photo, screenshot or scan — and get the text out, ready to copy. Everything runs in your browser; the image is never uploaded.</p>
+    </section>
+
+    <section class="wrap tool-wrap">
+      <div class="tool-panes">
+        <div class="tool-left">
+          <div class="dropzone" id="drop" tabindex="0" role="button" aria-label="Choose an image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+            <button class="btn btn-primary" type="button" id="pick">Choose an image</button>
+            <p class="dz-hint">or drop it here · JPG, PNG, WebP, BMP · stays on your device</p>
+            <input type="file" id="file" accept="image/*" hidden>
+          </div>
+          <div class="preview-box" id="previewBox" hidden>
+            <img id="preview" alt="Selected image">
+            <div class="preview-actions">
+              <label class="tool-field"><span>Language</span>
+                <select id="lang"><option value="eng" selected>English</option></select>
+              </label>
+              <button class="btn btn-primary" type="button" id="run">Extract text</button>
+              <button class="btn btn-ghost" type="button" id="reset">Change image</button>
+            </div>
+          </div>
+          <div class="tool-progress" id="progress" hidden>
+            <div class="bar"><i id="barFill"></i></div>
+            <span id="progressText">Preparing…</span>
+          </div>
+        </div>
+
+        <div class="tool-right">
+          <div class="result-head">
+            <h2>Extracted text</h2>
+            <div class="result-actions">
+              <button class="btn btn-ghost btn-sm" type="button" id="copy" disabled>Copy</button>
+              <button class="btn btn-ghost btn-sm" type="button" id="dl" disabled>Download .txt</button>
+            </div>
+          </div>
+          <textarea id="out" class="result-text" placeholder="The text from your image will appear here — then edit or copy it." spellcheck="false"></textarea>
+          <p class="tool-note" id="note"></p>
+        </div>
+      </div>
+      <p class="privacy-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        100% private — recognised in your browser, never uploaded. First run downloads the language model once (~3 MB), then it's instant.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/ocr">Image to text</a><a href="/pdf">PDF tools</a><a href="/privacy">Privacy</a></nav>
+      <span>© 2026 Bhaskar Solution</span>
+    </div>
+  </footer>
+
+  <script src="/assets/vendor/tesseract-5.1.1/tesseract.min.js" defer></script>
+  <script src="/assets/js/ocr.js?v=ocr1" defer></script>
+</body>
+</html>
