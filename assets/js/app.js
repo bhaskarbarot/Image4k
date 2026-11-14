@@ -59,12 +59,12 @@
   // Settings
   // ======================================================================
   const DEFAULTS = {
-    hd:       { mode: 'original', presetId: null, w: 1920, h: 1080, scale: '4k', engine: 'photo', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'balanced', colors: true, format: 'auto', quality: 95 },
-    resize:   { mode: 'preset', presetId: null, w: 1920, h: 1080, percent: 50, boost4k: false, engine: 'photo', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'auto', format: 'auto', quality: 92 },
+    hd:       { mode: 'original', presetId: null, w: 1920, h: 1080, scale: '4k', engine: 'best', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'balanced', colors: false, format: 'auto', quality: 95 },
+    resize:   { mode: 'preset', presetId: null, w: 1920, h: 1080, percent: 50, boost4k: false, engine: 'best', fit: 'cover', position: 'center', pad: 'blur', padColor: '#ffffff', sharpen: 'auto', format: 'auto', quality: 92 },
     compress: { cmode: 'quality', quality: 75, targetKB: 200, maxDim: '0', format: 'auto' },
     bg:       { mode: 'original', presetId: null, w: 1080, h: 1080, model: 'object', bgType: 'transparent', bgColor: '#ffffff', edge: 'natural', fillHoles: true, cropSubject: false, fit: 'contain', position: 'center', format: 'auto', quality: 92 }
   };
-  const STORE_KEY = 'image4k:settings:v1';
+  const STORE_KEY = 'image4k:settings:v2';
   const settings = JSON.parse(JSON.stringify(DEFAULTS));
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
@@ -81,7 +81,10 @@
   } catch (e) { /* storage unavailable */ }
   if (!['object', 'people'].includes(settings.bg.model)) settings.bg.model = 'object';
   if (!['quality', 'target'].includes(settings.compress.cmode)) settings.compress.cmode = 'quality';
-  for (const t of ['hd', 'resize']) if (!['photo', 'art', 'classic'].includes(settings[t].engine)) settings[t].engine = 'photo';
+  for (const t of ['hd', 'resize']) {
+    const e = settings[t].engine;
+    settings[t].engine = e === 'art' ? 'fast' : ['best', 'fast', 'classic'].includes(e) ? e : 'best';
+  }
   for (const t of Object.keys(settings)) if (settings[t].format !== 'auto' && !FORMATS[settings[t].format]) settings[t].format = 'auto';
   let saveTimer = 0;
   function persist() {
@@ -519,7 +522,9 @@
   const colorsFromQuality = (q) => (q >= 95 ? 256 : Math.max(8, Math.round(Math.pow(2, 3 + (q / 100) * 5))));
 
   // ======================================================================
-  // AI super-resolution (Real-ESRGAN via onnxruntime-web, loaded on demand)
+  // AI super-resolution (Real-ESRGAN family via onnxruntime-web, loaded on demand)
+  //   best: RealESRNet x4plus — fidelity-trained (no GAN), keeps text and shapes correct
+  //   fast: realesr-animevideov3 — compact and quick, good for photos and illustrations
   // ======================================================================
   const ORT_VER = '1.31.1';
   const ORT_URL = {
@@ -527,9 +532,22 @@
     wasm: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VER}/dist/ort.wasm.min.mjs`
   };
   const SR_MODELS = {
-    photo: { url: '/assets/models/realesr-general-x4v3.onnx', label: 'AI Photo' },
-    art: { url: '/assets/models/realesr-animevideov3.onnx', label: 'AI Text & Art' }
+    best: {
+      parts: ['/assets/models/realesrnet-x4plus.onnx.part1', '/assets/models/realesrnet-x4plus.onnx.part2'],
+      label: 'AI Best', size: 33834807,
+      tile: { gpu: 192, cpu: 384 }, pad: { gpu: 32, cpu: 32 },
+      maxIn: { gpu: 2_500_000, cpu: 1_000_000 },
+      secPerMP: { gpu: 30, cpu: 3300 }   // cpu figure is for one core; divided by threads
+    },
+    fast: {
+      parts: ['/assets/models/realesr-animevideov3.onnx'],
+      label: 'AI Fast', size: 2492874,
+      tile: { gpu: 256, cpu: 256 }, pad: { gpu: 24, cpu: 24 },
+      maxIn: { gpu: 4_000_000, cpu: 1_600_000 },
+      secPerMP: { gpu: 3, cpu: 280 }
+    }
   };
+  const MODEL_CACHE = 'image4k-models-v1';
   const SR_SCALE = 4;
   let srRuntime = null;          // { ort, ep }
   const srSessions = new Map();  // key -> Promise<InferenceSession>
@@ -549,6 +567,8 @@
     return gpuProbe;
   }
 
+  const cpuThreads = () => (self.crossOriginIsolated ? Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1)) : 1);
+
   async function loadSRRuntime(onProgress) {
     if (srRuntime) return srRuntime;
     onProgress && onProgress('Loading AI engine…');
@@ -557,44 +577,43 @@
       try { ort = await import(ORT_URL.webgpu); ep = 'webgpu'; } catch (e) { console.warn('[image4k] WebGPU runtime failed to load', e); }
     }
     if (!ort) { ort = await import(ORT_URL.wasm); ep = 'wasm'; }
-    ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.max(1, Math.min(8, (navigator.hardwareConcurrency || 4) - 1)) : 1;
+    ort.env.wasm.numThreads = cpuThreads();
+    // run CPU inference in a background worker so the page never freezes
+    if (ep === 'wasm') ort.env.wasm.proxy = true;
     srRuntime = { ort, ep };
     return srRuntime;
   }
 
-  async function fetchModel(url, label, onProgress) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Could not download the ${label} model (HTTP ${res.status})`);
-    const total = +res.headers.get('content-length') || 0;
-    if (!res.body || !total) return new Uint8Array(await res.arrayBuffer());
-    const reader = res.body.getReader();
-    const buf = new Uint8Array(total);
+  /** Download (or read from Cache Storage) a model that may be split into parts. */
+  async function fetchModel(m, onProgress) {
+    let cache = null;
+    try { cache = await caches.open(MODEL_CACHE); } catch (e) { /* Cache API unavailable */ }
+    const buffers = [];
     let got = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (got + value.length > buf.length) { // content-length was compressed size
-        const big = new Uint8Array(Math.max(buf.length * 2, got + value.length));
-        big.set(buf.subarray(0, got));
-        return finishGrow(big, got, value, reader, label, onProgress);
+    for (const url of m.parts) {
+      let res = cache ? await cache.match(url) : null;
+      const fromCache = !!res;
+      if (!res) {
+        res = await fetch(url);
+        if (!res.ok) throw new Error(`Could not download the ${m.label} model (HTTP ${res.status})`);
+        if (cache) { try { await cache.put(url, res.clone()); } catch (e) { /* quota — fine */ } }
       }
-      buf.set(value, got); got += value.length;
-      onProgress && onProgress(`Downloading ${label} model — ${Math.round((got / total) * 100)}%`);
+      if (fromCache || !res.body) {
+        const b = new Uint8Array(await res.arrayBuffer());
+        buffers.push(b); got += b.length;
+      } else {
+        const reader = res.body.getReader();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffers.push(value); got += value.length;
+          onProgress && onProgress(`Downloading ${m.label} model (one time) — ${Math.min(100, Math.round((got / m.size) * 100))}%`);
+        }
+      }
     }
-    return got === buf.length ? buf : buf.slice(0, got);
-  }
-  async function finishGrow(buf, got, value, reader, label, onProgress) {
-    const chunks = [buf.subarray(0, got), value];
-    let len = got + value.length;
-    for (;;) {
-      const { done, value: v } = await reader.read();
-      if (done) break;
-      chunks.push(v); len += v.length;
-      onProgress && onProgress(`Downloading ${label} model — ${fmtBytes(len)}`);
-    }
-    const out = new Uint8Array(len);
+    const out = new Uint8Array(got);
     let o = 0;
-    for (const c of chunks) { out.set(c, o); o += c.length; }
+    for (const b of buffers) { out.set(b, o); o += b.length; }
     return out;
   }
 
@@ -604,7 +623,7 @@
     if (!srSessions.has(key)) {
       const p = (async () => {
         const m = SR_MODELS[kind];
-        const bytes = await fetchModel(m.url, m.label, onProgress);
+        const bytes = await fetchModel(m, onProgress);
         onProgress && onProgress(`Starting ${m.label}…`);
         try {
           return await rt.ort.InferenceSession.create(bytes, { executionProviders: [rt.ep], graphOptimizationLevel: 'all' });
@@ -621,18 +640,27 @@
     return { session: await srSessions.get(key), rt };
   }
 
+  /** Rough processing-time estimate (seconds) for an AI upscale of `mp` input megapixels. */
+  async function estimateAISeconds(kind, mp) {
+    const m = SR_MODELS[kind];
+    const gpu = await probeGPU();
+    const inMP = Math.min(mp, (gpu ? m.maxIn.gpu : m.maxIn.cpu) / 1e6);
+    return gpu ? inMP * m.secPerMP.gpu : (inMP * m.secPerMP.cpu) / cpuThreads();
+  }
+
   /**
    * AI 4× super-resolution of `from` (fw×fh), delivered at dw×dh.
-   * Tiled with overlap so any size works; the 4× result is assembled in full when it
-   * fits in memory and resampled once (best quality), otherwise each tile is scaled into place.
+   * Tiled with overlap so any size works. Flat tiles (empty backgrounds) skip the network —
+   * the result there would be identical — which makes screenshots and documents much faster.
    */
   async function aiResize(from, fw, fh, dw, dh, kind, alpha, onProgress) {
     dw = Math.max(1, Math.round(dw)); dh = Math.max(1, Math.round(dh));
+    const M = SR_MODELS[kind];
     let { session, rt } = await getSRSession(kind, onProgress);
-    const gpu = rt.ep === 'webgpu';
+    let gpu = rt.ep === 'webgpu';
 
     // Keep the AI input within a sensible compute budget.
-    const maxIn = gpu ? 4_000_000 : 1_600_000;
+    const maxIn = gpu ? M.maxIn.gpu : M.maxIn.cpu;
     let src = from, sw = fw, sh = fh;
     const k = Math.min(1, Math.sqrt(maxIn / (fw * fh)));
     if (k < 1) {
@@ -643,29 +671,62 @@
     }
     const data = src.getContext('2d').getImageData(0, 0, sw, sh).data;
 
-    const TILE = gpu ? 256 : 160, PAD = gpu ? 24 : 16;
+    const TILE = gpu ? M.tile.gpu : M.tile.cpu, PAD = gpu ? M.pad.gpu : M.pad.cpu;
     const OW = sw * SR_SCALE, OH = sh * SR_SCALE;
     const assemble = OW * OH <= MAX_AREA;
     const big = assemble ? makeCanvas(OW, OH) : null;
     const out = assemble ? null : makeCanvas(dw, dh);
     const octx = (big || out).getContext('2d');
-    if (out) { octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high'; }
-    const tileCanvas = out ? makeCanvas(TILE * SR_SCALE, TILE * SR_SCALE) : null;
+    octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high';
+    const tileCanvas = makeCanvas(Math.min(TILE, sw) * SR_SCALE, Math.min(TILE, sh) * SR_SCALE);
     const fx = dw / sw, fy = dh / sh;
 
+    // even split so no tile is a thin sliver
     const tilesX = Math.ceil(sw / TILE), tilesY = Math.ceil(sh / TILE);
+    const tw = Math.ceil(sw / tilesX), th = Math.ceil(sh / tilesY);
     const total = tilesX * tilesY;
-    let done = 0;
+    let done = 0, worked = 0;
     const t0 = performance.now();
     for (let ty = 0; ty < tilesY; ty++) {
       for (let tx = 0; tx < tilesX; tx++) {
         if (state.cancel) throw new Error('cancelled');
-        const x0 = tx * TILE, y0 = ty * TILE;
-        const w = Math.min(TILE, sw - x0), h = Math.min(TILE, sh - y0);
-        // fixed-size padded window (constant tensor shape = faster on GPU), clamped to the image
-        const pw = Math.min(sw, TILE + 2 * PAD), ph = Math.min(sh, TILE + 2 * PAD);
-        const px0 = Math.max(0, Math.min(x0 - PAD, sw - pw));
-        const py0 = Math.max(0, Math.min(y0 - PAD, sh - ph));
+        const x0 = tx * tw, y0 = ty * th;
+        const w = Math.min(tw, sw - x0), h = Math.min(th, sh - y0);
+        let px0, py0, pw, ph;
+        if (gpu) {
+          // fixed-size padded window (constant tensor shape = no shader recompiles), clamped to the image
+          pw = Math.min(sw, tw + 2 * PAD); ph = Math.min(sh, th + 2 * PAD);
+          px0 = Math.max(0, Math.min(x0 - PAD, sw - pw));
+          py0 = Math.max(0, Math.min(y0 - PAD, sh - ph));
+        } else {
+          // CPU: context only where a neighbouring tile exists — no wasted work at image edges
+          px0 = Math.max(0, x0 - PAD); py0 = Math.max(0, y0 - PAD);
+          pw = Math.min(sw, x0 + w + PAD) - px0; ph = Math.min(sh, y0 + h + PAD) - py0;
+        }
+
+        // flat tile? (all channels within a few levels across the padded window)
+        let mn0 = 255, mx0 = 0, mn1 = 255, mx1 = 0, mn2 = 255, mx2 = 0, s0 = 0, s1 = 0, s2 = 0;
+        for (let y = 0; y < ph; y++) {
+          let si = ((py0 + y) * sw + px0) * 4;
+          for (let x = 0; x < pw; x++, si += 4) {
+            const r = data[si], g = data[si + 1], b = data[si + 2];
+            if (r < mn0) mn0 = r; if (r > mx0) mx0 = r;
+            if (g < mn1) mn1 = g; if (g > mx1) mx1 = g;
+            if (b < mn2) mn2 = b; if (b > mx2) mx2 = b;
+            s0 += r; s1 += g; s2 += b;
+          }
+        }
+        const dx0 = Math.round(x0 * fx), dy0 = Math.round(y0 * fy);
+        const dx1 = Math.round((x0 + w) * fx), dy1 = Math.round((y0 + h) * fy);
+        if (mx0 - mn0 <= 4 && mx1 - mn1 <= 4 && mx2 - mn2 <= 4) {
+          const n = pw * ph;
+          octx.fillStyle = `rgb(${Math.round(s0 / n)},${Math.round(s1 / n)},${Math.round(s2 / n)})`;
+          if (big) octx.fillRect(x0 * SR_SCALE, y0 * SR_SCALE, w * SR_SCALE, h * SR_SCALE);
+          else octx.fillRect(dx0, dy0, dx1 - dx0, dy1 - dy0);
+          done++;
+          continue;
+        }
+
         const n = pw * ph;
         const input = new Float32Array(3 * n);
         for (let y = 0; y < ph; y++) {
@@ -681,11 +742,11 @@
         try {
           result = await session.run({ input: tensor });
         } catch (e) {
-          if (rt.ep !== 'webgpu' || done > 0) throw e;
+          if (rt.ep !== 'webgpu' || worked > 0) throw e;
           // GPU failed at run time: rebuild on CPU and retry this tile
           console.warn('[image4k] WebGPU run failed, switching to CPU', e);
           srSessions.delete(kind + '|webgpu');
-          rt.ep = 'wasm';
+          rt.ep = 'wasm'; gpu = false;
           ({ session, rt } = await getSRSession(kind, onProgress));
           result = await session.run({ input: tensor });
         }
@@ -696,11 +757,11 @@
         const img = new ImageData(ow, oh);
         const id = img.data;
         for (let y = 0; y < oh; y++) {
-          let s0 = (oy + y) * OWt + ox, i = y * ow * 4;
-          for (let x = 0; x < ow; x++, s0++, i += 4) {
-            id[i] = od[s0] * 255 + 0.5;
-            id[i + 1] = od[N + s0] * 255 + 0.5;
-            id[i + 2] = od[2 * N + s0] * 255 + 0.5;
+          let q = (oy + y) * OWt + ox, i = y * ow * 4;
+          for (let x = 0; x < ow; x++, q++, i += 4) {
+            id[i] = od[q] * 255 + 0.5;
+            id[i + 1] = od[N + q] * 255 + 0.5;
+            id[i + 2] = od[2 * N + q] * 255 + 0.5;
             id[i + 3] = 255;
           }
         }
@@ -709,27 +770,26 @@
           octx.putImageData(img, x0 * SR_SCALE, y0 * SR_SCALE);
         } else {
           tileCanvas.getContext('2d').putImageData(img, 0, 0);
-          const dx0 = Math.round(x0 * fx), dy0 = Math.round(y0 * fy);
-          const dx1 = Math.round((x0 + w) * fx), dy1 = Math.round((y0 + h) * fy);
           octx.drawImage(tileCanvas, 0, 0, ow, oh, dx0, dy0, dx1 - dx0, dy1 - dy0);
         }
-        done++;
+        done++; worked++;
         if (onProgress) {
           const el = (performance.now() - t0) / 1000;
           const eta = done > 1 ? Math.round((el / done) * (total - done)) : null;
-          onProgress(`AI enhancing ${Math.round((done / total) * 100)}%${eta !== null && eta > 2 ? ` · about ${eta}s left` : ''}${gpu ? ' · GPU' : ''}`);
+          const etaTxt = eta === null || eta <= 2 ? '' : eta >= 90 ? ` · about ${Math.round(eta / 60)} min left` : ` · about ${eta}s left`;
+          onProgress(`${M.label} enhancing ${Math.round((done / total) * 100)}%${etaTxt}${gpu ? ' · GPU' : ''}`);
         }
         await new Promise((r) => setTimeout(r, 0)); // keep the page responsive
       }
     }
     if (src !== from) freeCanvas(src);
+    freeCanvas(tileCanvas);
     let result = out;
     if (big) {
       onProgress && onProgress('Finishing…');
       result = OW === dw && OH === dh ? big : await hqResize(big, OW, OH, dw, dh, NO_SHARP, false);
       if (result !== big) freeCanvas(big);
     }
-    if (tileCanvas) freeCanvas(tileCanvas);
     if (alpha) {
       // the model works on RGB — carry the original transparency over with classic resampling
       const a = await hqResize(from, fw, fh, dw, dh, NO_SHARP, true);
@@ -745,7 +805,7 @@
 
   /** Resampler that uses AI for real upscales and classic resampling otherwise. */
   function makeResizer(engine, onProgress, notes) {
-    if (engine !== 'photo' && engine !== 'art') return hqResize;
+    if (!SR_MODELS[engine]) return hqResize;
     return async (from, fw, fh, dw, dh, sharp, alpha, filter) => {
       if (dw * dh < fw * fh * 1.44) return hqResize(from, fw, fh, dw, dh, sharp, alpha, filter);
       const r = await aiResize(from, fw, fh, dw, dh, engine, alpha, onProgress);
@@ -1047,7 +1107,7 @@
         }
         const fit = t.reshape ? s.fit : 'stretch';
         const up = (t.w * t.h) / (sw * sh);
-        const useAI = (s.engine === 'photo' || s.engine === 'art') && !dec.svg;
+        const useAI = !!SR_MODELS[s.engine] && !dec.svg;
         const sharp = useAI ? NO_SHARP : sharpParams(resolveSharpen(s, tool, up), Math.sqrt(up));
         const resizer = useAI ? makeResizer(s.engine, onProgress, notes) : hqResize;
         if (fit === 'contain' && s.pad === 'transparent') hasAlpha = true;
@@ -1231,6 +1291,22 @@
       return;
     }
 
+    if ((tool === 'hd' || tool === 'resize') && s.engine === 'best' && !(await probeGPU())) {
+      let mp = 0;
+      for (const it of queue) {
+        if (!it.w) continue;
+        const t = computeTarget(it.w, it.h, tool, s);
+        if (t && t.w * t.h >= it.w * it.h * 1.44) mp += (it.w * it.h) / 1e6;
+      }
+      const est = mp ? await estimateAISeconds('best', mp) : 0;
+      if (est > 75) {
+        const fastEst = await estimateAISeconds('fast', mp);
+        const choice = await askSpeed(est, fastEst);
+        if (choice === 'cancel') return;
+        if (choice === 'fast') { s.engine = 'fast'; S().engine = 'fast'; persist(); syncUI(); }
+      }
+    }
+
     state.busy = true;
     state.cancel = false;
     state.runSig = state.tool + JSON.stringify(s);
@@ -1296,6 +1372,31 @@
       const firstDone = $('.file.done');
       if (firstDone && window.innerWidth < 1060) firstDone.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     }
+  }
+
+  const fmtDuration = (sec) => (sec < 90 ? `${Math.max(5, Math.round(sec / 5) * 5)} seconds` : `${Math.round(sec / 60)} minutes`);
+
+  /** Ask whether to wait for AI Best on a CPU-only device. Resolves 'best' | 'fast' | 'cancel'. */
+  function askSpeed(bestSec, fastSec) {
+    const dlg = $('#speedDialog');
+    $('#speedBest').textContent = `Wait for best quality · about ${fmtDuration(bestSec)}`;
+    $('#speedFast').textContent = `Use AI Fast · about ${fmtDuration(fastSec)}`;
+    return new Promise((resolve) => {
+      const done = (v) => { cleanup(); if (dlg.open) dlg.close(); resolve(v); };
+      const onBest = () => done('best'), onFast = () => done('fast'), onCancel = () => done('cancel');
+      const onClose = () => done('cancel');
+      function cleanup() {
+        $('#speedBest').removeEventListener('click', onBest);
+        $('#speedFast').removeEventListener('click', onFast);
+        $('#speedCancel').removeEventListener('click', onCancel);
+        dlg.removeEventListener('cancel', onClose);
+      }
+      $('#speedBest').addEventListener('click', onBest);
+      $('#speedFast').addEventListener('click', onFast);
+      $('#speedCancel').addEventListener('click', onCancel);
+      dlg.addEventListener('cancel', onClose);
+      if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+    });
   }
 
   function download(url, name) {
@@ -1518,12 +1619,17 @@
     if (tool === 'hd' || tool === 'resize') {
       const eh = $('#engineHint');
       const msg = {
-        photo: 'AI rebuilds real detail in photos. Downloads a 5 MB model once.',
-        art: 'AI tuned for text, screenshots, logos, cartoons and anime. Downloads a 2.5 MB model once.',
+        best: 'Most accurate AI — keeps text, faces and shapes true to the original. 34 MB model, downloaded once.',
+        fast: 'Lighter AI — about 10× quicker. Great for photos and drawings; small text may change slightly.',
         classic: 'Instant resampling — no AI. Edges stay soft when enlarging small images.'
       }[s.engine] || '';
       eh.textContent = msg;
-      if (s.engine !== 'classic') probeGPU().then((g) => { if (S().engine === s.engine) eh.textContent = msg + (g ? ' Your GPU will be used — fast.' : ' Runs on your CPU — can take up to a minute per image.'); });
+      if (s.engine !== 'classic') probeGPU().then((g) => {
+        if (S().engine !== s.engine) return;
+        eh.textContent = msg + (g ? ' Your graphics card will be used — fast.'
+          : s.engine === 'best' ? ' No graphics acceleration here, so it runs on your CPU and can take several minutes per image.'
+            : ' Runs on your CPU — usually under a minute per image.');
+      });
     }
 
     syncPalettes();

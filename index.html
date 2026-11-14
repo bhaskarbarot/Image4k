@@ -262,8 +262,8 @@
             <div class="field" data-tools="hd resize">
               <div class="label">Enhance engine <span data-tools="resize">used when enlarging</span></div>
               <div class="chips grid3" role="radiogroup" aria-label="Enhance engine" data-key="engine">
-                <button class="chip" role="radio" data-value="photo">AI Photo<small>People, places</small></button>
-                <button class="chip" role="radio" data-value="art">AI Text &amp; Art<small>Screenshots, logos</small></button>
+                <button class="chip" role="radio" data-value="best">AI Best<small>Most accurate</small></button>
+                <button class="chip" role="radio" data-value="fast">AI Fast<small>Quicker</small></button>
                 <button class="chip" role="radio" data-value="classic">Classic<small>Instant</small></button>
               </div>
               <p class="hint" id="engineHint"></p>
@@ -488,7 +488,7 @@
         <div class="faq" style="margin-top:32px">
           <details><summary>Is Image4k really free?</summary><p>Yes. Every tool is free with no sign-up, no watermark and no daily limit.</p></details>
           <details><summary>Are my images uploaded to a server?</summary><p>No. All processing happens inside your browser on your own device. Your images are never uploaded or stored. Only the background-removal AI model is downloaded once from a public model host and cached by your browser.</p></details>
-          <details><summary>How does Image4k make an image HD or 4K?</summary><p>Image4k uses Real-ESRGAN, an AI super-resolution model that runs right in your browser. Instead of just stretching pixels, it reconstructs sharp edges, text and textures, then outputs Full HD, 4K UHD (3840 px) or 8K (7680 px). Choose “AI Photo” for photos and “AI Text &amp; Art” for screenshots, logos, illustrations and anime. With a graphics card (WebGPU) it takes seconds; on other devices it can take up to a minute per image.</p></details>
+          <details><summary>How does Image4k make an image HD or 4K?</summary><p>Image4k uses AI super-resolution that runs right in your browser. “AI Best” uses RealESRNet, a model trained for accuracy rather than invented detail, so text, faces and shapes stay true to the original while edges become sharp. “AI Fast” is a lighter model that is about 10× quicker. Output can be Full HD, 4K UHD (3840 px) or 8K (7680 px). With a graphics card (Chrome or Edge) AI Best takes seconds; without one it runs on the processor and can take several minutes, and Image4k tells you before it starts.</p></details>
           <details><summary>How many images can I process at once?</summary><p>Up to 10 images per batch, up to 80 MB each. Download them one by one or all together as a ZIP.</p></details>
           <details><summary>Which formats are supported?</summary><p>Upload JPG, PNG, WebP, AVIF, GIF (first frame), BMP, SVG and HEIC/HEIF from iPhone. Download JPG, PNG, WebP, AVIF (when your browser supports it), BMP, TIFF and ICO.</p></details>
           <details><summary>How does the background remover work?</summary><p>An AI segmentation model runs in your browser to separate the subject from the background. “Any object” works on products, pets, people and things; “People” is a faster model tuned for portraits. Both run on any modern device. Then keep the background transparent, fill it with any color, or blur the original.</p></details>
@@ -512,6 +512,18 @@
       <span>© <span id="year">2026</span> Image4k.org</span>
     </div>
   </footer>
+
+  <!-- speed choice (CPU-only devices) -->
+  <dialog class="speed" id="speedDialog" aria-labelledby="speedTitle">
+    <h2 id="speedTitle">Best quality will take a while here</h2>
+    <p>This device has no graphics acceleration available in the browser, so the most accurate AI runs on the processor. You can wait, or use the faster AI now.</p>
+    <div class="speed-actions">
+      <button class="btn btn-primary btn-block" type="button" id="speedBest">Wait for best quality</button>
+      <button class="btn btn-ghost btn-block" type="button" id="speedFast">Use AI Fast</button>
+      <button class="btn btn-sm" type="button" id="speedCancel" style="color:var(--muted)">Cancel</button>
+    </div>
+    <p class="hint">Tip: Chrome or Edge on a computer with a graphics card runs AI Best in seconds.</p>
+  </dialog>
 
   <!-- mobile action bar -->
   <div class="mbar" id="mbar" hidden>

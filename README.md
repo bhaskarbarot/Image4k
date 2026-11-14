@@ -7,8 +7,9 @@ Static site — no backend, no database, no build step. Images never leave the v
 - Drag & drop, file picker or paste · up to **10 images** per batch · 80 MB each
 - Input: JPG, PNG, WebP, AVIF, GIF (first frame), BMP, SVG, HEIC/HEIF (iPhone)
 - Output: JPG, PNG, WebP, BMP, TIFF, ICO (+ AVIF where the browser can encode it)
-- **Make HD**: 2×, 4×, 4K (3840 px), 8K (7680 px) — **AI super-resolution (Real-ESRGAN)** in the browser:
-  "AI Photo" (realesr-general-x4v3) and "AI Text & Art" (realesr-animevideov3), WebGPU when available, otherwise multi-threaded WASM;
+- **Make HD**: 2×, 4×, 4K (3840 px), 8K (7680 px) — **AI super-resolution** in the browser:
+  "AI Best" = RealESRNet_x4plus (fidelity-trained, keeps text/shapes correct — scored best of 14 models in our text + photo benchmark),
+  "AI Fast" = realesr-animevideov3 (~10× quicker); WebGPU when available, otherwise multi-threaded WASM;
   "Classic" (Lanczos3 + unsharp mask) as instant fallback. The Resize tool uses the same AI when it enlarges.
 - **Resize**: 90+ presets (Instagram, YouTube, Facebook, X, LinkedIn, Pinterest, Twitch, ads, print, ratios, HD/4K/8K),
   custom size with aspect lock, percent, crop / fit (blur, color, transparent border) / stretch, "4K Ultra HD" toggle,
@@ -57,9 +58,11 @@ COOP/COEP enable multi-threaded WebAssembly, which makes background removal ~3�
 
 ## Notes
 - AI upscaling: onnxruntime-web 1.31.1 loads from cdn.jsdelivr.net; the models are served from `/assets/models/`.
-  Speed: seconds with a GPU (WebGPU, Chrome/Edge), ~30–60 s per 1 MP image on CPU. Tiled with overlap, so any image size works;
-  inputs above ~1.6 MP (CPU) / 4 MP (GPU) are reduced first to keep processing time reasonable.
-  The models were exported to ONNX from the official Real-ESRGAN v0.2.5.0 weights and verified against PyTorch (max diff 5e-6).
+  Speed (measured, 6-core CPU, no GPU): AI Fast ≈ 1 min per input megapixel, AI Best ≈ 10 min per input megapixel;
+  with WebGPU both take seconds. Flat background tiles skip the network, so screenshots/documents are much faster.
+  CPU-only visitors get a time estimate and can switch to AI Fast before a long AI Best run.
+  RealESRNet is stored with fp16 weights (33.8 MB, split in two <25 MB parts for any static host) and computed in fp32
+  (max deviation vs PyTorch 0.0007). Models are cached in the browser (Cache Storage) after the first download.
 - The background-removal engine (Transformers.js 4.3.2) loads from cdn.jsdelivr.net and the models from huggingface.co
   the first time the tool is used, then the browser caches them. To self-host, change `TJS_URL` and `MODELS` in `app.js`
   and set `env.remoteHost` to your own model mirror.
