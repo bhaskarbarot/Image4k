@@ -57,6 +57,7 @@ error_page 404 /404.html;
 COOP/COEP enable multi-threaded WebAssembly, which makes background removal ~3–4× faster in Chrome/Edge/Firefox.
 
 ## Notes
+- **After changing CSS or JS**, bump the `?v=` version on `style.css` / `*.js` links in the HTML pages so every browser loads the new file immediately.
 - AI upscaling: onnxruntime-web 1.31.1 loads from cdn.jsdelivr.net; the models are served from `/assets/models/`.
   Speed (measured, 6-core CPU, no GPU): AI Fast ≈ 1 min per input megapixel, AI Best ≈ 10 min per input megapixel;
   with WebGPU both take seconds. Flat background tiles skip the network, so screenshots/documents are much faster.
