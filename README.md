@@ -23,6 +23,18 @@ Static site — no backend, no database, no framework. Images never leave the vi
 - Before/after compare with 100% zoom, per-image download, "Download all" ZIP
 - Settings remembered per tool, mobile friendly, accessible (keyboard, ARIA), SEO + Open Graph + JSON-LD
 
+## PDF Tools (`/pdf`) — in progress
+Matte wine-red & white PDF editor, 100% in the browser (nothing uploaded), one PDF at a time.
+- **Engine:** PDFium (Chrome's PDF engine) as WebAssembly — `assets/vendor/pdfium-2.15.1/` (@embedpdf/pdfium, MIT; PDFium Apache-2.0/BSD).
+- **Phase 1 (done):** click any text to edit it **in its original font**, drag text/images to move, delete, add text,
+  add/replace/resize images, signatures (draw / type / upload), undo/redo, password-protected PDFs, download.
+  If new letters are missing from the PDF's embedded (subset) font, that line switches to the closest matching
+  Liberation font (`assets/vendor/liberation-2.1.5/`, SIL OFL 1.1) — same size, colour and position.
+- **Next phases:** merge · split · organize (rotate/reorder/crop/delete) · PDF↔images · extract text/images/tables ·
+  compress · AI enhance to HD.
+- Limits: text is edited line by line (no paragraph reflow); scanned PDFs need OCR (planned); complex scripts
+  (e.g. Hindi/Gujarati) may not shape correctly when edited.
+
 ## Files
 ```
 index.html              main app + landing content

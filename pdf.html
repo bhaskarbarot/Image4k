@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Free PDF Editor – Edit PDF Text, Images &amp; Signatures Online | Image4k</title>
+  <meta name="description" content="Edit PDF files free in your browser: change existing text in its original font, move and delete text and images, add text, images and signatures. Private — your PDF never leaves your device.">
+  <link rel="canonical" href="https://image4k.org/pdf">
+  <meta name="theme-color" content="#7B1F2E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Image4k PDF Editor – free, private, in your browser">
+  <meta property="og:description" content="Edit PDF text in its original font, move content, add images and signatures. Nothing is uploaded.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf2">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf2">
+</head>
+<body>
+  <header class="pbar">
+    <a class="pbrand" href="/pdf" aria-label="Image4k PDF home">
+      <span class="pmark" aria-hidden="true">PDF</span>
+      <span>Image4k <b>PDF</b></span>
+    </a>
+    <nav class="pnav" aria-label="Main">
+      <a href="/" class="pnav-link">Image tools</a>
+      <a href="/pdf" class="pnav-link is-active" aria-current="page">PDF tools</a>
+    </nav>
+    <div class="pbar-doc" id="docBar" hidden>
+      <span class="pdoc-name" id="docName">document.pdf</span>
+      <span class="pdoc-state" id="docState">Saved</span>
+    </div>
+    <div class="pbar-actions" id="docActions" hidden>
+      <button class="pbtn pbtn-ghost-light" type="button" id="openOther">Open another</button>
+      <button class="pbtn pbtn-light" type="button" id="downloadBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></svg>
+        Download
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= LANDING ================= -->
+  <main id="landing">
+    <section class="phero">
+      <h1>Edit PDF files online — free</h1>
+      <p>Change text in its original font, move or delete anything, add text, images and signatures. Your PDF never leaves your device.</p>
+      <div class="pdrop" id="pdfDrop" tabindex="0" role="button" aria-label="Choose a PDF file">
+        <div class="pdrop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg>
+        </div>
+        <button class="pbtn pbtn-wine pbtn-lg" type="button" id="pickPdf">Select a PDF</button>
+        <p class="pdrop-hint">or drop a PDF here · one file at a time · up to 200 MB</p>
+        <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden>
+      </div>
+      <p class="pprivacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        100% private — processed in your browser, never uploaded
+      </p>
+    </section>
+
+    <section class="ptools" aria-labelledby="ptoolsTitle">
+      <h2 id="ptoolsTitle">All PDF tools</h2>
+      <div class="ptool-grid">
+        <button class="ptool is-ready" type="button" data-open="edit"><span class="ptool-ico">✎</span><b>Edit PDF</b><span>Edit text in its own font, move, delete</span></button>
+        <button class="ptool is-ready" type="button" data-open="sign"><span class="ptool-ico">✍</span><b>Sign PDF</b><span>Draw, type or upload a signature</span></button>
+        <div class="ptool"><span class="ptool-ico">⊕</span><b>Merge PDF</b><span>Combine several PDFs</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">✂</span><b>Split PDF</b><span>Separate pages</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">⟳</span><b>Organize pages</b><span>Rearrange, rotate, crop, delete</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">✦</span><b>Enhance to HD</b><span>AI-sharpen images in a PDF</span><em>Soon</em></div>
+        <div class="ptool"><span class="ptool-ico">⧉</span><b>Extract</b><span>Text, images and tables</span><em>Soon</em></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= EDITOR ================= -->
+  <div class="peditor" id="editor" hidden>
+    <div class="ptoolbar" role="toolbar" aria-label="Editing tools">
+      <div class="ptb-group" role="radiogroup" aria-label="Tool">
+        <button class="ptb is-on" type="button" role="radio" aria-checked="true" data-tool="edit" title="Edit and move (V)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l7 17 2.5-7.5L21 11z"/></svg><span>Edit</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="text" title="Add text (T)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg><span>Add text</span>
+        </button>
+        <button class="ptb" type="button" data-action="image" title="Add image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg><span>Image</span>
+        </button>
+        <button class="ptb" type="button" data-action="sign" title="Add signature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c3-1 4-8 7-8s1 7 4 7 2-4 4-4 3 2 3 2M3 21h18"/></svg><span>Sign</span>
+        </button>
+      </div>
+      <div class="ptb-group">
+        <button class="ptb" type="button" data-action="undo" title="Undo (Ctrl+Z)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg><span>Undo</span>
+        </button>
+        <button class="ptb" type="button" data-action="redo" title="Redo (Ctrl+Y)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 000 10h3"/></svg><span>Redo</span>
+        </button>
+        <button class="ptb" type="button" data-action="delete" title="Delete selected (Del)" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg><span>Delete</span>
+        </button>
+      </div>
+      <div class="ptb-group ptb-zoom">
+        <button class="ptb ptb-icon" type="button" data-action="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
+        <button class="ptb ptb-zoomval" type="button" data-action="zoom-fit" title="Fit width" id="zoomVal">100%</button>
+        <button class="ptb ptb-icon" type="button" data-action="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
+        <span class="ppage-ind" id="pageInd">Page 1 / 1</span>
+      </div>
+    </div>
+
+    <div class="pwork">
+      <aside class="pthumbs" id="thumbs" aria-label="Pages"></aside>
+      <div class="pviewer" id="viewer" tabindex="-1"></div>
+      <aside class="pside" id="side" aria-label="Properties">
+        <div id="sideEmpty">
+          <h3>Edit this PDF</h3>
+          <ul class="ptips">
+            <li><b>Click any text</b> to edit it — it keeps its original font.</li>
+            <li><b>Drag</b> text or images to move them.</li>
+            <li>Select something and press <kbd>Delete</kbd> to remove it.</li>
+            <li>Use <b>Add text</b>, <b>Image</b> or <b>Sign</b> to add content.</li>
+            <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes any change.</li>
+          </ul>
+        </div>
+        <div id="sideText" hidden>
+          <h3>Text</h3>
+          <label class="pfield"><span>Content</span><textarea id="propText" rows="3"></textarea></label>
+          <div class="pfield"><span>Font</span><div class="pfont" id="propFontName">—</div></div>
+          <div class="prow">
+            <label class="pfield"><span>Style</span>
+              <select id="propFamily">
+                <option value="">Original</option>
+                <option value="Sans">Sans (Arial-like)</option>
+                <option value="Serif">Serif (Times-like)</option>
+                <option value="Mono">Mono (Courier-like)</option>
+              </select>
+            </label>
+            <label class="pfield pfield-sm"><span>Size</span><input id="propSize" type="number" min="4" max="400" step="0.5"></label>
+          </div>
+          <div class="prow">
+            <label class="pchk"><input type="checkbox" id="propBold"> <b>Bold</b></label>
+            <label class="pchk"><input type="checkbox" id="propItalic"> <i>Italic</i></label>
+            <label class="pfield pfield-color"><span>Color</span><input type="color" id="propColor"></label>
+          </div>
+          <button class="pbtn pbtn-wine pbtn-block" type="button" id="applyText">Apply changes</button>
+          <p class="pnote" id="fontNote"></p>
+        </div>
+        <div id="sideImage" hidden>
+          <h3>Image</h3>
+          <p class="pnote">Drag to move · drag the corner handle to resize.</p>
+          <button class="pbtn pbtn-wine pbtn-block" type="button" id="replaceImage">Replace image</button>
+        </div>
+        <button class="pbtn pbtn-outline pbtn-block" type="button" id="deleteSel" hidden>Delete</button>
+      </aside>
+    </div>
+    <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
+  </div>
+
+  <!-- signature dialog -->
+  <dialog class="pdialog" id="signDialog" aria-labelledby="signTitle">
+    <h2 id="signTitle">Add your signature</h2>
+    <div class="psign-tabs" role="tablist">
+      <button type="button" role="tab" class="is-on" aria-selected="true" data-sign="draw">Draw</button>
+      <button type="button" role="tab" aria-selected="false" data-sign="type">Type</button>
+      <button type="button" role="tab" aria-selected="false" data-sign="upload">Upload</button>
+    </div>
+    <div data-pane="draw"><canvas id="signPad" width="900" height="300" aria-label="Signature pad"></canvas><button class="plink" type="button" id="signClear">Clear</button></div>
+    <div data-pane="type" hidden><input id="signName" class="pinput psign-type" placeholder="Type your name" maxlength="60"></div>
+    <div data-pane="upload" hidden><button class="pbtn pbtn-outline" type="button" id="signUploadBtn">Choose image</button><p class="pnote">A photo or scan of your signature on white paper works best — white is removed automatically.</p></div>
+    <div class="psign-colors" role="radiogroup" aria-label="Ink color">
+      <button type="button" role="radio" aria-checked="true" data-ink="#111111" style="--c:#111111" aria-label="Black"></button>
+      <button type="button" role="radio" aria-checked="false" data-ink="#1d3fbb" style="--c:#1d3fbb" aria-label="Blue"></button>
+      <button type="button" role="radio" aria-checked="false" data-ink="#7B1F2E" style="--c:#7B1F2E" aria-label="Wine"></button>
+    </div>
+    <div class="pdialog-actions">
+      <button class="pbtn pbtn-outline" type="button" id="signCancel">Cancel</button>
+      <button class="pbtn pbtn-wine" type="button" id="signPlace">Place signature</button>
+    </div>
+  </dialog>
+
+  <!-- password dialog -->
+  <dialog class="pdialog" id="pwDialog" aria-labelledby="pwTitle">
+    <h2 id="pwTitle">This PDF is protected</h2>
+    <p class="pnote">Enter the password to open it. It stays on your device.</p>
+    <input class="pinput" id="pwInput" type="password" autocomplete="off">
+    <p class="perr" id="pwErr" hidden>Wrong password — try again.</p>
+    <div class="pdialog-actions">
+      <button class="pbtn pbtn-outline" type="button" id="pwCancel">Cancel</button>
+      <button class="pbtn pbtn-wine" type="button" id="pwOk">Open</button>
+    </div>
+  </dialog>
+
+  <input type="file" id="imgInput" accept="image/*" hidden>
+  <input type="file" id="signInput" accept="image/*" hidden>
+  <div class="ptoast" id="ptoast" role="status" aria-live="polite"></div>
+
+  <footer class="pfooter" id="pfooter">
+    <div class="pfoot-in">
+      <span>© <span id="pyear">2026</span> Image4k.org · <a href="/">Image tools</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></span>
+      <span class="pfoot-by">Designed &amp; built by <b>Bhaskar.Barot</b> ·
+        <a href="https://www.linkedin.com/in/bhaskar-d-barot/" target="_blank" rel="noopener noreferrer">LinkedIn</a> ·
+        <a href="https://github.com/bhaskarbarot" target="_blank" rel="noopener noreferrer">GitHub</a> ·
+        <a href="https://bhaskarbarot.vercel.app/" target="_blank" rel="noopener noreferrer">Portfolio</a>
+      </span>
+    </div>
+  </footer>
+
+  <script type="module" src="/assets/pdf/editor.js?v=pdf2"></script>
+</body>
+</html>

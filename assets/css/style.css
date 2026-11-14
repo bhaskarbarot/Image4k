@@ -87,7 +87,15 @@ button { cursor: pointer; }
 .nav-links { display: none; gap: 22px; margin: 0; padding: 0; list-style: none; }
 .nav-links a { color: #fff; font-weight: 600; font-size: 15px; }
 .nav-links a:hover { color: var(--accent); }
-.nav-cta { margin-left: auto; }
+.nav-cta { margin-left: 0; }
+.nav-pdf {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px;
+  border-radius: 999px; border: 1px solid #7B1F2E; background: #7B1F2E; color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap;
+}
+.nav-pdf:hover { background: #9A3445; color: #fff; }
+.nav-pdf svg { width: 16px; height: 16px; }
+.nav-new { font-size: 10px; font-weight: 800; text-transform: uppercase; background: #fff; color: #7B1F2E; border-radius: 999px; padding: 1px 6px; }
+@media (max-width: 520px) { .nav-new { display: none; } .site-header .nav-cta { display: none; } }
 @media (min-width: 900px) { .nav-links { display: flex; } }
 
 /* ---------- buttons ---------- */
