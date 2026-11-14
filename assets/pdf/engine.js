@@ -492,6 +492,31 @@ export class PdfDoc {
     if (!this.P.FPDFPage_GenerateContent(this.page(i))) throw new Error('Could not update page ' + (i + 1));
   }
 
+  // ---- security (Protect / Unlock) ---------------------------------------
+  /** True if this PDF carries any encryption (open password or owner restrictions). */
+  isEncrypted() { return !!this.P.EPDF_IsEncrypted(this.doc); }
+  /** The permission bits currently in force (unsigned 32-bit). 0xFFFFFFFF = all allowed. */
+  permissions() { return this.P.FPDF_GetDocPermissions(this.doc) >>> 0; }
+  /** True when the document was opened with the OWNER password (full rights). */
+  ownerUnlocked() { return !!this.P.EPDF_IsOwnerUnlocked(this.doc); }
+
+  /**
+   * Add (or replace) encryption. `userPw` is needed to OPEN the file; `ownerPw` grants full
+   * rights and is required to change these settings later. `perms` is the PDF permission
+   * integer (see PERM in secure.js). Throws on failure.
+   */
+  encrypt(userPw, ownerPw, perms) {
+    const owner = ownerPw || userPw || '';
+    if (!this.P.EPDF_SetEncryption(this.doc, userPw || '', owner, perms >>> 0))
+      throw new Error('Could not protect this PDF');
+  }
+  /** Remove all encryption. The document must already be open (unlocked). */
+  decrypt() {
+    if (!this.P.EPDF_RemoveEncryption(this.doc)) throw new Error('Could not remove the protection');
+  }
+  /** Lift owner-only restrictions (printing/copying) using the owner password. */
+  unlockOwner(ownerPw) { return !!this.P.EPDF_UnlockOwnerPermissions(this.doc, ownerPw || ''); }
+
   /** Save the whole document to bytes. */
   save() {
     const w = this.P.PDFiumExt_OpenFileWriter();

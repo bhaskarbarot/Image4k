@@ -233,13 +233,17 @@ Done (uncommitted on `pdf-tools`): engine page operations, `pages.js`, views in 
 | 7 | **Compress PDF** | For each image object: get bitmap → downscale to target dpi (Low 72 / Medium 150 / High 220) → JPEG re-encode (canvas) → put back with `FPDFImageObj_LoadJpegFileInline` (needs FILEACCESS callback). Keep text/vectors. Show size before/after; if bigger, keep original | output smaller on image-heavy PDFs, text still selectable (`pdftotext`) |
 | 8 | **Enhance to HD** | Same loop, but upscale embedded images with the Real-ESRGAN code from `assets/js/app.js` (`aiResize`) — extract it into a shared module (e.g. `assets/js/sr.js`) without breaking the image site | images sharper, text untouched, image site still passes its audit |
 
-### ⏳ Phase 5 — Security (NEW, requested 2026-11-14)
+### ✅ Phase 5 — Security (DONE · Protect + Unlock on `pdf-tools`)
 | # | Tool | How | Done when |
 |---|---|---|---|
 | 11 | **Protect PDF (add password)** | `this.P.EPDF_SetEncryption(doc, userPassword, ownerPassword, permissions)` then `save()`. Permission bits (PDF spec): print 4, modify 8, copy 16, annotate 32, fill forms 256, accessibility 512, assemble 1024, high-quality print 2048 (`permissions = 0xFFFFF0C0 \| chosen bits` style — verify with `qpdf --show-encryption` or `pdfinfo`). UI: password + confirm, show/hide, strength meter, checkboxes for allow print/copy/edit, optional separate owner password | `pdfinfo out.pdf` shows `Encrypted: yes`; opening asks for the password; wrong password fails; permissions respected |
 | 12 | **Unlock PDF (remove password)** | open with password (`PdfDoc.open(bytes, pw)`), `this.P.EPDF_RemoveEncryption(doc)`, `save()`. For owner-only locks use `EPDF_UnlockOwnerPermissions(doc, ownerPw)` | `pdfinfo` shows `Encrypted: no`; content identical. **Never** brute-force or crack passwords — the user must know it |
 
 ### ⏳ Phase 6 — Later
+**Note — password "breaker":** requested but intentionally NOT built. A tool that opens a PDF without its
+password is password cracking (defeating access control); it is out of scope. Unlock only removes protection
+once the PDF is open with the password the user knows (or lifts owner-only restrictions on a PDF that already opens).
+
 OCR for scanned PDFs (Tesseract.js, Apache-2.0) · broader fallback fonts (Noto, OFL: symbols, Hindi/Gujarati) · fill PDF forms.
 
 ### 🚀 Release checklist

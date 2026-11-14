@@ -192,6 +192,27 @@ kbd { font-family: ui-monospace, monospace; font-size: 12px; background: var(--b
 .pdialog::backdrop { background: rgba(30,10,14,.45); }
 .pdialog h2 { margin: 0 0 14px; font-size: 20px; color: var(--wine); }
 .pw-file { font-weight: 700; color: var(--ink); word-break: break-all; }
+
+/* ---------- secure (protect / unlock) ---------- */
+.psecure { max-width: 520px; display: flex; flex-direction: column; gap: 16px; }
+.psecure .pfield { display: flex; flex-direction: column; gap: 6px; }
+.psecure .pfield > span { font-weight: 700; font-size: 14px; }
+.pinput-row { display: flex; gap: 8px; }
+.pinput-row .pinput { flex: 1; }
+.pbtn-sm { padding: 6px 12px; font-size: 13px; }
+.pstrength { display: flex; gap: 5px; margin-top: 2px; }
+.pstrength i { flex: 1; height: 5px; border-radius: 3px; background: var(--line-2); transition: background .2s; }
+.pstrength.s1 i:nth-child(-n+1), .pstrength.s2 i:nth-child(-n+2), .pstrength.s3 i:nth-child(-n+3), .pstrength.s4 i:nth-child(-n+4) { background: var(--wine); }
+.pstrength.s1 i:nth-child(-n+1) { background: #c0392b; }
+.pstrength.s2 i:nth-child(-n+2) { background: #d98324; }
+.pstrength.s3 i:nth-child(-n+3) { background: #2e9e5b; }
+.pstrength.s4 i { background: #1e7f4f; }
+.pperms { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.pperms legend { font-weight: 700; font-size: 14px; padding: 0 6px; }
+.pperms .pchk { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.pperms .pchk input { width: 17px; height: 17px; accent-color: var(--wine); }
+.psecure-note { background: var(--wine-soft); border-radius: 10px; padding: 10px 12px; margin: 4px 0 0; line-height: 1.45; }
+.perr { color: var(--err); font-size: 13px; font-weight: 600; margin: 0; }
 .pdialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 .psign-tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 999px; margin-bottom: 14px; }
 .psign-tabs button { flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 999px; font-weight: 700; color: var(--ink-2); }

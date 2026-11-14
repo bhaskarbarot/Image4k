@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf4">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf4">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf5">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf5">
 </head>
 <body>
   <header class="pbar">
@@ -69,6 +69,8 @@
         <button class="ptool is-ready" type="button" data-open="merge"><span class="ptool-ico">⊕</span><b>Merge PDF</b><span>Combine several PDFs into one</span></button>
         <button class="ptool is-ready" type="button" data-open="split"><span class="ptool-ico">✂</span><b>Split PDF</b><span>Every page, ranges or chosen pages</span></button>
         <button class="ptool is-ready" type="button" data-open="organize"><span class="ptool-ico">⟳</span><b>Organize pages</b><span>Rearrange, rotate, crop, delete, extract</span></button>
+        <button class="ptool is-ready" type="button" data-open="protect"><span class="ptool-ico">🔒</span><b>Protect PDF</b><span>Add a password &amp; set permissions</span></button>
+        <button class="ptool is-ready" type="button" data-open="unlock"><span class="ptool-ico">🔓</span><b>Unlock PDF</b><span>Remove a password you know</span></button>
         <div class="ptool"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span><em>Soon</em></div>
         <div class="ptool"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span><em>Soon</em></div>
         <div class="ptool"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span><em>Soon</em></div>
@@ -238,6 +240,51 @@
     <div class="pspl-grid" id="splGrid"></div>
   </section>
 
+  <!-- ================= PROTECT ================= -->
+  <section class="pview" id="protect" hidden aria-labelledby="prTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="prTitle">Protect PDF</h1>
+        <p class="pview-sub" id="prName"></p>
+      </div>
+    </div>
+    <div class="psecure">
+      <div class="pfield">
+        <span>Password to open the PDF</span>
+        <div class="pinput-row">
+          <input class="pinput" id="prPass" type="password" autocomplete="new-password" placeholder="Choose a password">
+          <button class="pbtn pbtn-outline pbtn-sm" type="button" id="prShow" aria-pressed="false">Show</button>
+        </div>
+        <div class="pstrength s0" id="prStrength"><i></i><i></i><i></i><i></i></div>
+        <p class="pnote" id="prStrengthLabel"></p>
+      </div>
+      <label class="pfield">
+        <span>Confirm password</span>
+        <input class="pinput" id="prConfirm" type="password" autocomplete="new-password" placeholder="Type it again">
+      </label>
+      <p class="perr" id="prMismatch" hidden>The two passwords do not match.</p>
+
+      <fieldset class="pperms">
+        <legend>Once opened, allow the reader to…</legend>
+        <label class="pchk"><input type="checkbox" data-perm="print" checked> Print the document</label>
+        <label class="pchk"><input type="checkbox" data-perm="copy" checked> Copy text &amp; images</label>
+        <label class="pchk"><input type="checkbox" data-perm="modify" checked> Edit the content</label>
+        <label class="pchk"><input type="checkbox" data-perm="annotate" checked> Add comments &amp; fill forms</label>
+        <p class="pnote" id="prOwnerHint" hidden>To enforce these limits, the PDF gets a separate owner password. Set your own below, or one is generated for you.</p>
+      </fieldset>
+
+      <button class="plink" type="button" id="prOwnerToggle" aria-expanded="false">Advanced: set an owner password</button>
+      <label class="pfield" id="prOwnerWrap" hidden>
+        <span>Owner password (to change permissions later)</span>
+        <input class="pinput" id="prOwner" type="password" autocomplete="new-password" placeholder="Optional">
+      </label>
+
+      <button class="pbtn pbtn-wine pbtn-block" type="button" id="prGo" disabled>Protect &amp; download</button>
+      <p class="pnote psecure-note">🔒 The password is applied in your browser. Nothing is uploaded, and we never see or store it. Keep it safe — a protected PDF cannot be opened without it.</p>
+    </div>
+  </section>
+
   <!-- crop dialog -->
   <dialog class="pdialog pdialog-wide" id="cropDialog" aria-labelledby="cropTitle">
     <h2 id="cropTitle">Crop pages</h2>
@@ -307,6 +354,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf4"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf5"></script>
 </body>
 </html>
