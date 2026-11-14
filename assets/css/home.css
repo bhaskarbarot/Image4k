@@ -1,0 +1,40 @@
+/* Bhaskar Solution — hub home page. Builds on style.css (shared dark theme). */
+.hub-hero { text-align: center; padding: clamp(48px, 9vw, 104px) 0 clamp(32px, 5vw, 56px); }
+.hub-kicker {
+  display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-soft-2);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+}
+.hub-hero h1 { font-size: clamp(36px, 6vw, 68px); line-height: 1.04; letter-spacing: -0.02em; margin: 0 0 16px; }
+.hub-hero h1 .grad { background: linear-gradient(90deg, var(--accent), #b77bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hub-hero .lead { color: var(--text-2); font-size: clamp(16px, 1.8vw, 20px); max-width: 640px; margin: 0 auto; }
+.hub-privacy { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--muted); font-size: 14px; }
+.hub-privacy svg { width: 18px; height: 18px; color: #39d98a; }
+
+.hub-grid { display: grid; gap: 20px; grid-template-columns: 1fr; max-width: 920px; margin: 0 auto; padding-bottom: 24px; }
+@media (min-width: 680px) { .hub-grid { grid-template-columns: 1fr 1fr; } }
+
+.hub-card {
+  display: flex; flex-direction: column; gap: 14px; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px;
+  color: var(--text); transition: border-color .15s, transform .15s, box-shadow .15s; position: relative; overflow: hidden;
+}
+a.hub-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,.4); color: var(--text); }
+.hub-card .hub-ico {
+  width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-size: 28px;
+}
+.hub-card h2 { margin: 0; font-size: 22px; }
+.hub-card p { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.55; }
+.hub-card .hub-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.hub-card .hub-tags span { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--card-3); border-radius: 999px; padding: 3px 10px; }
+.hub-card .hub-go { margin-top: auto; display: inline-flex; align-items: center; gap: 7px; font-weight: 800; color: var(--accent); font-size: 15px; }
+a.hub-card:hover .hub-go { color: var(--accent-hover); }
+.hub-card .hub-go svg { width: 18px; height: 18px; transition: transform .15s; }
+a.hub-card:hover .hub-go svg { transform: translateX(4px); }
+
+.hub-card.is-soon { opacity: .62; cursor: default; }
+.hub-card.is-soon .hub-ico { background: var(--card-3); color: var(--muted); }
+.hub-badge { position: absolute; top: 18px; right: 18px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 10px; }
+
+.hub-more { text-align: center; color: var(--muted); font-size: 13px; margin: 8px 0 44px; }
