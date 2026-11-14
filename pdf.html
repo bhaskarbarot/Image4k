@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf6">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf6">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf7">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf7">
 </head>
 <body>
   <header class="pbar">
@@ -75,7 +75,7 @@
         <button class="ptool is-ready" type="button" data-open="toimg"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span></button>
         <button class="ptool is-ready" type="button" data-open="imgpdf"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span></button>
         <button class="ptool is-ready" type="button" data-open="extract"><span class="ptool-ico">⧉</span><b>Extract</b><span>Text, images and tables</span></button>
-        <div class="ptool"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span><em>Soon</em></div>
+        <button class="ptool is-ready" type="button" data-open="compress"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span></button>
         <div class="ptool"><span class="ptool-ico">✦</span><b>Enhance to HD</b><span>AI-sharpen images in a PDF</span><em>Soon</em></div>
       </div>
     </section>
@@ -306,6 +306,29 @@
     <p class="pview-hint" id="exHint"></p>
   </section>
 
+  <!-- ================= COMPRESS ================= -->
+  <section class="pview" id="compress" hidden aria-labelledby="cmTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="cmTitle">Compress PDF</h1>
+        <p class="pview-sub" id="cmName"></p>
+      </div>
+      <div class="pview-actions"><button class="pbtn pbtn-wine" type="button" id="cmGo">Compress &amp; download</button></div>
+    </div>
+    <div class="pconv-opts">
+      <label>Compression
+        <select class="pinput" id="cmLevel">
+          <option value="strong">Strong — smallest file (72 dpi images)</option>
+          <option value="balanced" selected>Balanced — good quality (150 dpi)</option>
+          <option value="light">Light — barely visible (220 dpi)</option>
+        </select>
+      </label>
+    </div>
+    <p class="pview-hint">Only the images are recompressed — text and vector graphics stay perfectly sharp and selectable. If compression wouldn't help, your original is returned unchanged.</p>
+    <p class="pnote psecure-note" id="cmResult" hidden></p>
+  </section>
+
   <!-- ================= PROTECT ================= -->
   <section class="pview" id="protect" hidden aria-labelledby="prTitle">
     <div class="pview-head">
@@ -421,6 +444,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf6"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf7"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 /* Image4k PDF — page tools: Organize, Merge, Split.
  * Nothing is changed in the original files: every tool builds a fresh PDF from the chosen pages.
  */
-import { PdfDoc } from './engine.js?v=pdf6';
+import { PdfDoc } from './engine.js?v=pdf7';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));

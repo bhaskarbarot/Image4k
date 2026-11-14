@@ -1,8 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf6';
-import { initPageTools, pageTools } from './pages.js?v=pdf6';
-import { initSecureTools, secureTools } from './secure.js?v=pdf6';
-import { initConvertTools, convertTools } from './convert.js?v=pdf6';
+import { PdfDoc } from './engine.js?v=pdf7';
+import { initPageTools, pageTools } from './pages.js?v=pdf7';
+import { initSecureTools, secureTools } from './secure.js?v=pdf7';
+import { initConvertTools, convertTools } from './convert.js?v=pdf7';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf7';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -739,7 +740,8 @@ const TOOLS = {
   unlock: { open: (f) => secureTools.unlock(f) },
   toimg: { open: (f) => convertTools.toImages(f) },
   extract: { open: (f) => convertTools.extract(f) },
-  imgpdf: { input: '#imgpdfInput', drop: (fs) => convertTools.imagesToPdf(fs) }
+  imgpdf: { input: '#imgpdfInput', drop: (fs) => convertTools.imagesToPdf(fs) },
+  compress: { open: (f) => optimizeTools.compress(f) }
 };
 
 function bind() {
@@ -747,6 +749,7 @@ function bind() {
   initPageTools(helpers);
   initSecureTools(helpers);
   initConvertTools(helpers);
+  initOptimizeTools(helpers);
   const input = $('#pdfInput');
   const pick = () => input.click();
   $('#pickPdf').addEventListener('click', (e) => { e.stopPropagation(); pick(); });

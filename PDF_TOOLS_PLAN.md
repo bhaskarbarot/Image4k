@@ -227,7 +227,7 @@ Done (uncommitted on `pdf-tools`): engine page operations, `pages.js`, views in 
 | 4 | **Images → PDF** | `PdfDoc.create()` → `addBlankPage(at, w, h)` (A4 595×842, Letter 612×792, or image size) → `addImage(i, ImageData, box)` with margins; order by drag | output opens in poppler with N pages, images centered, orientation auto. Note: `addImage` stores pixels losslessly (big files) → for JPEG inputs implement `FPDFImageObj_LoadJpegFileInline` with an `FPDF_FILEACCESS` struct (`M.addFunction` for `m_GetBlock`) to keep files small |
 | 9 | **Extract** | Text: `FPDFText_LoadPage` + `FPDFText_CountChars` + `FPDFText_GetText` per page → .txt. Images: image objects → `FPDFImageObj_GetRenderedBitmap`/`GetBitmap` → PNG (or `FPDFImageObj_GetImageDataRaw` for original JPEG) → ZIP. Tables: char boxes `FPDFText_GetCharBox` → cluster rows by y, columns by x gaps → CSV | text matches `pdftotext`; images count matches `pdfimages -list` |
 
-### ⏳ Phase 4 — Optimize
+### 🔄 Phase 4 — Optimize (Compress DONE on `pdf-tools`; Enhance-to-HD pending the shared AI fix)
 | # | Tool | How | Done when |
 |---|---|---|---|
 | 7 | **Compress PDF** | For each image object: get bitmap → downscale to target dpi (Low 72 / Medium 150 / High 220) → JPEG re-encode (canvas) → put back with `FPDFImageObj_LoadJpegFileInline` (needs FILEACCESS callback). Keep text/vectors. Show size before/after; if bigger, keep original | output smaller on image-heavy PDFs, text still selectable (`pdftotext`) |
