@@ -55,7 +55,7 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
 add_header Cross-Origin-Opener-Policy "same-origin" always;
 add_header Cross-Origin-Embedder-Policy "credentialless" always;
 add_header X-Content-Type-Options "nosniff" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Referrer-Policy "no-referrer" always;
 error_page 404 /404.html;
 ```
 COOP/COEP enable multi-threaded WebAssembly, which makes background removal ~3–4× faster in Chrome/Edge/Firefox.
