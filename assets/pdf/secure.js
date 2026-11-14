@@ -3,7 +3,7 @@
  * This tool NEVER cracks or guesses passwords — Unlock only works once the PDF is open,
  * which needs the password the user already knows.
  */
-import { PdfDoc } from './engine.js?v=pdf7';
+import { PdfDoc } from './engine.js?v=pdf8';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));

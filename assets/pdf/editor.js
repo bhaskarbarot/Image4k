@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf7';
-import { initPageTools, pageTools } from './pages.js?v=pdf7';
-import { initSecureTools, secureTools } from './secure.js?v=pdf7';
-import { initConvertTools, convertTools } from './convert.js?v=pdf7';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf7';
+import { PdfDoc } from './engine.js?v=pdf8';
+import { initPageTools, pageTools } from './pages.js?v=pdf8';
+import { initSecureTools, secureTools } from './secure.js?v=pdf8';
+import { initConvertTools, convertTools } from './convert.js?v=pdf8';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf8';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -216,7 +216,7 @@ function renderThumb(i, force) {
 function buildOverlay(i) {
   const p = state.pages[i], z = state.zoom;
   p.overlay.innerHTML = '';
-  p.overlay.className = 'poverlay' + (state.tool === 'text' ? ' tool-text' : '');
+  p.overlay.className = 'poverlay' + ({ text: ' tool-text', erase: ' tool-erase', match: ' tool-match' }[state.tool] || '');
   p.items.forEach((item, k) => {
     const d = document.createElement('div');
     d.className = 'pobj' + (item.kind === 'image' ? ' is-image' : '') + (item.broken ? ' is-broken' : '');
@@ -422,18 +422,20 @@ function startEdit(i, k) {
   ed.addEventListener('blur', () => setTimeout(() => { if (state.editing && state.editing.el === ed) finishEdit(true); }, 0));
 }
 
-function startNewText(i, vx, vy) {
+function startNewText(i, vx, vy, opts = {}) {
   finishEdit(true);
   const z = state.zoom, p = state.pages[i];
-  const size = 14;
+  const size = opts.size || 14;
+  const color = opts.color || [0, 0, 0, 255];
+  const family = opts.family || 'Sans';
   const ed = document.createElement('div');
   ed.className = 'pinline';
   ed.contentEditable = 'plaintext-only';
   if (ed.contentEditable !== 'plaintext-only') ed.contentEditable = 'true';
-  Object.assign(ed.style, { left: vx * z + 'px', top: vy * z + 'px', minHeight: size * 1.2 * z + 'px', lineHeight: size * 1.2 * z + 'px', fontSize: size * z + 'px', fontFamily: FAMILY_CSS.Sans, color: '#000', minWidth: '120px' });
+  Object.assign(ed.style, { left: vx * z + 'px', top: vy * z + 'px', minHeight: size * 1.2 * z + 'px', lineHeight: size * 1.2 * z + 'px', fontSize: size * z + 'px', fontFamily: FAMILY_CSS[family] || FAMILY_CSS.Sans, color: rgb(color), minWidth: '120px' });
   ed.dataset.placeholder = 'Type here';
   p.overlay.appendChild(ed);
-  state.editing = { i, el: ed, isNew: true, vx, vy, size };
+  state.editing = { i, el: ed, isNew: true, vx, vy, size, color, family };
   ed.focus();
   ed.addEventListener('keydown', onEditKey);
   ed.addEventListener('blur', () => setTimeout(() => { if (state.editing && state.editing.el === ed) finishEdit(true); }, 0));
@@ -455,7 +457,7 @@ async function finishEdit(commit) {
   if (ed.isNew) {
     if (commit && text.trim()) {
       const baseline = ed.vy + ed.size * 0.95;
-      await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size }), 'Add text');
+      await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size, color: ed.color, family: ed.family }), 'Add text');
     } else rerender(ed.i);
     return;
   }
@@ -475,6 +477,80 @@ async function finishEdit(commit) {
 }
 
 // =====================================================================
+// colour sampling (eyedropper) + eraser + match-and-type
+// =====================================================================
+/** RGBA of the rendered page at view point (vx, vy) in points. */
+function samplePageColor(i, vx, vy) {
+  const p = state.pages[i]; if (!p || !p.canvas.width) return null;
+  const { w, h } = state.doc.size(i);
+  const sx = p.canvas.width / w, sy = p.canvas.height / h;
+  const px = Math.max(0, Math.min(p.canvas.width - 1, Math.round(vx * sx)));
+  const py = Math.max(0, Math.min(p.canvas.height - 1, Math.round(vy * sy)));
+  try { const d = p.canvas.getContext('2d').getImageData(px, py, 1, 1).data; return [d[0], d[1], d[2], 255]; }
+  catch (e) { return null; }
+}
+/** Median colour just outside a view box — what to paint an eraser so it blends in. */
+function sampleBorderColor(i, box) {
+  const m = 4, pts = [];
+  for (let t = 0; t <= 1; t += 0.25) {
+    pts.push([box.x + t * box.w, box.y - m], [box.x + t * box.w, box.y + box.h + m],
+             [box.x - m, box.y + t * box.h], [box.x + box.w + m, box.y + t * box.h]);
+  }
+  const cols = pts.map(([x, y]) => samplePageColor(i, x, y)).filter(Boolean);
+  if (!cols.length) return [255, 255, 255, 255];
+  const med = (f) => cols.map(f).sort((a, b) => a - b)[cols.length >> 1];
+  return [med((c) => c[0]), med((c) => c[1]), med((c) => c[2]), 255];
+}
+/** Guess the colour and size of text under a click on an image (for Match & type). */
+function sampleTextStyle(i, vx, vy) {
+  const p = state.pages[i], { w, h } = state.doc.size(i);
+  const sx = p.canvas.width / w, sy = p.canvas.height / h;
+  const cx = Math.round(vx * sx), cy = Math.round(vy * sy), R = Math.max(8, Math.round(22 * sy));
+  const x0 = Math.max(0, cx - R), y0 = Math.max(0, cy - R);
+  const ww = Math.min(p.canvas.width, cx + R) - x0, hh = Math.min(p.canvas.height, cy + R) - y0;
+  let color = [0, 0, 0, 255], size = 14;
+  try {
+    const data = p.canvas.getContext('2d').getImageData(x0, y0, ww, hh).data;
+    let darkLum = 999, light = 0;
+    for (let k = 0; k < data.length; k += 4) {
+      const lum = 0.299 * data[k] + 0.587 * data[k + 1] + 0.114 * data[k + 2];
+      if (lum < darkLum) { darkLum = lum; color = [data[k], data[k + 1], data[k + 2], 255]; }
+      if (lum > light) light = lum;
+    }
+    // text height = vertical run of "dark" pixels through the clicked column
+    const mid = (darkLum + light) / 2, col = Math.min(ww - 1, cx - x0);
+    let top = -1, bot = -1;
+    for (let yy = 0; yy < hh; yy++) {
+      const k = (yy * ww + col) * 4, lum = 0.299 * data[k] + 0.587 * data[k + 1] + 0.114 * data[k + 2];
+      if (lum < mid) { if (top < 0) top = yy; bot = yy; }
+    }
+    if (top >= 0 && bot > top) size = Math.max(7, Math.min(72, ((bot - top) / sy) * 1.3));
+  } catch (e) { /* cross-origin or empty — use defaults */ }
+  return { color, size };
+}
+/** Drag a rectangle; on release cover it with a filled shape (eraser / whiteout). */
+function startErase(i, sx, sy, pageEl) {
+  const p = state.pages[i], z = state.zoom;
+  const box = document.createElement('div'); box.className = 'perase-preview'; p.overlay.appendChild(box);
+  const r = pageEl.getBoundingClientRect();
+  let cur = { x: sx, y: sy, w: 0, h: 0 };
+  const draw = (vx, vy) => {
+    const x = Math.min(sx, vx), y = Math.min(sy, vy), w = Math.abs(vx - sx), hh = Math.abs(vy - sy);
+    Object.assign(box.style, { left: x * z + 'px', top: y * z + 'px', width: w * z + 'px', height: hh * z + 'px' });
+    cur = { x, y, w, h: hh };
+  };
+  const onMove = (ev) => draw((ev.clientX - r.left) / z, (ev.clientY - r.top) / z);
+  const onUp = async () => {
+    document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp);
+    box.remove();
+    if (cur.w < 3 || cur.h < 3) return;
+    const bg = sampleBorderColor(i, cur);
+    await mutate(i, () => state.doc.addRect(i, cur, bg), 'Erase');
+  };
+  document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
+}
+
+// =====================================================================
 // pointer: select, drag-move, resize, add text
 // =====================================================================
 function bindOverlayEvents() {
@@ -486,6 +562,10 @@ function bindOverlayEvents() {
     const objEl = e.target.closest('.pobj');
     const rect = pageEl.getBoundingClientRect();
     const vx = (e.clientX - rect.left) / state.zoom, vy = (e.clientY - rect.top) / state.zoom;
+
+    if (state.picking) { e.preventDefault(); const c = samplePageColor(i, vx, vy); viewer.classList.remove('is-picking'); const cb = state.picking; state.picking = null; if (c) cb(c); return; }
+    if (state.tool === 'erase') { e.preventDefault(); startErase(i, vx, vy, pageEl); return; }
+    if (state.tool === 'match') { e.preventDefault(); const st = sampleTextStyle(i, vx, vy); startNewText(i, vx, vy - st.size * 0.8, { size: st.size, color: st.color }); setTool('edit'); return; }
 
     if (state.tool === 'text' && !objEl) {
       e.preventDefault();
@@ -563,8 +643,11 @@ function reselectAt(i, before) {
 function setTool(t) {
   state.tool = t;
   $$('.ptb[data-tool]').forEach((b) => { const on = b.dataset.tool === t; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', String(on)); });
-  state.pages.forEach((p) => p.overlay.classList.toggle('tool-text', t === 'text'));
-  if (t === 'text') toast('Click on the page where the new text should go.');
+  const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match' }[t] || '';
+  state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match'); if (cls) p.overlay.classList.add(cls); });
+  if (t === 'text') toast('Click where the new text should go.');
+  else if (t === 'erase') toast('Drag over anything to cover it — works on photos and scans too.');
+  else if (t === 'match') toast('Click on text in the image to copy its colour & size, then type over it.');
 }
 
 async function fileToImageData(file, maxSide = 2400) {
@@ -813,6 +896,11 @@ function bind() {
   });
   $('#replaceImage').addEventListener('click', () => { state.replacing = true; $('#imgInput').click(); });
   $('#applyText').addEventListener('click', applyPanel);
+  $('#propEyedrop').addEventListener('click', () => {
+    state.picking = (c) => { $('#propColor').value = hex(c); applyPanel(); };
+    $('#viewer').classList.add('is-picking');
+    toast('Click anywhere on the page to pick that colour.');
+  });
   $('#deleteSel').addEventListener('click', deleteSelected);
   $('#downloadBtn').addEventListener('click', download);
 
@@ -845,6 +933,8 @@ function bind() {
     if ((e.key === 'Delete' || e.key === 'Backspace') && state.sel) { e.preventDefault(); deleteSelected(); }
     else if (e.key === 'Escape') { select(null); setTool('edit'); }
     else if (e.key.toLowerCase() === 't') setTool('text');
+    else if (e.key.toLowerCase() === 'e') setTool('erase');
+    else if (e.key.toLowerCase() === 'm') setTool('match');
     else if (e.key.toLowerCase() === 'v') setTool('edit');
     else if (state.sel && e.key.startsWith('Arrow')) {
       e.preventDefault();

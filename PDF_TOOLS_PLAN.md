@@ -243,6 +243,13 @@ Done (uncommitted on `pdf-tools`): engine page operations, `pages.js`, views in 
 | 11 | **Protect PDF (add password)** | `this.P.EPDF_SetEncryption(doc, userPassword, ownerPassword, permissions)` then `save()`. Permission bits (PDF spec): print 4, modify 8, copy 16, annotate 32, fill forms 256, accessibility 512, assemble 1024, high-quality print 2048 (`permissions = 0xFFFFF0C0 \| chosen bits` style — verify with `qpdf --show-encryption` or `pdfinfo`). UI: password + confirm, show/hide, strength meter, checkboxes for allow print/copy/edit, optional separate owner password | `pdfinfo out.pdf` shows `Encrypted: yes`; opening asks for the password; wrong password fails; permissions respected |
 | 12 | **Unlock PDF (remove password)** | open with password (`PdfDoc.open(bytes, pw)`), `this.P.EPDF_RemoveEncryption(doc)`, `save()`. For owner-only locks use `EPDF_UnlockOwnerPermissions(doc, ownerPw)` | `pdfinfo` shows `Encrypted: no`; content identical. **Never** brute-force or crack passwords — the user must know it |
 
+### ✅ Image-PDF editing tools (NEW, 2026-11-14) — on `pdf-tools`
+Eraser (drag to cover anything; auto-samples the surrounding colour so it blends on scans/photos) ·
+Match & type (click text on an image → copies its colour + size → type real, selectable text over it) ·
+Eyedropper in the text panel (pick any colour from the page) · friendlier font names (Arial/Times/Courier).
+Engine: addRect (filled rectangle via FPDFPageObj_CreateNewRect). These make photo/scanned PDFs editable
+(cover the old, type the new) — the normal text editor can't change pixels baked into an image.
+
 ### ⏳ Phase 6 — Later
 **Note — password "breaker":** requested but intentionally NOT built. A tool that opens a PDF without its
 password is password cracking (defeating access control); it is out of scope. Unlock only removes protection

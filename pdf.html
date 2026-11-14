@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf7">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf7">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf8">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf8">
 </head>
 <body>
   <header class="pbar">
@@ -97,6 +97,12 @@
         <button class="ptb" type="button" data-action="sign" title="Add signature">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c3-1 4-8 7-8s1 7 4 7 2-4 4-4 3 2 3 2M3 21h18"/></svg><span>Sign</span>
         </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="erase" title="Eraser — cover anything (E)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20H5l-2-2a2 2 0 010-3l9-9 7 7-7 7M12 7l5 5"/></svg><span>Erase</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="match" title="Match &amp; type — copy the look of text on an image, then type over it">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7V5h10v2M8 17h4M10 5v12M17 14l3 3-3 3M20 17h-6"/></svg><span>Match &amp; type</span>
+        </button>
       </div>
       <div class="ptb-group">
         <button class="ptb" type="button" data-action="undo" title="Undo (Ctrl+Z)" disabled>
@@ -139,9 +145,9 @@
             <label class="pfield"><span>Style</span>
               <select id="propFamily">
                 <option value="">Original</option>
-                <option value="Sans">Sans (Arial-like)</option>
-                <option value="Serif">Serif (Times-like)</option>
-                <option value="Mono">Mono (Courier-like)</option>
+                <option value="Sans">Arial / Helvetica (Sans)</option>
+                <option value="Serif">Times New Roman (Serif)</option>
+                <option value="Mono">Courier (Mono)</option>
               </select>
             </label>
             <label class="pfield pfield-sm"><span>Size</span><input id="propSize" type="number" min="4" max="400" step="0.5"></label>
@@ -149,7 +155,9 @@
           <div class="prow">
             <label class="pchk"><input type="checkbox" id="propBold"> <b>Bold</b></label>
             <label class="pchk"><input type="checkbox" id="propItalic"> <i>Italic</i></label>
-            <label class="pfield pfield-color"><span>Color</span><input type="color" id="propColor"></label>
+            <label class="pfield pfield-color"><span>Color</span>
+              <span class="pcolor-row"><input type="color" id="propColor"><button class="pbtn pbtn-outline pbtn-sm" type="button" id="propEyedrop" title="Pick a colour from the page">🎨</button></span>
+            </label>
           </div>
           <button class="pbtn pbtn-wine pbtn-block" type="button" id="applyText">Apply changes</button>
           <p class="pnote" id="fontNote"></p>
@@ -444,6 +452,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf7"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf8"></script>
 </body>
 </html>
