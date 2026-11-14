@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf3">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf3">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf4">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf4">
 </head>
 <body>
   <header class="pbar">
@@ -159,7 +159,6 @@
         <button class="pbtn pbtn-outline pbtn-block" type="button" id="deleteSel" hidden>Delete</button>
       </aside>
     </div>
-    <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
   </div>
 
   <!-- ================= ORGANIZE ================= -->
@@ -278,6 +277,7 @@
   <!-- password dialog -->
   <dialog class="pdialog" id="pwDialog" aria-labelledby="pwTitle">
     <h2 id="pwTitle">This PDF is protected</h2>
+    <p class="pnote pw-file" id="pwFile" hidden></p>
     <p class="pnote">Enter the password to open it. It stays on your device.</p>
     <input class="pinput" id="pwInput" type="password" autocomplete="off">
     <p class="perr" id="pwErr" hidden>Wrong password — try again.</p>
@@ -287,9 +287,12 @@
     </div>
   </dialog>
 
+  <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
+
   <input type="file" id="imgInput" accept="image/*" hidden>
   <input type="file" id="toolInput" accept="application/pdf,.pdf" hidden>
   <input type="file" id="signInput" accept="image/*" hidden>
+  <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
   <div class="ptoast" id="ptoast" role="status" aria-live="polite"></div>
 
   <footer class="pfooter" id="pfooter">
@@ -304,6 +307,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf3"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf4"></script>
 </body>
 </html>

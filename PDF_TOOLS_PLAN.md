@@ -194,7 +194,7 @@ signatures (draw/type/upload) · undo/redo · password-protected PDFs open · do
 "PDF Tools · NEW" button in the image site header/footer. Tests passed: 13/13 editor flow, real Word & macOS PDFs,
 image-site audit 111/111.
 
-### 🔄 Phase 2 — Organize / Merge / Split (CODE WRITTEN, UNCOMMITTED, NOT WIRED)
+### ✅ Phase 2 — Organize / Merge / Split (DONE · wired + tested on `pdf-tools`)
 Done (uncommitted on `pdf-tools`): engine page operations, `pages.js`, views in `pdf.html`, styles in `pdf.css`.
 
 **Task 0 — fix module version mismatch (do first).**

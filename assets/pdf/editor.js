@@ -1,5 +1,6 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf2';
+import { PdfDoc } from './engine.js?v=pdf4';
+import { initPageTools, pageTools } from './pages.js?v=pdf4';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -34,6 +35,19 @@ function busy(on, text) {
   $('#busy').hidden = !on;
   if (text) $('#busyText').textContent = text;
 }
+/** Show one screen: landing, editor or a tool view (any <section class="pview">). */
+function showView(name) {
+  const views = ['landing', 'editor', ...$$('.pview').map((v) => v.id)];
+  for (const id of views) { const el = document.getElementById(id); if (el) el.hidden = id !== name; }
+  const editing = name === 'editor';
+  $('#docBar').hidden = !editing;
+  $('#docActions').hidden = !editing;
+  document.body.classList.toggle('is-editing', editing);
+  state.view = name;
+  window.scrollTo(0, 0);
+}
+function currentView() { return state.view || 'landing'; }
+
 function setDirty(d) {
   state.dirty = d;
   $('#docState').textContent = d ? 'Edited — not downloaded yet' : 'No changes';
@@ -61,7 +75,7 @@ async function openFile(file) {
       catch (e) {
         if (e.code !== 4) throw e;
         busy(false);
-        password = await askPassword(!!password);
+        password = await askPassword(!!password, file.name);
         if (password === null) return;
         busy(true, 'Opening PDF…');
       }
@@ -69,11 +83,7 @@ async function openFile(file) {
     if (state.doc) state.doc.destroy();
     Object.assign(state, { doc, password, name: file.name.replace(/\.pdf$/i, ''), sel: null, editing: null, undo: [], redo: [], current: 0 });
     $('#docName').textContent = file.name;
-    $('#landing').hidden = true;
-    $('#editor').hidden = false;
-    $('#docBar').hidden = false;
-    $('#docActions').hidden = false;
-    document.body.classList.add('is-editing');
+    showView('editor');
     setDirty(false);
     buildPages();
     fitWidth();
@@ -86,9 +96,11 @@ async function openFile(file) {
   }
 }
 
-function askPassword(retry) {
+function askPassword(retry, fileName) {
   const dlg = $('#pwDialog');
   $('#pwErr').hidden = !retry;
+  $('#pwFile').textContent = fileName || '';
+  $('#pwFile').hidden = !fileName;
   $('#pwInput').value = '';
   return new Promise((resolve) => {
     const done = (v) => { dlg.close(); cleanup(); resolve(v); };
@@ -713,7 +725,18 @@ function download() {
 // =====================================================================
 // wiring
 // =====================================================================
+/**
+ * Tools opened from the landing page. `open(file)` = single PDF tools (picked with #toolInput),
+ * `input` = a tool with its own file input, `drop(files)` = what dropping files on that tool's view does.
+ */
+const TOOLS = {
+  organize: { open: (f) => pageTools.organize(f), drop: (fs) => { const f = fs.find((x) => /\.pdf$/i.test(x.name) || x.type === 'application/pdf'); if (f) pageTools.organizeAdd(f); else toast('Please drop a PDF file.', true); } },
+  split: { open: (f) => pageTools.split(f) },
+  merge: { input: '#mrgInput', drop: (fs) => pageTools.merge(fs) }
+};
+
 function bind() {
+  initPageTools({ toast, busy, askPassword, showView, openInEditor: (file) => openFile(file) });
   const input = $('#pdfInput');
   const pick = () => input.click();
   $('#pickPdf').addEventListener('click', (e) => { e.stopPropagation(); pick(); });
@@ -721,17 +744,40 @@ function bind() {
   $('#pdfDrop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   input.addEventListener('change', () => { openFile(input.files[0]); input.value = ''; });
   $('#openOther').addEventListener('click', pick);
-  $$('[data-open]').forEach((b) => b.addEventListener('click', () => { state.pendingSign = b.dataset.open === 'sign'; pick(); }));
+  // tool cards on the landing page
+  const toolInput = $('#toolInput');
+  $$('[data-open]').forEach((b) => b.addEventListener('click', () => {
+    const t = b.dataset.open;
+    if (t === 'edit' || t === 'sign') { state.pendingSign = t === 'sign'; pick(); return; }
+    const tool = TOOLS[t];
+    if (!tool) return;
+    if (tool.input) { $(tool.input).click(); return; }      // tool with its own (multi-file) input
+    state.pendingTool = t;
+    toolInput.accept = tool.accept || 'application/pdf,.pdf';
+    toolInput.click();
+  }));
+  toolInput.addEventListener('change', () => {
+    const f = toolInput.files[0], t = state.pendingTool;
+    toolInput.value = '';
+    if (f && TOOLS[t]) TOOLS[t].open(f);
+  });
+  $$('[data-back]').forEach((b) => b.addEventListener('click', () => showView('landing')));
 
-  // drag & drop anywhere
+  // drag & drop anywhere — what happens depends on the screen that is open
   const drop = $('#pdfDrop');
+  const isPdf = (x) => /\.pdf$/i.test(x.name) || x.type === 'application/pdf';
   window.addEventListener('dragover', (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { e.preventDefault(); drop.classList.add('drag'); } });
   window.addEventListener('dragleave', (e) => { if (!e.relatedTarget) drop.classList.remove('drag'); });
   window.addEventListener('drop', (e) => {
     if (!e.dataTransfer || !e.dataTransfer.files.length) return;
     e.preventDefault(); drop.classList.remove('drag');
-    const f = [...e.dataTransfer.files].find((x) => /\.pdf$/i.test(x.name) || x.type === 'application/pdf');
-    if (f) openFile(f); else if (state.doc && e.dataTransfer.files[0].type.startsWith('image/')) addImageFile(e.dataTransfer.files[0]);
+    const files = [...e.dataTransfer.files];
+    const view = currentView();
+    const tool = TOOLS[view];
+    if (tool && tool.drop) { tool.drop(files); return; }
+    const f = files.find(isPdf);
+    if (tool && tool.open) { if (f) tool.open(f); else toast('Please drop a PDF file.', true); return; }
+    if (f) openFile(f); else if (state.doc && view === 'editor' && files[0].type.startsWith('image/')) addImageFile(files[0]);
     else toast('Please drop a PDF file.', true);
   });
 
