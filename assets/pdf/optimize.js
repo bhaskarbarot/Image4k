@@ -3,7 +3,7 @@
  * module is in place — see initEnhance below.
  * All local in the browser. Nothing is uploaded.
  */
-import { PdfDoc } from './engine.js?v=pdf8';
+import { PdfDoc } from './engine.js?v=pdf9';
 
 const $ = (s, r = document) => r.querySelector(s);
 const MAX_BYTES = 200 * 1024 * 1024;

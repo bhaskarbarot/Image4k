@@ -11,6 +11,10 @@
 @font-face { font-family: 'LibMono'; src: url('/assets/vendor/liberation-2.1.5/LiberationMono-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
 @font-face { font-family: 'LibMono'; src: url('/assets/vendor/liberation-2.1.5/LiberationMono-Italic.ttf') format('truetype'); font-style: italic; font-display: swap; }
 @font-face { font-family: 'LibMono'; src: url('/assets/vendor/liberation-2.1.5/LiberationMono-BoldItalic.ttf') format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/assets/vendor/carlito-1.103/Carlito-Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/assets/vendor/carlito-1.103/Carlito-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/assets/vendor/carlito-1.103/Carlito-Italic.ttf') format('truetype'); font-style: italic; font-display: swap; }
+@font-face { font-family: 'Carlito'; src: url('/assets/vendor/carlito-1.103/Carlito-BoldItalic.ttf') format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
 
 :root {
   --wine: #7B1F2E;
@@ -155,6 +159,18 @@ kbd { font-family: ui-monospace, monospace; font-size: 12px; background: var(--b
 .perase-preview { position: absolute; border: 1.5px solid var(--wine); background: rgba(123,31,46,.14); pointer-events: none; z-index: 6; border-radius: 2px; }
 .pcolor-row { display: inline-flex; gap: 6px; align-items: center; }
 .pcolor-row .pbtn-sm { padding: 4px 8px; font-size: 15px; line-height: 1; }
+/* eraser size control in the toolbar */
+.ptb-erase-size { gap: 8px; }
+.ptb-lbl { font-size: 13px; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+#eraseSize { width: 110px; accent-color: var(--wine); }
+@media (max-width: 760px) { #eraseSize { width: 72px; } .ptb-lbl { display: none; } }
+/* slim landing hero + choose-a-tool dialog */
+.phero-slim { padding: 44px 16px 10px; }
+.pchoose-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 4px; }
+.pchoose-grid button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); font-weight: 700; font-size: 13px; cursor: pointer; transition: border-color .12s, background .12s; }
+.pchoose-grid button:hover { border-color: var(--wine); background: var(--wine-soft); }
+.pchoose-grid button span { font-size: 22px; }
+@media (max-width: 520px) { .pchoose-grid { grid-template-columns: repeat(2, 1fr); } }
 .pobj { position: absolute; border: 1px solid transparent; border-radius: 2px; cursor: text; touch-action: none; }
 .pobj.is-image { cursor: move; }
 .pobj:hover { border-color: rgba(123,31,46,.55); background: rgba(123,31,46,.05); }

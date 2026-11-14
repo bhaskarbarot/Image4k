@@ -1,15 +1,15 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf8';
-import { initPageTools, pageTools } from './pages.js?v=pdf8';
-import { initSecureTools, secureTools } from './secure.js?v=pdf8';
-import { initConvertTools, convertTools } from './convert.js?v=pdf8';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf8';
+import { PdfDoc } from './engine.js?v=pdf9';
+import { initPageTools, pageTools } from './pages.js?v=pdf9';
+import { initSecureTools, secureTools } from './secure.js?v=pdf9';
+import { initConvertTools, convertTools } from './convert.js?v=pdf9';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf9';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const MAX_BYTES = 200 * 1024 * 1024;
 const ZOOMS = [0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-const FAMILY_CSS = { Sans: "'LibSans', Arial, sans-serif", Serif: "'LibSerif', 'Times New Roman', serif", Mono: "'LibMono', 'Courier New', monospace" };
+const FAMILY_CSS = { Sans: "'LibSans', Arial, sans-serif", Serif: "'LibSerif', 'Times New Roman', serif", Mono: "'LibMono', 'Courier New', monospace", Calibri: "'Carlito', Calibri, sans-serif" };
 
 const state = {
   doc: null, name: '', password: '', zoom: 1, tool: 'edit',
@@ -18,7 +18,8 @@ const state = {
   sel: null,            // { page, item }
   editing: null,        // inline edit session
   undo: [], redo: [], dirty: false, busy: false,
-  ink: '#111111', signMode: 'draw', pendingSign: false
+  ink: '#111111', signMode: 'draw', pendingSign: false,
+  eraseSize: 20, picking: null
 };
 
 // =====================================================================
@@ -90,6 +91,8 @@ async function openFile(file) {
     setDirty(false);
     buildPages();
     fitWidth();
+    // guide users opening a scanned / photo PDF (no text layer to click-edit)
+    try { if (!state.doc.pageText(0).trim()) toast('Scanned / photo PDF — the text is a picture, so use Add text, Erase or Match & type to change it.'); } catch (e) { /* ignore */ }
     if (state.pendingSign) { state.pendingSign = false; openSign(); }
   } catch (e) {
     console.error(e);
@@ -489,16 +492,15 @@ function samplePageColor(i, vx, vy) {
   try { const d = p.canvas.getContext('2d').getImageData(px, py, 1, 1).data; return [d[0], d[1], d[2], 255]; }
   catch (e) { return null; }
 }
-/** Median colour just outside a view box — what to paint an eraser so it blends in. */
-function sampleBorderColor(i, box) {
-  const m = 4, pts = [];
-  for (let t = 0; t <= 1; t += 0.25) {
-    pts.push([box.x + t * box.w, box.y - m], [box.x + t * box.w, box.y + box.h + m],
-             [box.x - m, box.y + t * box.h], [box.x + box.w + m, box.y + t * box.h]);
+/** Median colour of a grid around (vx,vy) — the background, even when the centre is on text. */
+function sampleAreaColor(i, vx, vy, rad) {
+  const cols = [], N = 7;
+  for (let a = 0; a < N; a++) for (let c = 0; c < N; c++) {
+    const col = samplePageColor(i, vx + (a / (N - 1) - 0.5) * 2 * rad, vy + (c / (N - 1) - 0.5) * 2 * rad);
+    if (col) cols.push(col);
   }
-  const cols = pts.map(([x, y]) => samplePageColor(i, x, y)).filter(Boolean);
   if (!cols.length) return [255, 255, 255, 255];
-  const med = (f) => cols.map(f).sort((a, b) => a - b)[cols.length >> 1];
+  const med = (f) => cols.map(f).sort((p, q) => p - q)[cols.length >> 1];
   return [med((c) => c[0]), med((c) => c[1]), med((c) => c[2]), 255];
 }
 /** Guess the colour and size of text under a click on an image (for Match & type). */
@@ -528,24 +530,41 @@ function sampleTextStyle(i, vx, vy) {
   } catch (e) { /* cross-origin or empty — use defaults */ }
   return { color, size };
 }
-/** Drag a rectangle; on release cover it with a filled shape (eraser / whiteout). */
-function startErase(i, sx, sy, pageEl) {
-  const p = state.pages[i], z = state.zoom;
-  const box = document.createElement('div'); box.className = 'perase-preview'; p.overlay.appendChild(box);
-  const r = pageEl.getBoundingClientRect();
-  let cur = { x: sx, y: sy, w: 0, h: 0 };
-  const draw = (vx, vy) => {
-    const x = Math.min(sx, vx), y = Math.min(sy, vy), w = Math.abs(vx - sx), hh = Math.abs(vy - sy);
-    Object.assign(box.style, { left: x * z + 'px', top: y * z + 'px', width: w * z + 'px', height: hh * z + 'px' });
-    cur = { x, y, w, h: hh };
+/** Round eraser brush: paint over anything with the background colour; size is adjustable. */
+function startEraseBrush(i, sx, sy, pageEl) {
+  const p = state.pages[i], z = state.zoom, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const { w, h } = state.doc.size(i);
+  const scale = z * dpr;                                    // view points -> paint pixels
+  const pc = document.createElement('canvas');
+  pc.width = Math.max(1, Math.round(w * scale)); pc.height = Math.max(1, Math.round(h * scale));
+  Object.assign(pc.style, { position: 'absolute', left: '0', top: '0', width: (w * z) + 'px', height: (h * z) + 'px', pointerEvents: 'none', zIndex: '6' });
+  p.overlay.appendChild(pc);
+  const ctx = pc.getContext('2d');
+  const bg = sampleAreaColor(i, sx, sy, (state.eraseSize || 20));
+  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  const r = (state.eraseSize || 20) / 2;                    // radius in view points
+  const rectEl = pageEl.getBoundingClientRect();
+  let minX = w, minY = h, maxX = 0, maxY = 0, last = null;
+  const stamp = (vx, vy) => {
+    ctx.beginPath(); ctx.arc(vx * scale, vy * scale, r * scale, 0, Math.PI * 2); ctx.fill();
+    minX = Math.min(minX, vx - r); minY = Math.min(minY, vy - r); maxX = Math.max(maxX, vx + r); maxY = Math.max(maxY, vy + r);
   };
-  const onMove = (ev) => draw((ev.clientX - r.left) / z, (ev.clientY - r.top) / z);
+  const paint = (vx, vy) => {
+    if (last) { const d = Math.hypot(vx - last.x, vy - last.y), n = Math.max(1, Math.ceil(d / (r * 0.4))); for (let k = 1; k <= n; k++) stamp(last.x + (vx - last.x) * k / n, last.y + (vy - last.y) * k / n); }
+    else stamp(vx, vy);
+    last = { x: vx, y: vy };
+  };
+  paint(sx, sy);
+  const onMove = (ev) => paint((ev.clientX - rectEl.left) / z, (ev.clientY - rectEl.top) / z);
   const onUp = async () => {
     document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp);
-    box.remove();
-    if (cur.w < 3 || cur.h < 3) return;
-    const bg = sampleBorderColor(i, cur);
-    await mutate(i, () => state.doc.addRect(i, cur, bg), 'Erase');
+    minX = Math.max(0, minX); minY = Math.max(0, minY); maxX = Math.min(w, maxX); maxY = Math.min(h, maxY);
+    const bw = maxX - minX, bh = maxY - minY;
+    pc.remove();
+    if (bw < 1 || bh < 1) return;
+    const sxp = Math.round(minX * scale), syp = Math.round(minY * scale), swp = Math.max(1, Math.round(bw * scale)), shp = Math.max(1, Math.round(bh * scale));
+    const crop = ctx.getImageData(sxp, syp, swp, shp);
+    await mutate(i, () => state.doc.addImage(i, crop, { x: minX, y: minY, w: bw, h: bh }), 'Erase');
   };
   document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
 }
@@ -564,7 +583,7 @@ function bindOverlayEvents() {
     const vx = (e.clientX - rect.left) / state.zoom, vy = (e.clientY - rect.top) / state.zoom;
 
     if (state.picking) { e.preventDefault(); const c = samplePageColor(i, vx, vy); viewer.classList.remove('is-picking'); const cb = state.picking; state.picking = null; if (c) cb(c); return; }
-    if (state.tool === 'erase') { e.preventDefault(); startErase(i, vx, vy, pageEl); return; }
+    if (state.tool === 'erase') { e.preventDefault(); startEraseBrush(i, vx, vy, pageEl); return; }
     if (state.tool === 'match') { e.preventDefault(); const st = sampleTextStyle(i, vx, vy); startNewText(i, vx, vy - st.size * 0.8, { size: st.size, color: st.color }); setTool('edit'); return; }
 
     if (state.tool === 'text' && !objEl) {
@@ -645,6 +664,7 @@ function setTool(t) {
   $$('.ptb[data-tool]').forEach((b) => { const on = b.dataset.tool === t; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', String(on)); });
   const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match' }[t] || '';
   state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match'); if (cls) p.overlay.classList.add(cls); });
+  const ew = $('#eraseSizeWrap'); if (ew) ew.hidden = t !== 'erase';
   if (t === 'text') toast('Click where the new text should go.');
   else if (t === 'erase') toast('Drag over anything to cover it — works on photos and scans too.');
   else if (t === 'match') toast('Click on text in the image to copy its colour & size, then type over it.');
@@ -835,12 +855,9 @@ function bind() {
   initOptimizeTools(helpers);
   const input = $('#pdfInput');
   const pick = () => input.click();
-  $('#pickPdf').addEventListener('click', (e) => { e.stopPropagation(); pick(); });
-  $('#pdfDrop').addEventListener('click', pick);
-  $('#pdfDrop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   input.addEventListener('change', () => { openFile(input.files[0]); input.value = ''; });
   $('#openOther').addEventListener('click', pick);
-  // tool cards on the landing page
+  // service cards on the landing page — pick the service first, then the file
   const toolInput = $('#toolInput');
   $$('[data-open]').forEach((b) => b.addEventListener('click', () => {
     const t = b.dataset.open;
@@ -859,21 +876,41 @@ function bind() {
   });
   $$('[data-back]').forEach((b) => b.addEventListener('click', () => showView('landing')));
 
+  // "choose a tool" dialog — shown when a PDF is dropped on the landing
+  const runService = (name, f) => {
+    if (name === 'edit') return openFile(f);
+    if (name === 'merge') return pageTools.merge([f]);
+    const tool = TOOLS[name];
+    if (tool && tool.open) return tool.open(f);
+  };
+  $$('#chooseDialog [data-choose]').forEach((b) => b.addEventListener('click', () => {
+    const f = state.droppedFile; $('#chooseDialog').close();
+    if (f) runService(b.dataset.choose, f);
+  }));
+  $('#chooseCancel').addEventListener('click', () => $('#chooseDialog').close());
+  function openChooser(file) { state.droppedFile = file; $('#chooseFile').textContent = file.name; $('#chooseFile').hidden = false; $('#chooseDialog').showModal(); }
+
   // drag & drop anywhere — what happens depends on the screen that is open
-  const drop = $('#pdfDrop');
   const isPdf = (x) => /\.pdf$/i.test(x.name) || x.type === 'application/pdf';
-  window.addEventListener('dragover', (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { e.preventDefault(); drop.classList.add('drag'); } });
-  window.addEventListener('dragleave', (e) => { if (!e.relatedTarget) drop.classList.remove('drag'); });
+  window.addEventListener('dragover', (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')) { e.preventDefault(); document.body.classList.add('pdragging'); } });
+  window.addEventListener('dragleave', (e) => { if (!e.relatedTarget) document.body.classList.remove('pdragging'); });
   window.addEventListener('drop', (e) => {
     if (!e.dataTransfer || !e.dataTransfer.files.length) return;
-    e.preventDefault(); drop.classList.remove('drag');
+    e.preventDefault(); document.body.classList.remove('pdragging');
     const files = [...e.dataTransfer.files];
     const view = currentView();
     const tool = TOOLS[view];
-    if (tool && tool.drop) { tool.drop(files); return; }
+    if (tool && tool.drop) { tool.drop(files); return; }          // merge / image-to-pdf views
     const f = files.find(isPdf);
-    if (tool && tool.open) { if (f) tool.open(f); else toast('Please drop a PDF file.', true); return; }
-    if (f) openFile(f); else if (state.doc && view === 'editor' && files[0].type.startsWith('image/')) addImageFile(files[0]);
+    if (tool && tool.open) { if (f) tool.open(f); else toast('Please drop a PDF file.', true); return; }  // single-PDF tool views
+    if (view === 'editor') {                                       // already editing: open / add image
+      if (f) openFile(f); else if (state.doc && files[0].type.startsWith('image/')) addImageFile(files[0]);
+      else toast('Please drop a PDF file.', true);
+      return;
+    }
+    // landing: let the user choose what to do
+    if (f) openChooser(f);
+    else if (files.some((x) => x.type.startsWith('image/'))) convertTools.imagesToPdf(files.filter((x) => x.type.startsWith('image/')));
     else toast('Please drop a PDF file.', true);
   });
 
@@ -902,6 +939,7 @@ function bind() {
     toast('Click anywhere on the page to pick that colour.');
   });
   $('#deleteSel').addEventListener('click', deleteSelected);
+  const es = $('#eraseSize'); if (es) es.addEventListener('input', (e) => { state.eraseSize = +e.target.value; });
   $('#downloadBtn').addEventListener('click', download);
 
   // signature dialog

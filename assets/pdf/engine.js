@@ -5,7 +5,13 @@
 import { init } from '/assets/vendor/pdfium-2.15.1/pdfium.esm.js';
 
 const WASM_URL = '/assets/vendor/pdfium-2.15.1/pdfium.wasm';
-const FONT_URL = '/assets/vendor/liberation-2.1.5/';
+// Each family maps to a bundled TrueType set with -Regular/-Bold/-Italic/-BoldItalic variants.
+const FONT_BASE = {
+  Sans: '/assets/vendor/liberation-2.1.5/LiberationSans',
+  Serif: '/assets/vendor/liberation-2.1.5/LiberationSerif',
+  Mono: '/assets/vendor/liberation-2.1.5/LiberationMono',
+  Calibri: '/assets/vendor/carlito-1.103/Carlito'   // Carlito = Calibri-metric-compatible (OFL)
+};
 
 const OBJ = { TEXT: 1, PATH: 2, IMAGE: 3, SHADING: 4, FORM: 5 };
 const RENDER_FLAGS = 0x01 /* annotations */ | 0x10 /* RGBA byte order */;
@@ -37,7 +43,8 @@ export function describeFont(baseName) {
 }
 export function fallbackFontFile(desc) {
   const style = desc.bold && desc.italic ? 'BoldItalic' : desc.bold ? 'Bold' : desc.italic ? 'Italic' : 'Regular';
-  return `Liberation${desc.family}-${style}.ttf`;
+  const base = FONT_BASE[desc.family] || FONT_BASE.Sans;
+  return `${base}-${style}.ttf`;
 }
 
 export class PdfDoc {
@@ -300,7 +307,7 @@ export class PdfDoc {
 
   async loadFont(file) {
     if (this.fonts.has(file)) return this.fonts.get(file);
-    const res = await fetch(FONT_URL + file);
+    const res = await fetch(file);
     if (!res.ok) throw new Error('Could not load font ' + file);
     const data = new Uint8Array(await res.arrayBuffer());
     const p = this.malloc(data.length);

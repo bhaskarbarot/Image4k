@@ -1,8 +1,8 @@
 /* Image4k PDF — convert & extract: PDF→image, Image→PDF, Extract (text / images / tables).
  * All local in the browser. Nothing is uploaded.
  */
-import { PdfDoc } from './engine.js?v=pdf8';
-import { parseRanges } from './pages.js?v=pdf8';
+import { PdfDoc } from './engine.js?v=pdf9';
+import { parseRanges } from './pages.js?v=pdf9';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));

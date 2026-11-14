@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf8">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf8">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf9">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf9">
 </head>
 <body>
   <header class="pbar">
@@ -45,17 +45,9 @@
 
   <!-- ================= LANDING ================= -->
   <main id="landing">
-    <section class="phero">
-      <h1>Edit PDF files online — free</h1>
-      <p>Change text in its original font, move or delete anything, add text, images and signatures. Your PDF never leaves your device.</p>
-      <div class="pdrop" id="pdfDrop" tabindex="0" role="button" aria-label="Choose a PDF file">
-        <div class="pdrop-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg>
-        </div>
-        <button class="pbtn pbtn-wine pbtn-lg" type="button" id="pickPdf">Select a PDF</button>
-        <p class="pdrop-hint">or drop a PDF here · one file at a time · up to 200 MB</p>
-        <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden>
-      </div>
+    <section class="phero phero-slim">
+      <h1>Every PDF tool — free &amp; private</h1>
+      <p>Pick a tool, choose your PDF, and it's done — everything runs in your browser. You can also just drop a PDF anywhere and choose what to do with it.</p>
       <p class="pprivacy">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
         100% private — processed in your browser, never uploaded
@@ -63,7 +55,7 @@
     </section>
 
     <section class="ptools" aria-labelledby="ptoolsTitle">
-      <h2 id="ptoolsTitle">All PDF tools</h2>
+      <h2 id="ptoolsTitle">Choose a tool to start</h2>
       <div class="ptool-grid">
         <button class="ptool is-ready" type="button" data-open="edit"><span class="ptool-ico">✎</span><b>Edit PDF</b><span>Edit text in its own font, move, delete</span></button>
         <button class="ptool is-ready" type="button" data-open="sign"><span class="ptool-ico">✍</span><b>Sign PDF</b><span>Draw, type or upload a signature</span></button>
@@ -115,6 +107,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg><span>Delete</span>
         </button>
       </div>
+      <div class="ptb-group ptb-erase-size" id="eraseSizeWrap" hidden>
+        <span class="ptb-lbl">Eraser</span>
+        <input type="range" id="eraseSize" min="6" max="80" value="20" aria-label="Eraser size">
+      </div>
       <div class="ptb-group ptb-zoom">
         <button class="ptb ptb-icon" type="button" data-action="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
         <button class="ptb ptb-zoomval" type="button" data-action="zoom-fit" title="Fit width" id="zoomVal">100%</button>
@@ -146,6 +142,7 @@
               <select id="propFamily">
                 <option value="">Original</option>
                 <option value="Sans">Arial / Helvetica (Sans)</option>
+                <option value="Calibri">Calibri</option>
                 <option value="Serif">Times New Roman (Serif)</option>
                 <option value="Mono">Courier (Mono)</option>
               </select>
@@ -418,6 +415,24 @@
     </div>
   </dialog>
 
+  <!-- choose-a-tool dialog (shown when a PDF is dropped on the landing) -->
+  <dialog class="pdialog pdialog-wide" id="chooseDialog" aria-labelledby="chooseTitle">
+    <h2 id="chooseTitle">What do you want to do?</h2>
+    <p class="pnote pw-file" id="chooseFile"></p>
+    <div class="pchoose-grid">
+      <button type="button" data-choose="edit"><span>✎</span>Edit</button>
+      <button type="button" data-choose="merge"><span>⊕</span>Merge</button>
+      <button type="button" data-choose="split"><span>✂</span>Split</button>
+      <button type="button" data-choose="organize"><span>⟳</span>Organize</button>
+      <button type="button" data-choose="protect"><span>🔒</span>Protect</button>
+      <button type="button" data-choose="unlock"><span>🔓</span>Unlock</button>
+      <button type="button" data-choose="toimg"><span>🖼</span>To images</button>
+      <button type="button" data-choose="extract"><span>⧉</span>Extract</button>
+      <button type="button" data-choose="compress"><span>⇲</span>Compress</button>
+    </div>
+    <div class="pdialog-actions"><button class="pbtn pbtn-outline" type="button" id="chooseCancel">Cancel</button></div>
+  </dialog>
+
   <!-- password dialog -->
   <dialog class="pdialog" id="pwDialog" aria-labelledby="pwTitle">
     <h2 id="pwTitle">This PDF is protected</h2>
@@ -433,6 +448,7 @@
 
   <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
 
+  <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden>
   <input type="file" id="imgInput" accept="image/*" hidden>
   <input type="file" id="imgpdfInput" accept="image/*" multiple hidden>
   <input type="file" id="toolInput" accept="application/pdf,.pdf" hidden>
@@ -452,6 +468,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf8"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf9"></script>
 </body>
 </html>
