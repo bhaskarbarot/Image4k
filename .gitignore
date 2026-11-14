@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+
+# Node (not used, but keep it out if added later)
+node_modules/
+
+# Local secrets
+.env
+*.local
