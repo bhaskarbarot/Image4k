@@ -1,5 +1,9 @@
 # Image4k — PDF Tools: Full Plan, Guide & Handoff
 
+> **RELEASED to `main` 2026-11-14** (commit after Phase 4a). Live: hub at `/`, image tools at `/image`, PDF tools at `/pdf`.
+> Done: Phases 1,2,3,5 + Compress + Bhaskar Solution home page. Pending: Enhance-to-HD and the image "Make HD" quality
+> fix — both wait on diagnosing the shared Real-ESRGAN AI (need a Chrome console trace). Password "breaker" intentionally not built.
+
 > Written for: any developer or AI coding agent (e.g. Google Antigravity) continuing this project, and for the owner.
 > Last updated: 2026-11-14 · Owner: Bhaskar Barot (GitHub `bhaskarbarot`)
 
