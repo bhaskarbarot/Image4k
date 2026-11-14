@@ -40,14 +40,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         path = self.path.split('?')[0]
         if path == '/':
             path = '/index.html'
+        chosen = {}
         for pattern, headers in RULES:
             if match(pattern, path):
                 for k, v in headers:
-                    if k == 'Content-Security-Policy':
-                        v = v.replace('; upgrade-insecure-requests', '')
-                    if k == 'Strict-Transport-Security':
-                        continue
-                    self.send_header(k, v)
+                    chosen[k] = v          # later (more specific) rules override earlier ones
+        for k, v in chosen.items():
+            if k == 'Strict-Transport-Security':
+                continue                   # never pin HTTPS on localhost
+            if k == 'Content-Security-Policy':
+                v = v.replace('; upgrade-insecure-requests', '')
+            self.send_header(k, v)
         super().end_headers()
 
     def send_error(self, code, message=None, explain=None):
