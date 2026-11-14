@@ -1,7 +1,10 @@
 # Image4k.org
 
 Free image tools that run entirely in the browser: **Make HD / 4K**, **Resize**, **Compress**, **Remove Background**.
-Static site — no backend, no database, no build step. Images never leave the visitor's device.
+
+🌐 **Live site: [https://image4k.pages.dev](https://image4k.pages.dev/)**
+
+Static site — no backend, no database, no framework. Images never leave the visitor's device.
 
 ## Features
 - Drag & drop, file picker or paste · up to **10 images** per batch · 80 MB each
@@ -42,13 +45,23 @@ python3 serve.py        # http://localhost:8080
 (Opening index.html directly from disk will not work — it needs to be served over HTTP.)
 
 ## Deploy
-**Live:** Cloudflare Workers (static assets) — `https://image4k.barotb076.workers.dev`, auto-deploys on every push to `main`.
-`wrangler.jsonc` serves `404.html` for unknown URLs and `/privacy.html` as `/privacy`; `.assetsignore` keeps repo-only files
-(README, serve.py, configs) off the website; `_headers` is applied automatically.
+**Live:** [https://image4k.pages.dev](https://image4k.pages.dev/) — Cloudflare Pages, auto-deploys on every push to `main`.
 
-Upload the folder as-is to any static host and point `image4k.org` at it.
+Cloudflare Pages build settings:
 
-- **Cloudflare Pages / Netlify**: deploy the folder; `_headers` is applied automatically.
+| Setting | Value |
+|---|---|
+| Framework preset | None |
+| Build command | `mkdir -p dist && tar -c --exclude-from=.assetsignore --exclude=./dist . \| tar -x -C dist` |
+| Build output directory | `dist` |
+
+`.assetsignore` keeps repo-only files (README, serve.py, configs) off the website — add any new private file there.
+`_headers` (security + caching) and `404.html` are applied automatically; `/privacy.html` is served as `/privacy`.
+
+Other hosts:
+
+- **Netlify**: same build command and output directory; `_headers` is applied automatically.
+- **Cloudflare Workers**: `wrangler.jsonc` is included (serves `404.html`, uses `.assetsignore`).
 - **Vercel / nginx / Apache**: copy the headers from `_headers`. nginx example:
 ```nginx
 add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob: data: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" always;
