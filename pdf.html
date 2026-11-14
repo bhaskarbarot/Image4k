@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf5">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf5">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf6">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf6">
 </head>
 <body>
   <header class="pbar">
@@ -72,11 +72,11 @@
         <button class="ptool is-ready" type="button" data-open="organize"><span class="ptool-ico">⟳</span><b>Organize pages</b><span>Rearrange, rotate, crop, delete, extract</span></button>
         <button class="ptool is-ready" type="button" data-open="protect"><span class="ptool-ico">🔒</span><b>Protect PDF</b><span>Add a password &amp; set permissions</span></button>
         <button class="ptool is-ready" type="button" data-open="unlock"><span class="ptool-ico">🔓</span><b>Unlock PDF</b><span>Remove a password you know</span></button>
-        <div class="ptool"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span><em>Soon</em></div>
-        <div class="ptool"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span><em>Soon</em></div>
+        <button class="ptool is-ready" type="button" data-open="toimg"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span></button>
+        <button class="ptool is-ready" type="button" data-open="imgpdf"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span></button>
+        <button class="ptool is-ready" type="button" data-open="extract"><span class="ptool-ico">⧉</span><b>Extract</b><span>Text, images and tables</span></button>
         <div class="ptool"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span><em>Soon</em></div>
         <div class="ptool"><span class="ptool-ico">✦</span><b>Enhance to HD</b><span>AI-sharpen images in a PDF</span><em>Soon</em></div>
-        <div class="ptool"><span class="ptool-ico">⧉</span><b>Extract</b><span>Text, images and tables</span><em>Soon</em></div>
       </div>
     </section>
   </main>
@@ -241,6 +241,71 @@
     <div class="pspl-grid" id="splGrid"></div>
   </section>
 
+  <!-- ================= PDF -> IMAGE ================= -->
+  <section class="pview" id="toimg" hidden aria-labelledby="tiTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="tiTitle">PDF to image</h1>
+        <p class="pview-sub" id="tiName"></p>
+      </div>
+      <div class="pview-actions"><button class="pbtn pbtn-wine" type="button" id="tiGo">Convert &amp; download</button></div>
+    </div>
+    <div class="pconv-opts">
+      <label>Format
+        <select class="pinput" id="tiFormat"><option value="jpg">JPG</option><option value="png">PNG</option></select>
+      </label>
+      <label>Quality
+        <select class="pinput" id="tiDpi"><option value="72">Screen · 72 dpi</option><option value="150" selected>High · 150 dpi</option><option value="300">Print · 300 dpi</option></select>
+      </label>
+      <label>Pages <input class="pinput" id="tiRange" type="text" placeholder="All (e.g. 1-3, 5)"></label>
+    </div>
+    <div class="pconv-grid" id="tiGrid"></div>
+  </section>
+
+  <!-- ================= IMAGE -> PDF ================= -->
+  <section class="pview" id="imgpdf" hidden aria-labelledby="ipTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="ipTitle">Image to PDF</h1>
+        <p class="pview-sub" id="ipSummary"></p>
+      </div>
+      <div class="pview-actions">
+        <button class="pbtn pbtn-outline" type="button" id="ipAdd">+ Add images</button>
+        <button class="pbtn pbtn-wine" type="button" id="ipGo" disabled>Build PDF &amp; download</button>
+      </div>
+    </div>
+    <div class="pconv-opts">
+      <label>Page size
+        <select class="pinput" id="ipSize"><option value="auto">Fit each image</option><option value="a4">A4</option><option value="letter">Letter</option></select>
+      </label>
+      <label>Margin
+        <select class="pinput" id="ipMargin"><option value="none">None</option><option value="small" selected>Small</option><option value="medium">Medium</option></select>
+      </label>
+    </div>
+    <p class="pview-hint">Drag to reorder · each image becomes one page, in this order.</p>
+    <div class="pmrg-list" id="ipList"></div>
+  </section>
+
+  <!-- ================= EXTRACT ================= -->
+  <section class="pview" id="extract" hidden aria-labelledby="exTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="exTitle">Extract from PDF</h1>
+        <p class="pview-sub" id="exName"></p>
+      </div>
+      <div class="pview-actions"><button class="pbtn pbtn-wine" type="button" id="exGo">Extract &amp; download</button></div>
+    </div>
+    <div class="pspl-modes" role="radiogroup" aria-label="What to extract">
+      <button type="button" role="radio" data-ex="text" class="is-on" aria-checked="true"><b>Text</b><span>All selectable text → .txt</span></button>
+      <button type="button" role="radio" data-ex="images" aria-checked="false"><b>Images</b><span>Every embedded image → PNG</span></button>
+      <button type="button" role="radio" data-ex="tables" aria-checked="false"><b>Tables</b><span>Rows &amp; columns → .csv</span></button>
+    </div>
+    <p class="pview-hint" id="exHint"></p>
+  </section>
+
   <!-- ================= PROTECT ================= -->
   <section class="pview" id="protect" hidden aria-labelledby="prTitle">
     <div class="pview-head">
@@ -338,6 +403,7 @@
   <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
 
   <input type="file" id="imgInput" accept="image/*" hidden>
+  <input type="file" id="imgpdfInput" accept="image/*" multiple hidden>
   <input type="file" id="toolInput" accept="application/pdf,.pdf" hidden>
   <input type="file" id="signInput" accept="image/*" hidden>
   <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
@@ -355,6 +421,6 @@
   </footer>
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf5"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf6"></script>
 </body>
 </html>

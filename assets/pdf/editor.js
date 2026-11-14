@@ -1,7 +1,8 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf5';
-import { initPageTools, pageTools } from './pages.js?v=pdf5';
-import { initSecureTools, secureTools } from './secure.js?v=pdf5';
+import { PdfDoc } from './engine.js?v=pdf6';
+import { initPageTools, pageTools } from './pages.js?v=pdf6';
+import { initSecureTools, secureTools } from './secure.js?v=pdf6';
+import { initConvertTools, convertTools } from './convert.js?v=pdf6';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -735,13 +736,17 @@ const TOOLS = {
   split: { open: (f) => pageTools.split(f) },
   merge: { input: '#mrgInput', drop: (fs) => pageTools.merge(fs) },
   protect: { open: (f) => secureTools.protect(f) },
-  unlock: { open: (f) => secureTools.unlock(f) }
+  unlock: { open: (f) => secureTools.unlock(f) },
+  toimg: { open: (f) => convertTools.toImages(f) },
+  extract: { open: (f) => convertTools.extract(f) },
+  imgpdf: { input: '#imgpdfInput', drop: (fs) => convertTools.imagesToPdf(fs) }
 };
 
 function bind() {
   const helpers = { toast, busy, askPassword, showView, openInEditor: (file) => openFile(file) };
   initPageTools(helpers);
   initSecureTools(helpers);
+  initConvertTools(helpers);
   const input = $('#pdfInput');
   const pick = () => input.click();
   $('#pickPdf').addEventListener('click', (e) => { e.stopPropagation(); pick(); });

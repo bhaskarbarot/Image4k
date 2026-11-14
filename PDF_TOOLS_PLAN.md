@@ -220,7 +220,7 @@ Done (uncommitted on `pdf-tools`): engine page operations, `pages.js`, views in 
 
 **Task 2 — test Phase 2** (Section 9) → commit → push `pdf-tools`.
 
-### ⏳ Phase 3 — Convert & Extract
+### ✅ Phase 3 — Convert & Extract (DONE · PDF→image, Image→PDF, Extract on `pdf-tools`)
 | # | Tool | How (PDFium) | Done when |
 |---|---|---|---|
 | 3 | **PDF → JPG/PNG** | `doc.render(i, dpi/72)` → canvas → `toBlob`; pages via range input; 1 file or ZIP | 72/150/300 dpi work; page count & size correct; ZIP for many pages |

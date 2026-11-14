@@ -492,6 +492,110 @@ export class PdfDoc {
     if (!this.P.FPDFPage_GenerateContent(this.page(i))) throw new Error('Could not update page ' + (i + 1));
   }
 
+  // ---- convert / extract / optimize (Phase 3 & 4) ------------------------
+  /** All text of page `i` in reading order (empty string if the page has none). */
+  pageText(i) {
+    const tp = this.P.FPDFText_LoadPage(this.page(i));
+    try {
+      const n = this.P.FPDFText_CountChars(tp);
+      if (n <= 0) return '';
+      const p = this.malloc((n + 1) * 2);
+      this.P.FPDFText_GetText(tp, 0, n, p);
+      const s = this.M.UTF16ToString(p);
+      this.free(p);
+      return s;
+    } finally { this.P.FPDFText_ClosePage(tp); }
+  }
+
+  /** Per-character boxes + unicode for page `i` (view space). Used to rebuild tables as CSV. */
+  pageChars(i) {
+    const tp = this.P.FPDFText_LoadPage(this.page(i));
+    const out = [];
+    try {
+      const n = this.P.FPDFText_CountChars(tp);
+      const s = this.scratch;
+      for (let k = 0; k < n; k++) {
+        const u = this.P.FPDFText_GetUnicode(tp, k);
+        if (!u || u === 10 || u === 13) continue;
+        if (!this.P.FPDFText_GetCharBox(tp, k, s, s + 8, s + 16, s + 24)) continue;
+        const l = this.f64(s), r = this.f64(s + 8), b = this.f64(s + 16), t = this.f64(s + 24);
+        const a = this.toView(i, l, t), c = this.toView(i, r, b);
+        out.push({ ch: String.fromCharCode(u), x: Math.min(a.x, c.x), y: Math.min(a.y, c.y), w: Math.abs(c.x - a.x), h: Math.abs(c.y - a.y) });
+      }
+    } finally { this.P.FPDFText_ClosePage(tp); }
+    return out;
+  }
+
+  /** The image objects on page `i`, each with its rendered pixels and display box. */
+  imageList(i) {
+    const page = this.page(i);
+    const n = this.P.FPDFPage_CountObjects(page);
+    const out = [];
+    for (let k = 0; k < n; k++) {
+      const obj = this.P.FPDFPage_GetObject(page, k);
+      if (this.P.FPDFPageObj_GetType(obj) !== OBJ.IMAGE) continue;
+      out.push({ obj, index: k, box: this.objBoundsView(i, obj), pixels: this.imagePixels(obj) });
+    }
+    return out;
+  }
+  imagePixels(obj) {
+    const s = this.scratch;
+    if (!this.P.FPDFImageObj_GetImagePixelSize(obj, s, s + 4)) return null;
+    return { w: this.i32(s), h: this.i32(s + 4) };
+  }
+  /** Rendered RGBA ImageData of one image object (with any soft mask applied). */
+  objectImageData(i, obj) {
+    const bmp = this.P.FPDFImageObj_GetRenderedBitmap(this.doc, this.page(i), obj);
+    if (!bmp) return null;
+    try {
+      const W = this.P.FPDFBitmap_GetWidth(bmp), H = this.P.FPDFBitmap_GetHeight(bmp);
+      const buf = this.P.FPDFBitmap_GetBuffer(bmp), stride = this.P.FPDFBitmap_GetStride(bmp);
+      const fmt = this.P.FPDFBitmap_GetFormat(bmp);          // 1=Gray 2=BGR 3=BGRx 4=BGRA
+      const bpp = fmt === 2 ? 3 : fmt === 1 ? 1 : 4;
+      const out = new Uint8ClampedArray(W * H * 4), heap = this.heap();
+      for (let y = 0; y < H; y++) {
+        let si = buf + y * stride, di = y * W * 4;
+        for (let x = 0; x < W; x++, si += bpp, di += 4) {
+          if (fmt === 1) { out[di] = out[di + 1] = out[di + 2] = heap[si]; out[di + 3] = 255; }
+          else { out[di] = heap[si + 2]; out[di + 1] = heap[si + 1]; out[di + 2] = heap[si]; out[di + 3] = bpp === 4 ? heap[si + 3] : 255; }
+        }
+      }
+      return new ImageData(out, W, H);
+    } finally { this.P.FPDFBitmap_Destroy(bmp); }
+  }
+  hasAlpha(obj) {
+    const s = this.scratch;
+    // FPDFImageObj_GetImageMetadata(obj, page, &meta) — bits_per_pixel 32 hints alpha; be safe and check render format
+    const bmp = this.P.FPDFImageObj_GetBitmap(obj);
+    if (!bmp) return false;
+    try { return this.P.FPDFBitmap_GetFormat(bmp) === 4; } finally { this.P.FPDFBitmap_Destroy(bmp); }
+  }
+
+  /** Embed a JPEG (Uint8Array) as a NEW image on page `i` at view box {x,y,w,h}. Stays compressed. */
+  addJpeg(i, jpegBytes, box) {
+    const page = this.page(i);
+    const obj = this.P.FPDFPageObj_NewImageObj(this.doc);
+    const p = this.malloc(jpegBytes.length);
+    this.heap().set(jpegBytes, p);
+    const ok = this.P.EPDFImageObj_SetJpeg(page, 0, obj, p, jpegBytes.length);
+    this.free(p);
+    if (!ok) { this.P.FPDFPageObj_Destroy(obj); throw new Error('Could not embed the image'); }
+    this.P.FPDFPage_InsertObject(page, obj);
+    this.resizeTo(i, obj, box);
+    return obj;
+  }
+
+  /** Replace an EXISTING image object's pixels with a JPEG (used by Compress). Keeps its matrix. */
+  replaceJpeg(i, obj, jpegBytes) {
+    const page = this.page(i);
+    const pa = this.malloc(4); this.M.setValue(pa, page, 'i32');
+    const p = this.malloc(jpegBytes.length);
+    this.heap().set(jpegBytes, p);
+    const ok = this.P.EPDFImageObj_SetJpeg(pa, 1, obj, p, jpegBytes.length);
+    this.free(p); this.free(pa);
+    if (!ok) throw new Error('Could not recompress an image');
+  }
+
   // ---- security (Protect / Unlock) ---------------------------------------
   /** True if this PDF carries any encryption (open password or owner restrictions). */
   isEncrypted() { return !!this.P.EPDF_IsEncrypted(this.doc); }
