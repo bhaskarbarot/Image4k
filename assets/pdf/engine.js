@@ -53,6 +53,16 @@ export class PdfDoc {
     this.scratch = this.malloc(64);
   }
 
+  /** A new, empty document. */
+  static async create() {
+    const P = await loadModule();
+    const d = new PdfDoc(P);
+    d.doc = P.FPDF_CreateNewDocument();
+    if (!d.doc) throw new Error('Could not create a PDF');
+    d.pageCount = 0;
+    return d;
+  }
+
   static async open(bytes, password = '') {
     const P = await loadModule();
     const d = new PdfDoc(P);
@@ -437,6 +447,44 @@ export class PdfDoc {
       this.free(buf);
     }
     this.commit(i);
+  }
+
+  // ---- page-level operations (organize / merge / split) ------------------
+  /** Forget cached page handles (indices change after structural edits). */
+  resetPages() {
+    for (const h of this.pages.values()) this.P.FPDF_ClosePage(h);
+    this.pages.clear();
+    this.pageCount = this.P.FPDF_GetPageCount(this.doc);
+  }
+
+  /** Copy pages (0-based `indices`, in that order) from `src` into this document at `at`. */
+  importPages(src, indices, at = this.pageCount) {
+    if (!indices.length) return;
+    const p = this.malloc(indices.length * 4);
+    indices.forEach((v, k) => this.M.setValue(p + k * 4, v, 'i32'));
+    const ok = this.P.FPDF_ImportPagesByIndex(this.doc, src.doc, p, indices.length, at);
+    this.free(p);
+    if (!ok) throw new Error('Could not copy pages');
+    this.resetPages();
+  }
+
+  addBlankPage(at, w, h) {
+    const page = this.P.FPDFPage_New(this.doc, at, w, h);
+    if (!page) throw new Error('Could not add a page');
+    this.P.FPDF_ClosePage(page);
+    this.resetPages();
+  }
+
+  deletePage(i) { this.P.FPDFPage_Delete(this.doc, i); this.resetPages(); }
+
+  rotation(i) { return this.P.FPDFPage_GetRotation(this.page(i)); }
+  setRotation(i, quarterTurns) { this.P.FPDFPage_SetRotation(this.page(i), ((quarterTurns % 4) + 4) % 4); }
+
+  /** Crop page `i` to a rectangle given in view points of the SOURCE geometry `fromDoc`/`fromIndex`. */
+  cropToView(i, fromDoc, fromIndex, r) {
+    const a = fromDoc.toPage(fromIndex, r.x, r.y), b = fromDoc.toPage(fromIndex, r.x + r.w, r.y + r.h);
+    const l = Math.min(a.x, b.x), rr = Math.max(a.x, b.x), bt = Math.min(a.y, b.y), t = Math.max(a.y, b.y);
+    this.P.FPDFPage_SetCropBox(this.page(i), l, bt, rr, t);
   }
 
   /** Write the page's object list back into its content stream. */

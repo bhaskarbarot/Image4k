@@ -8,3 +8,5 @@ serve.py
 node_modules
 .wrangler
 __pycache__
+PDF_TOOLS_PLAN.md
+ANTIGRAVITY_PROMPT.md

@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf2">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf2">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf3">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf3">
 </head>
 <body>
   <header class="pbar">
@@ -66,9 +66,9 @@
       <div class="ptool-grid">
         <button class="ptool is-ready" type="button" data-open="edit"><span class="ptool-ico">✎</span><b>Edit PDF</b><span>Edit text in its own font, move, delete</span></button>
         <button class="ptool is-ready" type="button" data-open="sign"><span class="ptool-ico">✍</span><b>Sign PDF</b><span>Draw, type or upload a signature</span></button>
-        <div class="ptool"><span class="ptool-ico">⊕</span><b>Merge PDF</b><span>Combine several PDFs</span><em>Soon</em></div>
-        <div class="ptool"><span class="ptool-ico">✂</span><b>Split PDF</b><span>Separate pages</span><em>Soon</em></div>
-        <div class="ptool"><span class="ptool-ico">⟳</span><b>Organize pages</b><span>Rearrange, rotate, crop, delete</span><em>Soon</em></div>
+        <button class="ptool is-ready" type="button" data-open="merge"><span class="ptool-ico">⊕</span><b>Merge PDF</b><span>Combine several PDFs into one</span></button>
+        <button class="ptool is-ready" type="button" data-open="split"><span class="ptool-ico">✂</span><b>Split PDF</b><span>Every page, ranges or chosen pages</span></button>
+        <button class="ptool is-ready" type="button" data-open="organize"><span class="ptool-ico">⟳</span><b>Organize pages</b><span>Rearrange, rotate, crop, delete, extract</span></button>
         <div class="ptool"><span class="ptool-ico">🖼</span><b>PDF to image</b><span>Export pages as JPG / PNG</span><em>Soon</em></div>
         <div class="ptool"><span class="ptool-ico">⇪</span><b>Image to PDF</b><span>Turn images into a PDF</span><em>Soon</em></div>
         <div class="ptool"><span class="ptool-ico">⇲</span><b>Compress PDF</b><span>Smaller file, sharp text</span><em>Soon</em></div>
@@ -162,6 +162,97 @@
     <div class="pbusy" id="busy" hidden><div class="pspinner"></div><span id="busyText">Working…</span></div>
   </div>
 
+  <!-- ================= ORGANIZE ================= -->
+  <section class="pview" id="organize" hidden aria-labelledby="orgTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="orgTitle">Organize pages</h1>
+        <p class="pview-sub"><span id="orgName"></span> · <span id="orgCount"></span></p>
+      </div>
+      <div class="pview-actions">
+        <button class="pbtn pbtn-outline" type="button" id="orgEdit">Edit content</button>
+        <button class="pbtn pbtn-wine" type="button" id="orgDownload">Download PDF</button>
+      </div>
+    </div>
+    <div class="porg-tools" role="toolbar" aria-label="Page tools">
+      <button class="ptb" type="button" id="orgAll"><span>☐</span><span>Select all</span></button>
+      <button class="ptb" type="button" id="orgRotL" disabled><span>↺</span><span>Rotate left</span></button>
+      <button class="ptb" type="button" id="orgRotR" disabled><span>↻</span><span>Rotate right</span></button>
+      <button class="ptb" type="button" id="orgCrop" disabled><span>⛶</span><span>Crop</span></button>
+      <button class="ptb" type="button" id="orgDel" disabled><span>🗑</span><span>Delete</span></button>
+      <button class="ptb" type="button" id="orgExtract" disabled><span>⇩</span><span>Extract selected</span></button>
+      <span class="porg-sep"></span>
+      <button class="ptb" type="button" id="orgAddPdf"><span>⊕</span><span>Add PDF</span></button>
+      <button class="ptb" type="button" id="orgBlank"><span>▢</span><span>Blank page</span></button>
+      <span class="porg-sep"></span>
+      <button class="ptb" type="button" id="orgUndo" disabled><span>↶</span><span>Undo</span></button>
+      <button class="ptb" type="button" id="orgRedo" disabled><span>↷</span><span>Redo</span></button>
+    </div>
+    <p class="pview-hint">Click pages to select them (Shift-click for a range) · drag to reorder · use the buttons on each page to rotate, move or delete.</p>
+    <div class="porg-grid" id="orgGrid"></div>
+    <input type="file" id="orgAddInput" accept="application/pdf,.pdf" hidden>
+  </section>
+
+  <!-- ================= MERGE ================= -->
+  <section class="pview" id="merge" hidden aria-labelledby="mrgTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="mrgTitle">Merge PDF</h1>
+        <p class="pview-sub" id="mrgSummary"></p>
+      </div>
+      <div class="pview-actions">
+        <button class="pbtn pbtn-outline" type="button" id="mrgClear">Clear</button>
+        <button class="pbtn pbtn-outline" type="button" id="mrgAdd">+ Add PDFs</button>
+        <button class="pbtn pbtn-wine" type="button" id="mrgGo" disabled>Merge &amp; download</button>
+      </div>
+    </div>
+    <p class="pview-hint">Files are joined top to bottom · drag or use the arrows to change the order · leave “Pages” empty to include all pages.</p>
+    <div class="pmrg-list" id="mrgList"></div>
+    <input type="file" id="mrgInput" accept="application/pdf,.pdf" multiple hidden>
+  </section>
+
+  <!-- ================= SPLIT ================= -->
+  <section class="pview" id="split" hidden aria-labelledby="splTitle">
+    <div class="pview-head">
+      <div>
+        <button class="plink" type="button" data-back>← All PDF tools</button>
+        <h1 id="splTitle">Split PDF</h1>
+        <p class="pview-sub" id="splName"></p>
+      </div>
+      <div class="pview-actions">
+        <button class="pbtn pbtn-wine" type="button" id="splGo">Split &amp; download</button>
+      </div>
+    </div>
+    <div class="pspl-modes" role="radiogroup" aria-label="How to split">
+      <button type="button" role="radio" data-mode="each" class="is-on" aria-checked="true"><b>Every page</b><span>One PDF per page</span></button>
+      <button type="button" role="radio" data-mode="every" aria-checked="false"><b>Every N pages</b><span>Equal chunks</span></button>
+      <button type="button" role="radio" data-mode="ranges" aria-checked="false"><b>Custom ranges</b><span>e.g. 1-3, 4-7, 9</span></button>
+      <button type="button" role="radio" data-mode="pick" aria-checked="false"><b>Pick pages</b><span>Extract into one PDF</span></button>
+    </div>
+    <div class="pspl-opts">
+      <label id="splEveryRow" hidden>Pages per file <input class="pinput" id="splEvery" type="number" min="1" value="2"></label>
+      <label id="splRangesRow" hidden>Ranges (one PDF each) <input class="pinput" id="splRanges" type="text" value="1-2" placeholder="1-3, 4-7, 9"></label>
+      <p class="pnote" id="splSummary"></p>
+    </div>
+    <div class="pspl-grid" id="splGrid"></div>
+  </section>
+
+  <!-- crop dialog -->
+  <dialog class="pdialog pdialog-wide" id="cropDialog" aria-labelledby="cropTitle">
+    <h2 id="cropTitle">Crop pages</h2>
+    <p class="pnote" id="cropInfo"></p>
+    <div class="pcrop-stage"><canvas id="cropCanvas"></canvas>
+      <div class="pcrop-box" id="cropBox"><span data-h="nw"></span><span data-h="ne"></span><span data-h="sw"></span><span data-h="se"></span><span data-h="n"></span><span data-h="s"></span><span data-h="w"></span><span data-h="e"></span></div>
+    </div>
+    <div class="pdialog-actions">
+      <button class="pbtn pbtn-outline" type="button" id="cropReset">Remove crop</button>
+      <button class="pbtn pbtn-outline" type="button" id="cropCancel">Cancel</button>
+      <button class="pbtn pbtn-wine" type="button" id="cropApply">Apply crop</button>
+    </div>
+  </dialog>
+
   <!-- signature dialog -->
   <dialog class="pdialog" id="signDialog" aria-labelledby="signTitle">
     <h2 id="signTitle">Add your signature</h2>
@@ -197,6 +288,7 @@
   </dialog>
 
   <input type="file" id="imgInput" accept="image/*" hidden>
+  <input type="file" id="toolInput" accept="application/pdf,.pdf" hidden>
   <input type="file" id="signInput" accept="image/*" hidden>
   <div class="ptoast" id="ptoast" role="status" aria-live="polite"></div>
 
@@ -211,6 +303,7 @@
     </div>
   </footer>
 
-  <script type="module" src="/assets/pdf/editor.js?v=pdf2"></script>
+  <script src="/assets/vendor/jszip.min.js" defer></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf3"></script>
 </body>
 </html>
