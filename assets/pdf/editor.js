@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf13';
-import { initPageTools, pageTools } from './pages.js?v=pdf13';
-import { initSecureTools, secureTools } from './secure.js?v=pdf13';
-import { initConvertTools, convertTools } from './convert.js?v=pdf13';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf13';
+import { PdfDoc } from './engine.js?v=pdf17';
+import { initPageTools, pageTools } from './pages.js?v=pdf17';
+import { initSecureTools, secureTools } from './secure.js?v=pdf17';
+import { initConvertTools, convertTools } from './convert.js?v=pdf17';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf17';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -219,17 +219,21 @@ function renderThumb(i, force) {
 function buildOverlay(i) {
   const p = state.pages[i], z = state.zoom;
   p.overlay.innerHTML = '';
-  p.overlay.className = 'poverlay' + ({ text: ' tool-text', erase: ' tool-erase', match: ' tool-match' }[state.tool] || '');
+  p.overlay.className = 'poverlay' + ({ text: ' tool-text', erase: ' tool-erase', match: ' tool-match', highlight: ' tool-highlight' }[state.tool] || '');
+  const pg = state.doc.size(i);
   p.items.forEach((item, k) => {
+    // A full-page image is the scanned background: keep it non-interactive so clicks land on text & annotations on top of it.
+    const isBg = item.kind === 'image' && item.box.w >= pg.w * 0.9 && item.box.h >= pg.h * 0.9;
     const d = document.createElement('div');
-    d.className = 'pobj' + (item.kind === 'image' ? ' is-image' : '') + (item.broken ? ' is-broken' : '');
+    d.className = 'pobj' + (item.kind === 'image' ? ' is-image' : '') + (item.broken ? ' is-broken' : '') + (isBg ? ' is-bg' : '');
     d.dataset.k = k;
+    if (isBg) { d.style.pointerEvents = 'none'; p.overlay.appendChild(d); return; }
     const pad = item.kind === 'text' ? 1.5 : 0;
     Object.assign(d.style, { left: (item.box.x - pad) * z + 'px', top: (item.box.y - pad) * z + 'px', width: (item.box.w + 2 * pad) * z + 'px', height: (item.box.h + 2 * pad) * z + 'px' });
     d.title = item.kind === 'text' ? (item.broken ? 'This text uses a font that cannot be read, so it cannot be edited' : 'Click to edit · drag to move') : 'Drag to move · corner to resize';
     if (state.sel && state.sel.page === i && state.sel.k === k) {
       d.classList.add('is-sel');
-      if (item.kind === 'image') d.insertAdjacentHTML('beforeend', '<span class="phandle"></span>');
+      if (!item.broken) d.insertAdjacentHTML('beforeend', '<span class="phandle"></span>');   // text & images both resize
     }
     p.overlay.appendChild(d);
   });
@@ -385,6 +389,89 @@ async function applyPanel() {
   if (r && r.usedFallback && !Object.keys(opts).length) toast('Some new letters were not in this PDF’s font — that line now uses the closest matching font.');
 }
 
+// ---- live (real-time) editing ---------------------------------------
+// Panel changes apply to the PDF immediately — bold/italic/colour/size/content
+// show on the page as you change them, no "Apply" needed.
+let _liveT = null, _liveBusy = false, _liveAgain = false;
+function queueLive(d = 280) { clearTimeout(_liveT); _liveT = setTimeout(applyLive, d); }
+
+/** Re-select the same text after a live edit WITHOUT touching panel inputs or focus. */
+function requiet(i, k, prevBox) {
+  const items = state.pages[i].items;
+  let nk = (items[k] && items[k].kind === 'text') ? k : -1;
+  if (nk < 0) {
+    let best = Infinity;
+    for (let j = 0; j < items.length; j++) {
+      const it = items[j]; if (it.kind !== 'text') continue;
+      const d = (it.box.x - prevBox.x) ** 2 + (it.box.y - prevBox.y) ** 2;
+      if (d < best) { best = d; nk = j; }
+    }
+  }
+  if (nk >= 0) { state.sel = { page: i, k: nk }; buildOverlay(i); }
+}
+
+async function applyLive() {
+  const sel = state.sel, item = selItem();
+  if (!sel || !item || item.kind !== 'text') return;
+  if (_liveBusy) { _liveAgain = true; return; }
+  const i = sel.page, prevBox = { ...item.box };
+  const text = $('#propText').value.replace(/\r?\n/g, ' ');
+  const opts = {};
+  if ($('#propFamily').value) opts.family = $('#propFamily').value;
+  const size = parseFloat($('#propSize').value);
+  if (size > 0 && Math.abs(size - item.size) > 0.05) opts.size = size;
+  if ($('#propBold').checked !== item.font.bold) opts.bold = $('#propBold').checked;
+  if ($('#propItalic').checked !== item.font.italic) opts.italic = $('#propItalic').checked;
+  if ($('#propColor').value.toLowerCase() !== hex(item.color)) opts.color = fromHex($('#propColor').value);
+  if (!text.trim()) return;                                   // never delete while the box is being typed in
+  if (text === item.text && !Object.keys(opts).length) return;
+  _liveBusy = true;
+  await mutate(i, () => state.doc.editText(i, item, text, opts), 'Edit text');
+  requiet(i, sel.k, prevBox);
+  _liveBusy = false;
+  if (_liveAgain) { _liveAgain = false; applyLive(); }
+}
+
+/** Open the style panel for a brand-new (not yet committed) text box. */
+function openNewTextPanel(size, color) {
+  $('#sideEmpty').hidden = true; $('#sideImage').hidden = true; $('#sideText').hidden = false;
+  $('#deleteSel').hidden = false; $('#side').classList.add('is-open');
+  $('#propText').value = '';
+  $('#propFontName').textContent = 'New text';
+  $('#propFamily').value = ''; $('#propSize').value = Math.round(size * 10) / 10;
+  $('#propBold').checked = false; $('#propItalic').checked = false;
+  $('#propColor').value = hex(color);
+  $('#fontNote').textContent = '';
+}
+
+/** Live-style the inline (uncommitted) new-text element from the panel. */
+function styleNewTextLive() {
+  const ed = state.editing; if (!ed || !ed.isNew) return;
+  const z = state.zoom;
+  ed.size = parseFloat($('#propSize').value) || ed.size;
+  ed.bold = $('#propBold').checked; ed.italic = $('#propItalic').checked;
+  ed.family = $('#propFamily').value || ed.family;
+  ed.color = fromHex($('#propColor').value);
+  Object.assign(ed.el.style, {
+    fontSize: ed.size * z + 'px', lineHeight: ed.size * 1.2 * z + 'px', minHeight: ed.size * 1.2 * z + 'px',
+    fontWeight: ed.bold ? '700' : '400', fontStyle: ed.italic ? 'italic' : 'normal',
+    color: rgb(ed.color), fontFamily: FAMILY_CSS[ed.family] || FAMILY_CSS.Sans,
+  });
+  const t = $('#propText').value; if (t && document.activeElement === $('#propText')) ed.el.textContent = t;
+}
+
+/** Route a panel change: new uncommitted text → style the inline box; existing text → live edit. */
+function onStyleInput(immediate) {
+  if (state.editing && state.editing.isNew) { styleNewTextLive(); return; }
+  if (immediate) applyLive(); else queueLive();
+}
+
+/** "Done" button: bake in the new text, or flush a live edit, then close the panel. */
+async function commitText() {
+  if (state.editing && state.editing.isNew) { await finishEdit(true); return; }
+  clearTimeout(_liveT); await applyLive(); select(null);
+}
+
 // =====================================================================
 // inline text editing
 // =====================================================================
@@ -422,7 +509,11 @@ function startEdit(i, k) {
   range.selectNodeContents(ed);
   const s = getSelection(); s.removeAllRanges(); s.addRange(range);
   ed.addEventListener('keydown', onEditKey);
-  ed.addEventListener('blur', () => setTimeout(() => { if (state.editing && state.editing.el === ed) finishEdit(true); }, 0));
+  ed.addEventListener('blur', () => setTimeout(() => {
+    if (!state.editing || state.editing.el !== ed) return;
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#side')) return; // editing style in the panel — keep the box open
+    finishEdit(true);
+  }, 0));
 }
 
 function startNewText(i, vx, vy, opts = {}) {
@@ -438,10 +529,15 @@ function startNewText(i, vx, vy, opts = {}) {
   Object.assign(ed.style, { left: vx * z + 'px', top: vy * z + 'px', minHeight: size * 1.2 * z + 'px', lineHeight: size * 1.2 * z + 'px', fontSize: size * z + 'px', fontFamily: FAMILY_CSS[family] || FAMILY_CSS.Sans, color: rgb(color), minWidth: '120px' });
   ed.dataset.placeholder = 'Type here';
   p.overlay.appendChild(ed);
-  state.editing = { i, el: ed, isNew: true, vx, vy, size, color, family };
+  state.editing = { i, el: ed, isNew: true, vx, vy, size, color, family, bold: !!opts.bold, italic: !!opts.italic };
+  openNewTextPanel(size, color);
   ed.focus();
   ed.addEventListener('keydown', onEditKey);
-  ed.addEventListener('blur', () => setTimeout(() => { if (state.editing && state.editing.el === ed) finishEdit(true); }, 0));
+  ed.addEventListener('blur', () => setTimeout(() => {
+    if (!state.editing || state.editing.el !== ed) return;
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#side')) return; // editing style in the panel — keep the box open
+    finishEdit(true);
+  }, 0));
 }
 
 function onEditKey(e) {
@@ -454,15 +550,16 @@ async function finishEdit(commit) {
   const ed = state.editing;
   if (!ed || ed.closing) return;
   ed.closing = true;
-  const text = ed.el.textContent.replace(/\r?\n/g, ' ');
+  let text = ed.el.textContent.replace(/\r?\n/g, ' ');
+  if (ed.isNew && !text.trim()) text = ($('#propText').value || '').replace(/\r?\n/g, ' ');   // allow content typed in the panel
   ed.el.remove();
   state.editing = null;
   if (ed.isNew) {
     if (commit && text.trim()) {
       const baseline = ed.vy + ed.size * 0.95;
-      await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size, color: ed.color, family: ed.family }), 'Add text');
-      selectLastText(ed.i);     // open the style panel (bold/italic/colour/size) on the text just added
-    } else rerender(ed.i);
+      await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size, color: ed.color, family: ed.family, bold: ed.bold, italic: ed.italic }), 'Add text');
+      selectLastText(ed.i);     // keep the new text selected so it stays movable/resizable & stylable
+    } else { rerender(ed.i); select(null); }
     return;
   }
   state.doc.setHidden(ed.item.objs, false, ed.colors);
@@ -679,15 +776,27 @@ function bindOverlayEvents() {
       objEl.removeEventListener('pointerup', onUp);
       objEl.removeEventListener('pointercancel', onUp);
       if (!moved) {
-        if (item.kind === 'text' && state.tool === 'edit') await editItem(i, item);
+        // click once to select (then move/resize); click the selected text again to edit its words inline
+        const already = state.sel && state.sel.page === i && state.sel.k === k;
+        if (!resizing && item.kind === 'text' && !item.broken && already) await editItem(i, item);
         else select({ page: i, k });
         return;
       }
       finishEdit(true);
       const z = state.zoom;
       if (resizing) {
-        const w = parseFloat(objEl.style.width) / z, h = parseFloat(objEl.style.height) / z;
-        await mutate(i, () => state.doc.resizeTo(i, item.objs[0], { x: item.box.x, y: item.box.y, w, h }), 'Resize');
+        const newW = parseFloat(objEl.style.width) / z;
+        if (item.kind === 'text') {
+          const scale = Math.max(0.1, newW / (item.box.w || newW));   // text: scale the FONT size, not a raw matrix
+          const ns = Math.max(4, Math.round(item.size * scale * 10) / 10);
+          const pb = { ...item.box };
+          await mutate(i, () => state.doc.editText(i, item, item.text, { size: ns }), 'Resize text');
+          requiet(i, state.sel ? state.sel.k : k, pb);   // editText replaces the object — reselect quietly
+          return;
+        } else {
+          const h = parseFloat(objEl.style.height) / z;
+          await mutate(i, () => state.doc.resizeTo(i, item.objs[0], { x: item.box.x, y: item.box.y, w: newW, h }), 'Resize');
+        }
       } else {
         const dx = (ev.clientX - start.x) / z, dy = (ev.clientY - start.y) / z;
         await mutate(i, () => state.doc.move(i, item.objs, dx, dy), 'Move');
@@ -995,7 +1104,14 @@ function bind() {
     if (state.replacing) { state.replacing = false; replaceSelectedImage(f); } else addImageFile(f);
   });
   $('#replaceImage').addEventListener('click', () => { state.replacing = true; $('#imgInput').click(); });
-  $('#applyText').addEventListener('click', applyPanel);
+  $('#applyText').addEventListener('click', commitText);
+  // live editing: panel changes show on the page immediately
+  $('#propBold').addEventListener('change', () => onStyleInput(true));
+  $('#propItalic').addEventListener('change', () => onStyleInput(true));
+  $('#propFamily').addEventListener('change', () => onStyleInput(true));
+  $('#propSize').addEventListener('input', () => onStyleInput(false));
+  $('#propColor').addEventListener('input', () => onStyleInput(false));
+  $('#propText').addEventListener('input', () => { if (state.editing && state.editing.isNew) styleNewTextLive(); else queueLive(320); });
   $('#propEyedrop').addEventListener('click', () => {
     state.picking = (c) => { $('#propColor').value = hex(c); applyPanel(); };
     $('#viewer').classList.add('is-picking');
