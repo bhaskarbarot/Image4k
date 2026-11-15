@@ -429,6 +429,53 @@ export class PdfDoc {
     return obj;
   }
 
+  /** Straight stroked line between two view points. */
+  addLine(i, a, color, width = 2) {
+    const p1 = this.toPage(i, a.x1, a.y1), p2 = this.toPage(i, a.x2, a.y2);
+    const obj = this.P.FPDFPageObj_CreateNewPath(p1.x, p1.y);
+    if (!obj) throw new Error('Could not add the line');
+    this.P.FPDFPath_LineTo(obj, p2.x, p2.y);
+    this.P.FPDFPageObj_SetStrokeColor(obj, color[0], color[1], color[2], color[3] ?? 255);
+    this.P.FPDFPageObj_SetStrokeWidth(obj, width);
+    this.P.FPDFPageObj_SetLineCap(obj, 1);        // round cap
+    this.P.FPDFPath_SetDrawMode(obj, 0, true);    // stroke only, no fill
+    this.P.FPDFPage_InsertObject(this.page(i), obj);
+    this.commit(i);
+    return obj;
+  }
+
+  /** Outlined (stroked) rectangle over view box {x,y,w,h}. */
+  addRectOutline(i, box, color, width = 2) {
+    const a = this.toPage(i, box.x, box.y + box.h), b = this.toPage(i, box.x + box.w, box.y);
+    const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y), w = Math.abs(b.x - a.x), h = Math.abs(b.y - a.y);
+    const obj = this.P.FPDFPageObj_CreateNewRect(x, y, w, h);
+    if (!obj) throw new Error('Could not add the rectangle');
+    this.P.FPDFPageObj_SetStrokeColor(obj, color[0], color[1], color[2], color[3] ?? 255);
+    this.P.FPDFPageObj_SetStrokeWidth(obj, width);
+    this.P.FPDFPageObj_SetLineJoin(obj, 1);       // round join
+    this.P.FPDFPath_SetDrawMode(obj, 0, true);    // stroke only
+    this.P.FPDFPage_InsertObject(this.page(i), obj);
+    this.commit(i);
+    return obj;
+  }
+
+  /** Freehand stroked path through view points [{x,y}...]. */
+  addPath(i, pts, color, width = 2) {
+    if (!pts || pts.length < 2) return null;
+    const p0 = this.toPage(i, pts[0].x, pts[0].y);
+    const obj = this.P.FPDFPageObj_CreateNewPath(p0.x, p0.y);
+    if (!obj) throw new Error('Could not add the drawing');
+    for (let k = 1; k < pts.length; k++) { const p = this.toPage(i, pts[k].x, pts[k].y); this.P.FPDFPath_LineTo(obj, p.x, p.y); }
+    this.P.FPDFPageObj_SetStrokeColor(obj, color[0], color[1], color[2], color[3] ?? 255);
+    this.P.FPDFPageObj_SetStrokeWidth(obj, width);
+    this.P.FPDFPageObj_SetLineCap(obj, 1);
+    this.P.FPDFPageObj_SetLineJoin(obj, 1);
+    this.P.FPDFPath_SetDrawMode(obj, 0, true);
+    this.P.FPDFPage_InsertObject(this.page(i), obj);
+    this.commit(i);
+    return obj;
+  }
+
   /** Add a text line at view point (vx, vy = baseline). */
   async addText(i, vx, vy, text, { family = 'Sans', bold = false, italic = false, size = 14, color = [0, 0, 0, 255] } = {}) {
     const font = await this.loadFont(fallbackFontFile({ family, bold, italic }));

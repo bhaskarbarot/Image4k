@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf17';
-import { initPageTools, pageTools } from './pages.js?v=pdf17';
-import { initSecureTools, secureTools } from './secure.js?v=pdf17';
-import { initConvertTools, convertTools } from './convert.js?v=pdf17';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf17';
+import { PdfDoc } from './engine.js?v=pdf18';
+import { initPageTools, pageTools } from './pages.js?v=pdf18';
+import { initSecureTools, secureTools } from './secure.js?v=pdf18';
+import { initConvertTools, convertTools } from './convert.js?v=pdf18';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf18';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -19,7 +19,7 @@ const state = {
   editing: null,        // inline edit session
   undo: [], redo: [], dirty: false, busy: false,
   ink: '#111111', signMode: 'draw', pendingSign: false,
-  eraseSize: 20, picking: null
+  eraseSize: 20, picking: null, inkColor: [17, 17, 17], inkWidth: 2
 };
 
 // =====================================================================
@@ -716,6 +716,47 @@ function drawLoupe(i, vx, vy, clientX, clientY) {
 }
 function hideLoupe() { if (_loupe) _loupe.box.hidden = true; }
 
+/** Underline, strikethrough, line, rectangle and freehand drawing — drag to draw, with a live SVG preview. */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function startAnno(i, sx, sy, pageEl, kind) {
+  const p = state.pages[i], z = state.zoom, r = pageEl.getBoundingClientRect();
+  const color = state.inkColor || [17, 17, 17], width = state.inkWidth || 2;
+  const col = rgb(color), wpx = Math.max(1, width * z);
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('class', 'panno-preview');
+  Object.assign(svg.style, { position: 'absolute', left: '0', top: '0', width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' });
+  p.overlay.appendChild(svg);
+  const mk = (t) => { const e = document.createElementNS(SVGNS, t); svg.appendChild(e); return e; };
+  let shape, pts = [{ x: sx, y: sy }], cur = { x: sx, y: sy };
+  if (kind === 'draw') { shape = mk('polyline'); shape.setAttribute('fill', 'none'); shape.setAttribute('stroke-linecap', 'round'); shape.setAttribute('stroke-linejoin', 'round'); }
+  else if (kind === 'rect') { shape = mk('rect'); shape.setAttribute('fill', 'none'); }
+  else { shape = mk('line'); shape.setAttribute('stroke-linecap', 'round'); }
+  shape.setAttribute('stroke', col);
+  shape.setAttribute('stroke-width', (kind === 'underline' || kind === 'strike') ? Math.max(2, 2 * z) : wpx);
+  const toV = (ev) => ({ x: (ev.clientX - r.left) / z, y: (ev.clientY - r.top) / z });
+  const draw = () => {
+    const x1 = sx, y1 = sy, x2 = cur.x, y2 = cur.y;
+    if (kind === 'draw') shape.setAttribute('points', pts.map((q) => `${q.x * z},${q.y * z}`).join(' '));
+    else if (kind === 'line') { shape.setAttribute('x1', x1 * z); shape.setAttribute('y1', y1 * z); shape.setAttribute('x2', x2 * z); shape.setAttribute('y2', y2 * z); }
+    else if (kind === 'rect') { shape.setAttribute('x', Math.min(x1, x2) * z); shape.setAttribute('y', Math.min(y1, y2) * z); shape.setAttribute('width', Math.abs(x2 - x1) * z); shape.setAttribute('height', Math.abs(y2 - y1) * z); }
+    else { const yy = kind === 'underline' ? Math.max(y1, y2) : (y1 + y2) / 2; shape.setAttribute('x1', Math.min(x1, x2) * z); shape.setAttribute('x2', Math.max(x1, x2) * z); shape.setAttribute('y1', yy * z); shape.setAttribute('y2', yy * z); }
+  };
+  draw();
+  const onMove = (ev) => { cur = toV(ev); if (kind === 'draw') { const l = pts[pts.length - 1]; if (Math.hypot(cur.x - l.x, cur.y - l.y) >= 2) pts.push({ ...cur }); } draw(); };
+  const onUp = async () => {
+    document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp);
+    svg.remove();
+    const x1 = sx, y1 = sy, x2 = cur.x, y2 = cur.y;
+    const minx = Math.min(x1, x2), maxx = Math.max(x1, x2), miny = Math.min(y1, y2), maxy = Math.max(y1, y2), w = maxx - minx, h = maxy - miny;
+    if (kind === 'draw') { if (pts.length >= 2) await mutate(i, () => state.doc.addPath(i, pts, color, width), 'Draw'); }
+    else if (kind === 'line') { if (Math.hypot(x2 - x1, y2 - y1) >= 3) await mutate(i, () => state.doc.addLine(i, { x1, y1, x2, y2 }, color, width), 'Line'); }
+    else if (kind === 'rect') { if (w >= 3 && h >= 3) await mutate(i, () => state.doc.addRectOutline(i, { x: minx, y: miny, w, h }, color, width), 'Rectangle'); }
+    else if (kind === 'underline') { if (w >= 3) { const t = Math.max(1.5, width); await mutate(i, () => state.doc.addRect(i, { x: minx, y: maxy - t, w, h: t }, color), 'Underline'); } }
+    else if (kind === 'strike') { if (w >= 3) { const t = Math.max(1.5, width), my = (miny + maxy) / 2; await mutate(i, () => state.doc.addRect(i, { x: minx, y: my - t / 2, w, h: t }, color), 'Strikethrough'); } }
+  };
+  document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
+}
+
 // =====================================================================
 // pointer: select, drag-move, resize, add text
 // =====================================================================
@@ -747,6 +788,7 @@ function bindOverlayEvents() {
       return;
     }
     if (state.tool === 'highlight') { e.preventDefault(); startHighlight(i, vx, vy, pageEl); return; }
+    if (['underline', 'strike', 'line', 'rect', 'draw'].includes(state.tool)) { e.preventDefault(); startAnno(i, vx, vy, pageEl, state.tool); return; }
     if (!objEl) { finishEdit(true); select(null); return; }
 
     const k = +objEl.dataset.k;
@@ -829,13 +871,23 @@ function reselectAt(i, before) {
 function setTool(t) {
   state.tool = t;
   $$('.ptb[data-tool]').forEach((b) => { const on = b.dataset.tool === t; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', String(on)); });
-  const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match', highlight: 'tool-highlight' }[t] || '';
-  state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match', 'tool-highlight'); if (cls) p.overlay.classList.add(cls); });
+  const inkTool = ['underline', 'strike', 'line', 'rect', 'draw'].includes(t);
+  const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match', highlight: 'tool-highlight' }[t] || (inkTool ? 'tool-draw' : '');
+  state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match', 'tool-highlight', 'tool-draw'); if (cls) p.overlay.classList.add(cls); });
   const ew = $('#eraseSizeWrap'); if (ew) ew.hidden = t !== 'erase';
-  if (t === 'text') toast('Click where the new text should go.');
-  else if (t === 'erase') toast('Drag over anything to cover it — works on photos and scans too.');
-  else if (t === 'match') toast('Click on text in the image to copy its colour & size, then type over it.');
-  else if (t === 'highlight') toast('Drag across text or an area to highlight it.');
+  const aw = $('#annoWrap'); if (aw) aw.hidden = !inkTool;
+  const tips = {
+    text: 'Click where the new text should go.',
+    erase: 'Drag over anything to cover it — works on photos and scans too.',
+    match: 'Click on text in the image to copy its colour & size, then type over it.',
+    highlight: 'Drag across text or an area to highlight it.',
+    underline: 'Drag across the words you want to underline.',
+    strike: 'Drag across the words you want to strike through.',
+    line: 'Drag to draw a straight line.',
+    rect: 'Drag to draw a rectangle.',
+    draw: 'Hold and drag to draw freehand.',
+  };
+  if (tips[t]) toast(tips[t]);
 }
 
 async function fileToImageData(file, maxSide = 2400) {
@@ -1119,6 +1171,8 @@ function bind() {
   });
   $('#deleteSel').addEventListener('click', deleteSelected);
   const es = $('#eraseSize'); if (es) es.addEventListener('input', (e) => { state.eraseSize = +e.target.value; });
+  const ac = $('#annoColor'); if (ac) ac.addEventListener('input', (e) => { state.inkColor = fromHex(e.target.value); });
+  const aw2 = $('#annoWidth'); if (aw2) aw2.addEventListener('change', (e) => { state.inkWidth = +e.target.value; });
   $('#downloadBtn').addEventListener('click', download);
 
   // signature dialog

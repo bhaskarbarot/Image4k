@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf17">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf17">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf18">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf18">
 </head>
 <body>
   <header class="pbar">
@@ -98,6 +98,21 @@
         <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="highlight" title="Highlight — drag over text to highlight (H)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l6 6-2 2-6-6zM15 5l4 4-4 4-4-4zM4 20h5"/></svg><span>Highlight</span>
         </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="underline" title="Underline — drag across words">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v6a6 6 0 0012 0V4M4 21h16"/></svg><span>Underline</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="strike" title="Strikethrough — drag across words">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M7 6h8M9 18h6"/></svg><span>Strike</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="line" title="Line — drag to draw a straight line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19L19 5"/></svg><span>Line</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="rect" title="Rectangle — drag to draw a box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1"/></svg><span>Rectangle</span>
+        </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="draw" title="Draw — hold and drag to draw freehand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21s1-4 3-6 4-3 6-3 3 1 3 3-2 3-3 1 0-3 2-5 4-3 4-3"/></svg><span>Draw</span>
+        </button>
       </div>
       <div class="ptb-group">
         <button class="ptb" type="button" data-action="undo" title="Undo (Ctrl+Z)" disabled>
@@ -113,6 +128,16 @@
       <div class="ptb-group ptb-erase-size" id="eraseSizeWrap" hidden>
         <span class="ptb-lbl">Eraser</span>
         <input type="range" id="eraseSize" min="6" max="80" value="20" aria-label="Eraser size">
+      </div>
+      <div class="ptb-group ptb-anno" id="annoWrap" hidden>
+        <span class="ptb-lbl">Ink</span>
+        <input type="color" id="annoColor" value="#111111" title="Ink colour" aria-label="Ink colour">
+        <select id="annoWidth" class="pinput pinput-sm" title="Line thickness" aria-label="Line thickness">
+          <option value="1">Thin</option>
+          <option value="2" selected>Medium</option>
+          <option value="4">Thick</option>
+          <option value="6">Extra thick</option>
+        </select>
       </div>
       <div class="ptb-group ptb-zoom">
         <button class="ptb ptb-icon" type="button" data-action="zoom-out" title="Zoom out" aria-label="Zoom out">−</button>
@@ -472,6 +497,6 @@
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
   <script src="/assets/js/consent-gate.js?v=pdf11"></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf17"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf18"></script>
 </body>
 </html>
