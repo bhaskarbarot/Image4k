@@ -115,7 +115,16 @@
       let m = new Uint8Array(w * h);
       for (let p = 0, q = 3; q < md.length; p++, q += 4) m[p] = md[q] > 0 ? 1 : 0;
       m = dilate(m, w, h, 3);
-      const out = window.inpaintImage(imgData, m);
+      const hd = $('#hdRefine') ? $('#hdRefine').checked : true;
+      let out;
+      if (hd && window.inpaintExemplarAsync) {
+        setProgress(true, 'Refining (texture-aware)…');
+        out = await window.inpaintExemplarAsync(imgData, m, {
+          onProgress: (p) => { $('#barFill').style.width = Math.round(6 + p * 90) + '%'; $('#progressText').textContent = 'Refining… ' + Math.round(p * 100) + '%'; }
+        });
+      } else {
+        out = window.inpaintImage(imgData, m);
+      }
       img.getContext('2d').putImageData(out, 0, 0);
       clearMask();
       setProgress(false);
@@ -178,5 +187,5 @@
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind); else bind();
-  window.__wm = { remove, wandSelect, hasMask, load };
+  window.__wm = { remove, wandSelect, hasMask, load, getMaskCanvas: () => mask, getImgCanvas: () => img, redraw };
 })();

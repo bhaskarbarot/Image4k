@@ -108,3 +108,115 @@
   if (typeof window !== 'undefined') window.inpaintImage = inpaintImage;
   if (typeof module !== 'undefined') module.exports = { inpaintImage, ImageDataCtor };
 })();
+
+/* ---- Exemplar (texture-aware) inpainting: copies real patches from the surroundings ----
+ * Much better over texture/detail than the smooth fill — fills holes with matching texture
+ * so the result doesn't look blurred or "edited". Exposed as window.inpaintExemplar. */
+(function () {
+  'use strict';
+  function inpaintExemplar(imageData, mask, opts) {
+    opts = opts || {};
+    const W = imageData.width, H = imageData.height;
+    const data = new Uint8ClampedArray(imageData.data);
+    const known = new Uint8Array(W * H);
+    for (let i = 0; i < W * H; i++) known[i] = mask[i] ? 0 : 1;
+    const P = opts.patch || 3, S = opts.search || 18, STEP = opts.step || 2;
+    const idx = (x, y) => y * W + x;
+
+    // BFS distance from the known region into the holes -> fill order (shallow first)
+    const dist = new Int32Array(W * H).fill(-1);
+    let q = [];
+    for (let i = 0; i < W * H; i++) if (known[i]) { dist[i] = 0; q.push(i); }
+    const holes = [];
+    for (let h = 0; h < q.length; h++) {
+      const i = q[h], x = i % W, y = (i / W) | 0, d = dist[i];
+      const nb = [[1,0],[-1,0],[0,1],[0,-1]];
+      for (let k = 0; k < 4; k++) {
+        const nx = x + nb[k][0], ny = y + nb[k][1];
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const ni = ny * W + nx; if (dist[ni] !== -1) continue;
+        dist[ni] = d + 1; q.push(ni); if (!known[ni]) holes.push(ni);
+      }
+    }
+    holes.sort((a, b) => dist[a] - dist[b]);
+
+    // fill each hole pixel from the best-matching nearby known/already-filled patch
+    for (let hh = 0; hh < holes.length; hh++) {
+      const i = holes[hh], x = i % W, y = (i / W) | 0;
+      let bestSSD = Infinity, bq = -1;
+      const x0 = Math.max(P, x - S), x1 = Math.min(W - P - 1, x + S), y0 = Math.max(P, y - S), y1 = Math.min(H - P - 1, y + S);
+      for (let sy = y0; sy <= y1; sy += STEP) for (let sx = x0; sx <= x1; sx += STEP) {
+        const ci = idx(sx, sy); if (!known[ci]) continue;            // candidate centre must be known
+        let ssd = 0, cnt = 0, okSrc = true;
+        for (let dy = -P; dy <= P && okSrc; dy++) for (let dx = -P; dx <= P; dx++) {
+          const si = idx(sx + dx, sy + dy); if (!known[si]) { okSrc = false; break; }
+          const tx = x + dx, ty = y + dy;
+          if (tx >= 0 && ty >= 0 && tx < W && ty < H && known[idx(tx, ty)]) {
+            const ti = idx(tx, ty) * 4, s2 = si * 4;
+            const dr = data[ti] - data[s2], dg = data[ti + 1] - data[s2 + 1], db = data[ti + 2] - data[s2 + 2];
+            ssd += dr * dr + dg * dg + db * db; cnt++;
+          }
+        }
+        if (okSrc && cnt > 0) { const m = ssd / cnt + (Math.abs(sx - x) + Math.abs(sy - y)) * 0.05; if (m < bestSSD) { bestSSD = m; bq = ci; } }
+      }
+      if (bq >= 0) { const t = i * 4, sp = bq * 4; data[t] = data[sp]; data[t+1] = data[sp+1]; data[t+2] = data[sp+2]; data[t+3] = 255; known[i] = 1; }
+    }
+    // any leftover -> smooth fallback
+    let left = 0; for (let i = 0; i < W * H; i++) if (!known[i]) left++;
+    if (left > 0) { const lo = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) lo[i] = known[i] ? 0 : 1; return window.inpaintImage(new ImageDataCtor(data, W, H), lo); }
+    return new ImageDataCtor(data, W, H);
+  }
+    const ImageDataCtor = (typeof ImageData !== 'undefined') ? ImageData : function (d, w, h) { return { data: d, width: w, height: h }; };
+  if (typeof window !== 'undefined') window.inpaintExemplar = inpaintExemplar;
+  if (typeof module !== 'undefined' && module.exports) module.exports.inpaintExemplar = inpaintExemplar;
+})();
+
+/* Async, chunked exemplar inpaint for the browser: same result, but yields so the UI
+ * stays responsive and reports progress. window.inpaintExemplarAsync(imageData, mask, opts). */
+(function () {
+  'use strict';
+  const ImageDataCtor = (typeof ImageData !== 'undefined') ? ImageData : function (d, w, h) { return { data: d, width: w, height: h }; };
+  async function inpaintExemplarAsync(imageData, mask, opts) {
+    opts = opts || {};
+    const onProgress = opts.onProgress || function () {};
+    const W = imageData.width, H = imageData.height;
+    const data = new Uint8ClampedArray(imageData.data);
+    const known = new Uint8Array(W * H);
+    for (let i = 0; i < W * H; i++) known[i] = mask[i] ? 0 : 1;
+    const P = opts.patch || 3, S = opts.search || 18, STEP = opts.step || 2;
+    const idx = (x, y) => y * W + x;
+    // BFS order
+    const dist = new Int32Array(W * H).fill(-1); const q = [];
+    for (let i = 0; i < W * H; i++) if (known[i]) { dist[i] = 0; q.push(i); }
+    const holes = [];
+    for (let h = 0; h < q.length; h++) {
+      const i = q[h], x = i % W, y = (i / W) | 0, d = dist[i];
+      const nb = [[1,0],[-1,0],[0,1],[0,-1]];
+      for (let k = 0; k < 4; k++) { const nx = x + nb[k][0], ny = y + nb[k][1]; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const ni = ny * W + nx; if (dist[ni] !== -1) continue; dist[ni] = d + 1; q.push(ni); if (!known[ni]) holes.push(ni); }
+    }
+    holes.sort((a, b) => dist[a] - dist[b]);
+    const total = holes.length || 1;
+    for (let hh = 0; hh < holes.length; hh++) {
+      const i = holes[hh], x = i % W, y = (i / W) | 0;
+      let bestSSD = Infinity, bq = -1;
+      const x0 = Math.max(P, x - S), x1 = Math.min(W - P - 1, x + S), y0 = Math.max(P, y - S), y1 = Math.min(H - P - 1, y + S);
+      for (let sy = y0; sy <= y1; sy += STEP) for (let sx = x0; sx <= x1; sx += STEP) {
+        const ci = idx(sx, sy); if (!known[ci]) continue;
+        let ssd = 0, cnt = 0, okSrc = true;
+        for (let dy = -P; dy <= P && okSrc; dy++) for (let dx = -P; dx <= P; dx++) {
+          const si = idx(sx + dx, sy + dy); if (!known[si]) { okSrc = false; break; }
+          const tx = x + dx, ty = y + dy;
+          if (tx >= 0 && ty >= 0 && tx < W && ty < H && known[idx(tx, ty)]) { const ti = idx(tx, ty) * 4, s2 = si * 4; const dr = data[ti]-data[s2], dg = data[ti+1]-data[s2+1], db = data[ti+2]-data[s2+2]; ssd += dr*dr+dg*dg+db*db; cnt++; }
+        }
+        if (okSrc && cnt > 0) { const m = ssd / cnt + (Math.abs(sx - x) + Math.abs(sy - y)) * 0.05; if (m < bestSSD) { bestSSD = m; bq = ci; } }
+      }
+      if (bq >= 0) { const t = i * 4, sp = bq * 4; data[t]=data[sp]; data[t+1]=data[sp+1]; data[t+2]=data[sp+2]; data[t+3]=255; known[i] = 1; }
+      if ((hh & 1023) === 0) { onProgress(hh / total); await new Promise((r) => setTimeout(r, 0)); }
+    }
+    let left = 0; for (let i = 0; i < W * H; i++) if (!known[i]) left++;
+    if (left > 0) { const lo = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) lo[i] = known[i] ? 0 : 1; onProgress(0.98); return window.inpaintImage(new ImageDataCtor(data, W, H), lo); }
+    onProgress(1);
+    return new ImageDataCtor(data, W, H);
+  }
+  if (typeof window !== 'undefined') window.inpaintExemplarAsync = inpaintExemplarAsync;
+})();
