@@ -116,12 +116,14 @@
       for (let p = 0, q = 3; q < md.length; p++, q += 4) m[p] = md[q] > 0 ? 1 : 0;
       m = dilate(m, w, h, 3);
       const hd = $('#hdRefine') ? $('#hdRefine').checked : true;
+      const prog = (p, msg) => { $('#barFill').style.width = Math.round((p || 0) * 100) + '%'; if (msg) $('#progressText').textContent = msg; };
+      const exemplar = () => window.inpaintExemplarAsync(imgData, m, { onProgress: (p) => prog(0.06 + p * 0.9, 'Refining (texture-aware)… ' + Math.round(p * 100) + '%') });
       let out;
-      if (hd && window.inpaintExemplarAsync) {
-        setProgress(true, 'Refining (texture-aware)…');
-        out = await window.inpaintExemplarAsync(imgData, m, {
-          onProgress: (p) => { $('#barFill').style.width = Math.round(6 + p * 90) + '%'; $('#progressText').textContent = 'Refining… ' + Math.round(p * 100) + '%'; }
-        });
+      if (hd && window.AIInpaint && window.AIInpaint.available()) {
+        try { setProgress(true, 'Preparing AI…'); out = await window.AIInpaint.run(imgData, m, { onProgress: prog }); }
+        catch (e) { console.warn('[watermark] AI inpaint unavailable, using texture-aware fill:', e && e.message); setProgress(true, 'Refining (texture-aware)…'); out = await exemplar(); }
+      } else if (hd && window.inpaintExemplarAsync) {
+        setProgress(true, 'Refining (texture-aware)…'); out = await exemplar();
       } else {
         out = window.inpaintImage(imgData, m);
       }
