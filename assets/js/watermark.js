@@ -26,6 +26,11 @@
   function setProgress(on, text) { $('#progress').hidden = !on; if (text) $('#progressText').textContent = text; if (on) $('#barFill').style.width = '100%'; }
 
   async function load(file) {
+    if (window.ConsentGate && !(await window.ConsentGate.require('the Watermark Remover'))) {
+      note('You need to accept the responsible-use terms (and password) to use this tool.', true);
+      $('#file').value = '';
+      return;
+    }
     const bmp = await createImageBitmap(file);
     const k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);

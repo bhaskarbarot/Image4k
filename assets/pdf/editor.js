@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf9';
-import { initPageTools, pageTools } from './pages.js?v=pdf9';
-import { initSecureTools, secureTools } from './secure.js?v=pdf9';
-import { initConvertTools, convertTools } from './convert.js?v=pdf9';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf9';
+import { PdfDoc } from './engine.js?v=pdf10';
+import { initPageTools, pageTools } from './pages.js?v=pdf10';
+import { initSecureTools, secureTools } from './secure.js?v=pdf10';
+import { initConvertTools, convertTools } from './convert.js?v=pdf10';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf10';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -839,8 +839,8 @@ const TOOLS = {
   organize: { open: (f) => pageTools.organize(f), drop: (fs) => { const f = fs.find((x) => /\.pdf$/i.test(x.name) || x.type === 'application/pdf'); if (f) pageTools.organizeAdd(f); else toast('Please drop a PDF file.', true); } },
   split: { open: (f) => pageTools.split(f) },
   merge: { input: '#mrgInput', drop: (fs) => pageTools.merge(fs) },
-  protect: { open: (f) => secureTools.protect(f) },
-  unlock: { open: (f) => secureTools.unlock(f) },
+  protect: { open: async (f) => { if (window.ConsentGate && !(await window.ConsentGate.require('Protect PDF'))) return; return secureTools.protect(f); } },
+  unlock: { open: async (f) => { if (window.ConsentGate && !(await window.ConsentGate.require('Unlock PDF'))) return; return secureTools.unlock(f); } },
   toimg: { open: (f) => convertTools.toImages(f) },
   extract: { open: (f) => convertTools.extract(f) },
   imgpdf: { input: '#imgpdfInput', drop: (fs) => convertTools.imagesToPdf(fs) },

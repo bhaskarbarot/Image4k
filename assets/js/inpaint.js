@@ -60,7 +60,32 @@
       if (!mask[i]) continue;
       out[i * 4] = L0.col[i * 3]; out[i * 4 + 1] = L0.col[i * 3 + 1]; out[i * 4 + 2] = L0.col[i * 3 + 2]; out[i * 4 + 3] = 255;
     }
+    addDetail(out, mask, W, H);   // re-inject grain so textured fills don't look smeared
     return new ImageDataCtor(out, W, H);
+  }
+
+  // Add noise to each filled pixel matched to the local variance of the ORIGINAL surroundings,
+  // so a fill over textured areas (rock, water, grain) blends instead of looking like a smooth blotch.
+  function addDetail(out, mask, W, H) {
+    let s = 0x9e3779b9 >>> 0;
+    const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s / 4294967296) * 2 - 1; };
+    const R = 3;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const idx = y * W + x; if (!mask[idx]) continue;
+      let n = 0, m0 = 0, m1 = 0, m2 = 0, q0 = 0, q1 = 0, q2 = 0;
+      for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+        const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const j = yy * W + xx; if (mask[j]) continue;      // only original (known) pixels
+        const p = j * 4; const a = out[p], b = out[p + 1], c = out[p + 2];
+        m0 += a; m1 += b; m2 += c; q0 += a * a; q1 += b * b; q2 += c * c; n++;
+      }
+      if (n < 6) continue;
+      const sd0 = Math.sqrt(Math.max(0, q0 / n - (m0 / n) ** 2));
+      const sd1 = Math.sqrt(Math.max(0, q1 / n - (m1 / n) ** 2));
+      const sd2 = Math.sqrt(Math.max(0, q2 / n - (m2 / n) ** 2));
+      const g = rnd(), p = idx * 4;
+      out[p] += g * sd0 * 0.85; out[p + 1] += g * sd1 * 0.85; out[p + 2] += g * sd2 * 0.85;
+    }
   }
 
   function normalise(weightedCol, wt, n) {
