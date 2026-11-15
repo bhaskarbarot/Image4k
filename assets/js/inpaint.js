@@ -105,8 +105,44 @@
     return out;
   }
   const ImageDataCtor = (typeof ImageData !== 'undefined') ? ImageData : function (d, w, h) { return { data: d, width: w, height: h }; };
-  if (typeof window !== 'undefined') window.inpaintImage = inpaintImage;
-  if (typeof module !== 'undefined') module.exports = { inpaintImage, ImageDataCtor };
+
+  // Hybrid blend: take the correct low-frequency colour/gradient from the smooth (push-pull)
+  // fill and add the high-frequency TEXTURE from the exemplar fill. Fixes bright-gradient
+  // artifacts while keeping real texture, so fills look natural on any image.
+  function hybridize(exData, origData, mask, W, H) {
+    const st = inpaintImage({ data: origData, width: W, height: H }, mask).data;
+    const out = new Uint8ClampedArray(exData);
+    const idx = (x, y) => y * W + x;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = idx(x, y); if (!mask[i]) continue;
+      let n = 0, b0 = 0, b1 = 0, b2 = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const p = idx(xx, yy) * 4; b0 += exData[p]; b1 += exData[p + 1]; b2 += exData[p + 2]; n++;
+      }
+      const p = i * 4;
+      out[p] = st[p] + (exData[p] - b0 / n);
+      out[p + 1] = st[p + 1] + (exData[p + 1] - b1 / n);
+      out[p + 2] = st[p + 2] + (exData[p + 2] - b2 / n);
+      out[p + 3] = 255;
+    }
+    // feather the 2px seam so there's no visible edge between filled and original
+    const ring = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (mask[idx(x, y)]) continue;
+      if ((x > 0 && mask[idx(x-1,y)]) || (x < W-1 && mask[idx(x+1,y)]) || (y > 0 && mask[idx(x,y-1)]) || (y < H-1 && mask[idx(x,y+1)])) ring[idx(x,y)] = 1;
+    }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      if (!ring[idx(x,y)]) continue;
+      let n=0,a0=0,a1=0,a2=0;
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=W||yy>=H)continue; const p=idx(xx,yy)*4; a0+=out[p];a1+=out[p+1];a2+=out[p+2];n++; }
+      const p=idx(x,y)*4; out[p]=out[p]*0.5+a0/n*0.5; out[p+1]=out[p+1]*0.5+a1/n*0.5; out[p+2]=out[p+2]*0.5+a2/n*0.5;
+    }
+    return out;
+  }
+
+  if (typeof window !== 'undefined') { window.inpaintImage = inpaintImage; window._inpaintHybridize = hybridize; }
+  if (typeof module !== 'undefined') module.exports = { inpaintImage, ImageDataCtor, hybridize };
 })();
 
 /* ---- Exemplar (texture-aware) inpainting: copies real patches from the surroundings ----
@@ -215,8 +251,9 @@
     }
     let left = 0; for (let i = 0; i < W * H; i++) if (!known[i]) left++;
     if (left > 0) { const lo = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) lo[i] = known[i] ? 0 : 1; onProgress(0.98); return window.inpaintImage(new ImageDataCtor(data, W, H), lo); }
+    const hb = window._inpaintHybridize ? window._inpaintHybridize(data, imageData.data, mask, W, H) : data;
     onProgress(1);
-    return new ImageDataCtor(data, W, H);
+    return new ImageDataCtor(hb, W, H);
   }
   if (typeof window !== 'undefined') window.inpaintExemplarAsync = inpaintExemplarAsync;
 })();
