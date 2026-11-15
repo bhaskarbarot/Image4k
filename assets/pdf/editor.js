@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf10';
-import { initPageTools, pageTools } from './pages.js?v=pdf10';
-import { initSecureTools, secureTools } from './secure.js?v=pdf10';
-import { initConvertTools, convertTools } from './convert.js?v=pdf10';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf10';
+import { PdfDoc } from './engine.js?v=pdf13';
+import { initPageTools, pageTools } from './pages.js?v=pdf13';
+import { initSecureTools, secureTools } from './secure.js?v=pdf13';
+import { initConvertTools, convertTools } from './convert.js?v=pdf13';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf13';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -461,6 +461,7 @@ async function finishEdit(commit) {
     if (commit && text.trim()) {
       const baseline = ed.vy + ed.size * 0.95;
       await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size, color: ed.color, family: ed.family }), 'Add text');
+      selectLastText(ed.i);     // open the style panel (bold/italic/colour/size) on the text just added
     } else rerender(ed.i);
     return;
   }
@@ -569,11 +570,67 @@ function startEraseBrush(i, sx, sy, pageEl) {
   document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
 }
 
+/** Drag a rectangle to drop a translucent highlight (like a highlighter pen). */
+function startHighlight(i, sx, sy, pageEl) {
+  const p = state.pages[i], z = state.zoom;
+  const box = document.createElement('div'); box.className = 'phl-preview'; p.overlay.appendChild(box);
+  const r = pageEl.getBoundingClientRect();
+  let cur = { x: sx, y: sy, w: 0, h: 0 };
+  const draw = (vx, vy) => { const x = Math.min(sx, vx), y = Math.min(sy, vy), w = Math.abs(vx - sx), h = Math.abs(vy - sy); Object.assign(box.style, { left: x * z + 'px', top: y * z + 'px', width: w * z + 'px', height: h * z + 'px' }); cur = { x, y, w, h }; };
+  const onMove = (ev) => draw((ev.clientX - r.left) / z, (ev.clientY - r.top) / z);
+  const onUp = async () => {
+    document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp);
+    box.remove();
+    if (cur.w < 3 || cur.h < 3) return;
+    await mutate(i, () => state.doc.addHighlight(i, cur, state.hlColor || [255, 232, 59]), 'Highlight');
+  };
+  document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
+}
+
+// ---- colour-picker magnifier (loupe) ----------------------------------
+let _loupe = null;
+function ensureLoupe() {
+  if (_loupe) return _loupe;
+  const box = document.createElement('div'); box.id = 'pickLoupe'; box.hidden = true;
+  const cv = document.createElement('canvas'); cv.width = 132; cv.height = 132;
+  box.appendChild(cv); document.body.appendChild(box);
+  _loupe = { box, cv, ctx: cv.getContext('2d') };
+  return _loupe;
+}
+function drawLoupe(i, vx, vy, clientX, clientY) {
+  const p = state.pages[i]; if (!p || !p.canvas.width) return;
+  const lp = ensureLoupe(); lp.box.hidden = false;
+  const { w } = state.doc.size(i);
+  const s = p.canvas.width / w;
+  const cx = vx * s, cy = vy * s;
+  const SRC = 22, g = lp.ctx, W = lp.cv.width, Z = W / SRC;
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, W, W);
+  g.drawImage(p.canvas, cx - SRC / 2, cy - SRC / 2, SRC, SRC, 0, 0, W, W);
+  const m = W / 2;
+  g.strokeStyle = 'rgba(255,255,255,.95)'; g.lineWidth = 1; g.strokeRect(m - Z / 2 - 1, m - Z / 2 - 1, Z + 2, Z + 2);
+  g.strokeStyle = 'rgba(0,0,0,.75)'; g.strokeRect(m - Z / 2, m - Z / 2, Z, Z);
+  const c = samplePageColor(i, vx, vy); if (c) lp.box.style.borderColor = hex(c);
+  const off = 20, LW = 150;
+  let left = clientX + off, top = clientY + off;
+  if (left + LW > innerWidth) left = clientX - LW - off;
+  if (top + LW > innerHeight) top = clientY - LW - off;
+  lp.box.style.left = Math.max(4, left) + 'px'; lp.box.style.top = Math.max(4, top) + 'px';
+}
+function hideLoupe() { if (_loupe) _loupe.box.hidden = true; }
+
 // =====================================================================
 // pointer: select, drag-move, resize, add text
 // =====================================================================
 function bindOverlayEvents() {
   const viewer = $('#viewer');
+  viewer.addEventListener('pointermove', (e) => {
+    if (!state.picking) { return; }
+    const pageEl = (e.target.closest && e.target.closest('.ppage')) || document.elementFromPoint(e.clientX, e.clientY)?.closest?.('.ppage');
+    if (!pageEl) { hideLoupe(); return; }
+    const i = +pageEl.dataset.page, r = pageEl.getBoundingClientRect();
+    drawLoupe(i, (e.clientX - r.left) / state.zoom, (e.clientY - r.top) / state.zoom, e.clientX, e.clientY);
+  });
   viewer.addEventListener('pointerdown', (e) => {
     const pageEl = e.target.closest('.ppage');
     if (!pageEl || e.target.closest('.pinline')) return;
@@ -582,16 +639,17 @@ function bindOverlayEvents() {
     const rect = pageEl.getBoundingClientRect();
     const vx = (e.clientX - rect.left) / state.zoom, vy = (e.clientY - rect.top) / state.zoom;
 
-    if (state.picking) { e.preventDefault(); const c = samplePageColor(i, vx, vy); viewer.classList.remove('is-picking'); const cb = state.picking; state.picking = null; if (c) cb(c); return; }
+    if (state.picking) { e.preventDefault(); const c = samplePageColor(i, vx, vy); viewer.classList.remove('is-picking'); hideLoupe(); const cb = state.picking; state.picking = null; if (c) cb(c); return; }
     if (state.tool === 'erase') { e.preventDefault(); startEraseBrush(i, vx, vy, pageEl); return; }
     if (state.tool === 'match') { e.preventDefault(); const st = sampleTextStyle(i, vx, vy); startNewText(i, vx, vy - st.size * 0.8, { size: st.size, color: st.color }); setTool('edit'); return; }
 
-    if (state.tool === 'text' && !objEl) {
+    if (state.tool === 'text') {           // Text tool: always add text, even over a full-page image/scan
       e.preventDefault();
       startNewText(i, vx, vy - 8);
       setTool('edit');
       return;
     }
+    if (state.tool === 'highlight') { e.preventDefault(); startHighlight(i, vx, vy, pageEl); return; }
     if (!objEl) { finishEdit(true); select(null); return; }
 
     const k = +objEl.dataset.k;
@@ -662,12 +720,13 @@ function reselectAt(i, before) {
 function setTool(t) {
   state.tool = t;
   $$('.ptb[data-tool]').forEach((b) => { const on = b.dataset.tool === t; b.classList.toggle('is-on', on); b.setAttribute('aria-checked', String(on)); });
-  const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match' }[t] || '';
-  state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match'); if (cls) p.overlay.classList.add(cls); });
+  const cls = { text: 'tool-text', erase: 'tool-erase', match: 'tool-match', highlight: 'tool-highlight' }[t] || '';
+  state.pages.forEach((p) => { p.overlay.classList.remove('tool-text', 'tool-erase', 'tool-match', 'tool-highlight'); if (cls) p.overlay.classList.add(cls); });
   const ew = $('#eraseSizeWrap'); if (ew) ew.hidden = t !== 'erase';
   if (t === 'text') toast('Click where the new text should go.');
   else if (t === 'erase') toast('Drag over anything to cover it — works on photos and scans too.');
   else if (t === 'match') toast('Click on text in the image to copy its colour & size, then type over it.');
+  else if (t === 'highlight') toast('Drag across text or an area to highlight it.');
 }
 
 async function fileToImageData(file, maxSide = 2400) {
@@ -700,6 +759,10 @@ async function addImageFile(file) {
 function selectLastImage(i) {
   const items = state.pages[i].items;
   for (let k = items.length - 1; k >= 0; k--) if (items[k].kind === 'image') { select({ page: i, k }); return; }
+}
+function selectLastText(i) {
+  const items = state.pages[i].items;
+  for (let k = items.length - 1; k >= 0; k--) if (items[k].kind === 'text') { select({ page: i, k }); return; }
 }
 
 async function replaceSelectedImage(file) {

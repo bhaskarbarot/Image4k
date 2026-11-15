@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf10">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf10">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf13">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf13">
 </head>
 <body>
   <header class="pbar">
@@ -95,6 +95,9 @@
         <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="match" title="Match &amp; type — copy the look of text on an image, then type over it">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7V5h10v2M8 17h4M10 5v12M17 14l3 3-3 3M20 17h-6"/></svg><span>Match &amp; type</span>
         </button>
+        <button class="ptb" type="button" role="radio" aria-checked="false" data-tool="highlight" title="Highlight — drag over text to highlight (H)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l6 6-2 2-6-6zM15 5l4 4-4 4-4-4zM4 20h5"/></svg><span>Highlight</span>
+        </button>
       </div>
       <div class="ptb-group">
         <button class="ptb" type="button" data-action="undo" title="Undo (Ctrl+Z)" disabled>
@@ -153,7 +156,7 @@
             <label class="pchk"><input type="checkbox" id="propBold"> <b>Bold</b></label>
             <label class="pchk"><input type="checkbox" id="propItalic"> <i>Italic</i></label>
             <label class="pfield pfield-color"><span>Color</span>
-              <span class="pcolor-row"><input type="color" id="propColor"><button class="pbtn pbtn-outline pbtn-sm" type="button" id="propEyedrop" title="Pick a colour from the page">🎨</button></span>
+              <span class="pcolor-row"><input type="color" id="propColor"><button class="pbtn pbtn-outline pbtn-sm" type="button" id="propEyedrop" title="Pick a colour from the page" aria-label="Pick a colour from the page"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l2 2-7 7-2-2 7-7zM12 10l-7 7v2h2l7-7"/></svg></button></span>
             </label>
           </div>
           <button class="pbtn pbtn-wine pbtn-block" type="button" id="applyText">Apply changes</button>
@@ -469,6 +472,6 @@
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
   <script src="/assets/js/consent-gate.js?v=pdf11"></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf10"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf13"></script>
 </body>
 </html>
