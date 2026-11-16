@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf18">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf18">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf19">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf19">
 </head>
 <body>
   <header class="pbar">
@@ -191,6 +191,10 @@
           <h3>Image</h3>
           <p class="pnote">Drag to move · drag the corner handle to resize.</p>
           <button class="pbtn pbtn-wine pbtn-block" type="button" id="replaceImage">Replace image</button>
+        </div>
+        <div id="sideShape" hidden>
+          <h3>Object</h3>
+          <p class="pnote">A line, border or shape (e.g. a table rule). Drag to move it, or Delete to remove it.</p>
         </div>
         <button class="pbtn pbtn-outline pbtn-block" type="button" id="deleteSel" hidden>Delete</button>
       </aside>
@@ -497,6 +501,6 @@
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
   <script src="/assets/js/consent-gate.js?v=pdf11"></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf18"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf19"></script>
 </body>
 </html>

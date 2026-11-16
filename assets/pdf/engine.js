@@ -223,7 +223,7 @@ export class PdfDoc {
     const page = this.page(i);
     const tp = this.P.FPDFText_LoadPage(page);
     const n = this.P.FPDFPage_CountObjects(page);
-    const runs = [], images = [];
+    const runs = [], images = [], shapes = [];
     try {
       for (let k = 0; k < n; k++) {
         const obj = this.P.FPDFPage_GetObject(page, k);
@@ -231,6 +231,11 @@ export class PdfDoc {
         if (type === OBJ.IMAGE) {
           const box = this.objBoundsView(i, obj);
           if (box && box.w > 2 && box.h > 2) images.push({ kind: 'image', objs: [obj], index: k, box });
+          continue;
+        }
+        if (type === OBJ.PATH) {                 // lines, borders, table rules, shapes — selectable & movable
+          const box = this.objBoundsView(i, obj);
+          if (box && (box.w > 1 || box.h > 1)) shapes.push({ kind: 'shape', objs: [obj], index: k, box });
           continue;
         }
         if (type !== OBJ.TEXT) continue;
@@ -289,7 +294,7 @@ export class PdfDoc {
       const r0 = l.runs[0];
       Object.assign(l, { objs: l.runs.map((r) => r.obj), base: r0.base, size: r0.size, color: r0.color, font: describeFont(r0.base), embedded: r0.embedded, broken: l.runs.some((r) => r.broken), index: r0.index });
     }
-    return lines.concat(images);
+    return shapes.concat(lines, images);   // shapes at the bottom so text/images stay clickable on top of them
   }
 
   // ---- editing -------------------------------------------------------------

@@ -178,7 +178,7 @@ kbd { font-family: ui-monospace, monospace; font-size: 12px; background: var(--b
 .pchoose-grid button span { font-size: 22px; }
 @media (max-width: 520px) { .pchoose-grid { grid-template-columns: repeat(2, 1fr); } }
 .pobj { position: absolute; border: 1px solid transparent; border-radius: 2px; cursor: text; touch-action: none; }
-.pobj.is-image { cursor: move; }
+.pobj.is-image, .pobj.is-shape { cursor: move; }
 .pobj:hover { border-color: rgba(123,31,46,.55); background: rgba(123,31,46,.05); }
 .pobj.is-sel { border: 1.5px solid var(--wine); background: rgba(123,31,46,.06); }
 .pobj.is-broken { cursor: not-allowed; }

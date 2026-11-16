@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf18';
-import { initPageTools, pageTools } from './pages.js?v=pdf18';
-import { initSecureTools, secureTools } from './secure.js?v=pdf18';
-import { initConvertTools, convertTools } from './convert.js?v=pdf18';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf18';
+import { PdfDoc } from './engine.js?v=pdf19';
+import { initPageTools, pageTools } from './pages.js?v=pdf19';
+import { initSecureTools, secureTools } from './secure.js?v=pdf19';
+import { initConvertTools, convertTools } from './convert.js?v=pdf19';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf19';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -222,18 +222,18 @@ function buildOverlay(i) {
   p.overlay.className = 'poverlay' + ({ text: ' tool-text', erase: ' tool-erase', match: ' tool-match', highlight: ' tool-highlight' }[state.tool] || '');
   const pg = state.doc.size(i);
   p.items.forEach((item, k) => {
-    // A full-page image is the scanned background: keep it non-interactive so clicks land on text & annotations on top of it.
-    const isBg = item.kind === 'image' && item.box.w >= pg.w * 0.9 && item.box.h >= pg.h * 0.9;
+    // A full-page image/shape is the scanned background or page border: keep it non-interactive so clicks land on content on top of it.
+    const isBg = (item.kind === 'image' || item.kind === 'shape') && item.box.w >= pg.w * 0.9 && item.box.h >= pg.h * 0.9;
     const d = document.createElement('div');
-    d.className = 'pobj' + (item.kind === 'image' ? ' is-image' : '') + (item.broken ? ' is-broken' : '') + (isBg ? ' is-bg' : '');
+    d.className = 'pobj' + (item.kind === 'image' ? ' is-image' : '') + (item.kind === 'shape' ? ' is-shape' : '') + (item.broken ? ' is-broken' : '') + (isBg ? ' is-bg' : '');
     d.dataset.k = k;
     if (isBg) { d.style.pointerEvents = 'none'; p.overlay.appendChild(d); return; }
     const pad = item.kind === 'text' ? 1.5 : 0;
     Object.assign(d.style, { left: (item.box.x - pad) * z + 'px', top: (item.box.y - pad) * z + 'px', width: (item.box.w + 2 * pad) * z + 'px', height: (item.box.h + 2 * pad) * z + 'px' });
-    d.title = item.kind === 'text' ? (item.broken ? 'This text uses a font that cannot be read, so it cannot be edited' : 'Click to edit · drag to move') : 'Drag to move · corner to resize';
+    d.title = item.kind === 'text' ? (item.broken ? 'This text uses a font that cannot be read, so it cannot be edited' : 'Click to edit · drag to move') : (item.kind === 'shape' ? 'Drag to move · Delete to remove' : 'Drag to move · corner to resize');
     if (state.sel && state.sel.page === i && state.sel.k === k) {
       d.classList.add('is-sel');
-      if (!item.broken) d.insertAdjacentHTML('beforeend', '<span class="phandle"></span>');   // text & images both resize
+      if (!item.broken && item.kind !== 'shape') d.insertAdjacentHTML('beforeend', '<span class="phandle"></span>');   // text & images resize; shapes move only
     }
     p.overlay.appendChild(d);
   });
@@ -344,6 +344,7 @@ function select(sel) {
   $('#sideEmpty').hidden = !!item;
   $('#sideText').hidden = !item || item.kind !== 'text';
   $('#sideImage').hidden = !item || item.kind !== 'image';
+  const sh = $('#sideShape'); if (sh) sh.hidden = !item || item.kind !== 'shape';
   $('#deleteSel').hidden = !item;
   $('[data-action="delete"]').disabled = !item;
   $('#side').classList.toggle('is-open', !!item);
@@ -1163,7 +1164,13 @@ function bind() {
   $('#propFamily').addEventListener('change', () => onStyleInput(true));
   $('#propSize').addEventListener('input', () => onStyleInput(false));
   $('#propColor').addEventListener('input', () => onStyleInput(false));
-  $('#propText').addEventListener('input', () => { if (state.editing && state.editing.isNew) styleNewTextLive(); else queueLive(320); });
+  $('#propText').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitText(); }   // Enter / Shift+Enter commit — never a new line (PDF text is single-line)
+  });
+  $('#propText').addEventListener('input', (e) => {
+    if (/[\r\n]/.test(e.target.value)) { const p = e.target.selectionStart; e.target.value = e.target.value.replace(/[\r\n]+/g, ' '); e.target.setSelectionRange(p, p); }  // strip pasted newlines
+    if (state.editing && state.editing.isNew) styleNewTextLive(); else queueLive(320);
+  });
   $('#propEyedrop').addEventListener('click', () => {
     state.picking = (c) => { $('#propColor').value = hex(c); applyPanel(); };
     $('#viewer').classList.add('is-picking');
