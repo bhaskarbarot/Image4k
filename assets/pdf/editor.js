@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf19';
-import { initPageTools, pageTools } from './pages.js?v=pdf19';
-import { initSecureTools, secureTools } from './secure.js?v=pdf19';
-import { initConvertTools, convertTools } from './convert.js?v=pdf19';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf19';
+import { PdfDoc } from './engine.js?v=pdf25';
+import { initPageTools, pageTools } from './pages.js?v=pdf25';
+import { initSecureTools, secureTools } from './secure.js?v=pdf25';
+import { initConvertTools, convertTools } from './convert.js?v=pdf25';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf25';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -19,7 +19,7 @@ const state = {
   editing: null,        // inline edit session
   undo: [], redo: [], dirty: false, busy: false,
   ink: '#111111', signMode: 'draw', pendingSign: false,
-  eraseSize: 20, picking: null, inkColor: [17, 17, 17], inkWidth: 2
+  eraseSize: 20, picking: null, inkColor: [17, 17, 17], inkWidth: 2, tableMode: false
 };
 
 // =====================================================================
@@ -237,6 +237,7 @@ function buildOverlay(i) {
     }
     p.overlay.appendChild(d);
   });
+  if (state.tableMode) renderTableUI(i); else clearTableUI(i);
 }
 
 function rerender(i) {
@@ -759,6 +760,96 @@ function startAnno(i, sx, sy, pageEl, kind) {
 }
 
 // =====================================================================
+// Table editor — detect a grid from the drawn lines and edit rows/columns
+// =====================================================================
+function tableTextObjs(i, grid, pred) {
+  const out = [];
+  for (const it of state.pages[i].items) {
+    if (it.kind !== 'text') continue;
+    const cx = it.box.x + it.box.w / 2, cy = it.box.y + it.box.h / 2;
+    const inX = cx >= grid.bbox.x - 3 && cx <= grid.bbox.x + grid.bbox.w + 3;
+    const inY = cy >= grid.bbox.y - 3 && cy <= grid.bbox.y + grid.bbox.h + 3;
+    if (inX && inY && pred(cx, cy)) for (const o of it.objs) out.push(o);
+  }
+  return out;
+}
+async function tableOp(i, grid, params, label) {
+  await mutate(i, () => state.doc.tableEdit(i, { color: grid.color, width: grid.width, removeLineObjs: grid.lineObjs, ...params }), label);
+  if (state.tableMode) buildOverlay(i);
+}
+function tableInsertRow(i, grid, b) {
+  const ys = grid.ys, Yb = ys[b];
+  const H = b < ys.length - 1 ? ys[b + 1] - ys[b] : ys[b] - ys[b - 1];
+  const objs = tableTextObjs(i, grid, (cx, cy) => cy > Yb + 0.5);
+  const newYs = ys.slice(0, b + 1).concat([Yb + H], ys.slice(b + 1).map((y) => y + H));
+  return tableOp(i, grid, { shiftText: [{ objs, dx: 0, dy: H }], xs: grid.xs, ys: newYs }, 'Insert row');
+}
+function tableDeleteRow(i, grid, r) {
+  const ys = grid.ys; if (ys.length <= 2) return;
+  const y0 = ys[r], y1 = ys[r + 1], h = y1 - y0;
+  const removeText = tableTextObjs(i, grid, (cx, cy) => cy > y0 - 0.5 && cy < y1 + 0.5);
+  const shift = tableTextObjs(i, grid, (cx, cy) => cy >= y1 - 0.5);
+  const newYs = ys.slice(0, r + 1).concat(ys.slice(r + 2).map((y) => y - h));
+  return tableOp(i, grid, { removeText, shiftText: [{ objs: shift, dx: 0, dy: -h }], xs: grid.xs, ys: newYs }, 'Delete row');
+}
+function tableInsertCol(i, grid, b) {
+  const xs = grid.xs, Xb = xs[b];
+  const W = b < xs.length - 1 ? xs[b + 1] - xs[b] : xs[b] - xs[b - 1];
+  const objs = tableTextObjs(i, grid, (cx) => cx > Xb + 0.5);
+  const newXs = xs.slice(0, b + 1).concat([Xb + W], xs.slice(b + 1).map((x) => x + W));
+  return tableOp(i, grid, { shiftText: [{ objs, dx: W, dy: 0 }], xs: newXs, ys: grid.ys }, 'Insert column');
+}
+function tableDeleteCol(i, grid, c) {
+  const xs = grid.xs; if (xs.length <= 2) return;
+  const x0 = xs[c], x1 = xs[c + 1], w = x1 - x0;
+  const removeText = tableTextObjs(i, grid, (cx) => cx > x0 - 0.5 && cx < x1 + 0.5);
+  const shift = tableTextObjs(i, grid, (cx) => cx >= x1 - 0.5);
+  const newXs = xs.slice(0, c + 1).concat(xs.slice(c + 2).map((x) => x - w));
+  return tableOp(i, grid, { removeText, shiftText: [{ objs: shift, dx: -w, dy: 0 }], xs: newXs, ys: grid.ys }, 'Delete column');
+}
+function tableMoveBy(i, grid, dx, dy) {
+  const objs = tableTextObjs(i, grid, () => true);
+  return tableOp(i, grid, { shiftText: [{ objs, dx, dy }], xs: grid.xs.map((x) => x + dx), ys: grid.ys.map((y) => y + dy) }, 'Move table');
+}
+
+function clearTableUI(i) { const el = state.pages[i].el.querySelector('.ptable-ui'); if (el) el.remove(); }
+function renderTableUI(i) {
+  const p = state.pages[i], z = state.zoom;
+  clearTableUI(i);
+  const grid = state.doc.tableGrid(i);
+  p.grid = grid || null;
+  if (!grid) return;
+  const L = document.createElement('div'); L.className = 'ptable-ui';
+  const bb = grid.bbox;
+  const btn = (cls, left, top, title, on) => {
+    const b = document.createElement('button'); b.className = 'ptbl-btn ' + cls; b.type = 'button'; b.title = title;
+    b.style.left = left * z + 'px'; b.style.top = top * z + 'px';
+    b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    b.addEventListener('click', async (e) => { e.stopPropagation(); e.preventDefault(); await on(); });
+    L.appendChild(b); return b;
+  };
+  // column controls along the top: + at each boundary, − centred in each column
+  grid.xs.forEach((x, k) => { const b = btn('ptbl-add', x, bb.y - 22, 'Insert column here', () => tableInsertCol(i, grid, k)); b.textContent = '+'; });
+  for (let c = 0; c < grid.xs.length - 1; c++) { const mid = (grid.xs[c] + grid.xs[c + 1]) / 2; const b = btn('ptbl-del', mid, bb.y - 40, 'Delete this column', () => tableDeleteCol(i, grid, c)); b.textContent = '×'; }
+  // row controls along the left: + at each boundary, − centred in each row
+  grid.ys.forEach((y, k) => { const b = btn('ptbl-add', bb.x - 22, y, 'Insert row here', () => tableInsertRow(i, grid, k)); b.textContent = '+'; });
+  for (let r = 0; r < grid.ys.length - 1; r++) { const mid = (grid.ys[r] + grid.ys[r + 1]) / 2; const b = btn('ptbl-del', bb.x - 40, mid, 'Delete this row', () => tableDeleteRow(i, grid, r)); b.textContent = '×'; }
+  // move handle (top-left), drag to move the whole table
+  const mh = document.createElement('button'); mh.className = 'ptbl-move'; mh.type = 'button'; mh.title = 'Drag to move the table'; mh.textContent = '✛';
+  mh.style.left = (bb.x - 40) * z + 'px'; mh.style.top = (bb.y - 40) * z + 'px';
+  mh.addEventListener('pointerdown', (e) => {
+    e.stopPropagation(); e.preventDefault(); mh.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY; let moved = false;
+    const onMove = (ev) => { const dx = ev.clientX - sx, dy = ev.clientY - sy; if (!moved && Math.hypot(dx, dy) < 4) return; moved = true; L.style.transform = `translate(${dx}px,${dy}px)`; };
+    const onUp = async (ev) => { mh.removeEventListener('pointermove', onMove); mh.removeEventListener('pointerup', onUp); L.style.transform = ''; if (!moved) return; await tableMoveBy(i, grid, (ev.clientX - sx) / z, (ev.clientY - sy) / z); };
+    mh.addEventListener('pointermove', onMove); mh.addEventListener('pointerup', onUp);
+  });
+  L.appendChild(mh);
+  p.el.appendChild(L);
+}
+function renderAllTableUI() { state.pages.forEach((_, i) => { if (state.tableMode) renderTableUI(i); else clearTableUI(i); }); }
+
+// =====================================================================
 // pointer: select, drag-move, resize, add text
 // =====================================================================
 function bindOverlayEvents() {
@@ -887,8 +978,12 @@ function setTool(t) {
     line: 'Drag to draw a straight line.',
     rect: 'Drag to draw a rectangle.',
     draw: 'Hold and drag to draw freehand.',
+    table: 'Use the + and × buttons to add or remove rows and columns. Click a cell to edit its text.',
   };
   if (tips[t]) toast(tips[t]);
+  state.tableMode = t === 'table';
+  renderAllTableUI();
+  if (t === 'table' && !state.pages.some((p) => p.grid)) toast('No table detected on this page. Tables must have visible lines (not a scanned image).');
 }
 
 async function fileToImageData(file, maxSide = 2400) {
@@ -1199,6 +1294,7 @@ function bind() {
   }));
 
   bindOverlayEvents();
+  window.__grid = (i = 0) => (state.doc ? state.doc.tableGrid(i) : null);
 
   // keyboard
   document.addEventListener('keydown', async (e) => {

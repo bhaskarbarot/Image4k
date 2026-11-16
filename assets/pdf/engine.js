@@ -434,20 +434,95 @@ export class PdfDoc {
     return obj;
   }
 
-  /** Straight stroked line between two view points. */
-  addLine(i, a, color, width = 2) {
+  strokeColor(obj) {
+    const s = this.scratch;
+    this.P.FPDFPageObj_GetStrokeColor(obj, s, s + 4, s + 8, s + 12);
+    return [this.i32(s), this.i32(s + 4), this.i32(s + 8), this.i32(s + 12)];
+  }
+  strokeWidth(obj) { const s = this.scratch; this.P.FPDFPageObj_GetStrokeWidth(obj, s); return this.f32(s); }
+
+  /** Line segments of a path object, in view coords: [{x1,y1,x2,y2}]. */
+  pathSegmentsView(i, obj) {
+    const m = this.matrix(obj), s = this.scratch, out = [];
+    const n = this.P.FPDFPath_CountSegments(obj);
+    let prev = null;
+    for (let k = 0; k < n; k++) {
+      const seg = this.P.FPDFPath_GetPathSegment(obj, k);
+      if (!seg) continue;
+      const t = this.P.FPDFPathSegment_GetType(seg);
+      this.P.FPDFPathSegment_GetPoint(seg, s, s + 4);
+      const ox = this.f32(s), oy = this.f32(s + 4);
+      const v = this.toView(i, m[0] * ox + m[2] * oy + m[4], m[1] * ox + m[3] * oy + m[5]);
+      if (t === 0 && prev) out.push({ x1: prev.x, y1: prev.y, x2: v.x, y2: v.y });   // 0 = LINETO (2 = MOVETO, 1 = BEZIER)
+      prev = v;
+    }
+    return out;
+  }
+
+  /** Straight stroked line between two view points (no page re-generate). */
+  _line(i, a, color, width = 2) {
     const p1 = this.toPage(i, a.x1, a.y1), p2 = this.toPage(i, a.x2, a.y2);
     const obj = this.P.FPDFPageObj_CreateNewPath(p1.x, p1.y);
     if (!obj) throw new Error('Could not add the line');
     this.P.FPDFPath_LineTo(obj, p2.x, p2.y);
     this.P.FPDFPageObj_SetStrokeColor(obj, color[0], color[1], color[2], color[3] ?? 255);
-    this.P.FPDFPageObj_SetStrokeWidth(obj, width);
-    this.P.FPDFPageObj_SetLineCap(obj, 1);        // round cap
-    this.P.FPDFPath_SetDrawMode(obj, 0, true);    // stroke only, no fill
+    this.P.FPDFPageObj_SetStrokeWidth(obj, Math.max(0.5, width));
+    this.P.FPDFPageObj_SetLineCap(obj, 1);
+    this.P.FPDFPath_SetDrawMode(obj, 0, true);
     this.P.FPDFPage_InsertObject(this.page(i), obj);
-    this.commit(i);
     return obj;
   }
+  addLine(i, a, color, width = 2) { const o = this._line(i, a, color, width); this.commit(i); return o; }
+
+  /** Detect a table grid from the page's vector lines. Returns {xs,ys,bbox,color,width,lineObjs} or null. */
+  tableGrid(i) {
+    const page = this.page(i), n = this.P.FPDFPage_CountObjects(page);
+    const H = [], V = [], lineObjs = [], colors = [], widths = [];
+    for (let k = 0; k < n; k++) {
+      const obj = this.P.FPDFPage_GetObject(page, k);
+      if (this.P.FPDFPageObj_GetType(obj) !== OBJ.PATH) continue;
+      const segs = this.pathSegmentsView(i, obj);
+      if (!segs.length) continue;
+      const col = this.strokeColor(obj), w = this.strokeWidth(obj);
+      let used = false;
+      for (const sg of segs) {
+        const dx = Math.abs(sg.x2 - sg.x1), dy = Math.abs(sg.y2 - sg.y1);
+        if (dy <= 2.5 && dx > 6) { H.push({ y: (sg.y1 + sg.y2) / 2, x1: Math.min(sg.x1, sg.x2), x2: Math.max(sg.x1, sg.x2) }); used = true; }
+        else if (dx <= 2.5 && dy > 6) { V.push({ x: (sg.x1 + sg.x2) / 2, y1: Math.min(sg.y1, sg.y2), y2: Math.max(sg.y1, sg.y2) }); used = true; }
+      }
+      if (used) { lineObjs.push(obj); colors.push(col); widths.push(w); }
+    }
+    if (H.length < 2 || V.length < 2) return null;
+    const clus = (vals, tol) => {
+      const s = [...vals].sort((a, b) => a - b), g = [];
+      for (const v of s) { const last = g[g.length - 1]; if (last && v - last.v <= tol) { last.sum += v; last.n++; last.v = last.sum / last.n; } else g.push({ v, sum: v, n: 1 }); }
+      return g.map((x) => x.v);
+    };
+    const ys = clus(H.map((h) => h.y), 4), xs = clus(V.map((v) => v.x), 4);
+    if (ys.length < 2 || xs.length < 2) return null;
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    if (x1 - x0 < 20 || y1 - y0 < 12) return null;
+    const color = colors[0] || [0, 0, 0], width = widths.sort((a, b) => a - b)[Math.floor(widths.length / 2)] || 1;
+    return { xs, ys, bbox: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, color, width, lineObjs };
+  }
+
+  /** Apply a table change atomically: move/remove text, drop old grid lines, redraw grid. */
+  tableEdit(i, o) {
+    const page = this.page(i), a = this.toPage(i, 0, 0);
+    for (const t of (o.shiftText || [])) {
+      const b = this.toPage(i, t.dx || 0, t.dy || 0), tx = b.x - a.x, ty = b.y - a.y;
+      for (const obj of t.objs) this.P.FPDFPageObj_Transform(obj, 1, 0, 0, 1, tx, ty);
+    }
+    for (const obj of (o.removeText || [])) { this.P.FPDFPage_RemoveObject(page, obj); this.P.FPDFPageObj_Destroy(obj); }
+    for (const obj of (o.removeLineObjs || [])) { this.P.FPDFPage_RemoveObject(page, obj); this.P.FPDFPageObj_Destroy(obj); }
+    const xs = o.xs, ys = o.ys, x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const col = o.color || [0, 0, 0], w = o.width || 1;
+    for (const y of ys) this._line(i, { x1: x0, y1: y, x2: x1, y2: y }, col, w);
+    for (const x of xs) this._line(i, { x1: x, y1: y0, x2: x, y2: y1 }, col, w);
+    this.commit(i);
+  }
+
+  /** Add a text line at view point (vx, vy = baseline). */
 
   /** Outlined (stroked) rectangle over view box {x,y,w,h}. */
   addRectOutline(i, box, color, width = 2) {
