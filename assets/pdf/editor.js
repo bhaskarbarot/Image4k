@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf26';
-import { initPageTools, pageTools } from './pages.js?v=pdf26';
-import { initSecureTools, secureTools } from './secure.js?v=pdf26';
-import { initConvertTools, convertTools } from './convert.js?v=pdf26';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf26';
+import { PdfDoc } from './engine.js?v=pdf27';
+import { initPageTools, pageTools } from './pages.js?v=pdf27';
+import { initSecureTools, secureTools } from './secure.js?v=pdf27';
+import { initConvertTools, convertTools } from './convert.js?v=pdf27';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf27';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -1078,6 +1078,8 @@ function openSign() {
   setSignMode('draw');
   clearPad();
   $('#signName').value = '';
+  state.signUpload = null; state.signProcessed = null;
+  const pw = $('#signPreviewWrap'); if (pw) pw.hidden = true;
   $('#signDialog').showModal();
 }
 function setSignMode(m) {
@@ -1136,6 +1138,7 @@ async function signatureImage() {
     x.fillText(name, 20, 150, 1360);
     return trim(x.getImageData(0, 0, c.width, c.height));
   }
+  if (state.signMode === 'upload') return state.signProcessed || null;
   return null;
 }
 
@@ -1151,18 +1154,63 @@ async function placeSignature(img) {
   toast('Signature added — drag it into place.');
 }
 
+/**
+ * Turn a photo/scan of a signature into a clean transparent-background signature.
+ * Adaptive: estimates the paper brightness locally (handles uneven phone lighting &
+ * off-white paper), keeps only ink that is clearly darker than its local paper,
+ * removes speckle, and recolours the ink to `inkHex`.
+ */
+function extractSignature(img, inkHex) {
+  const { width: W, height: H, data } = img, N = W * H, ink = fromHex(inkHex);
+  const L = new Float32Array(N);
+  for (let i = 0, p = 0; i < N; i++, p += 4) L[i] = 0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2];
+  // local paper brightness = brightest value in a coarse cell, bilinearly smoothed
+  const cell = Math.max(24, Math.round(Math.min(W, H) / 14));
+  const gx = Math.ceil(W / cell), gy = Math.ceil(H / cell), bg = new Float32Array(gx * gy);
+  for (let cy = 0; cy < gy; cy++) for (let cx = 0; cx < gx; cx++) {
+    let mx = 0; const x0 = cx * cell, y0 = cy * cell, x1 = Math.min(W, x0 + cell), y1 = Math.min(H, y0 + cell);
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { const v = L[y * W + x]; if (v > mx) mx = v; }
+    bg[cy * gx + cx] = mx;
+  }
+  const sampleBg = (x, y) => {
+    const fx = Math.min(gx - 1, Math.max(0, x / cell - 0.5)), fy = Math.min(gy - 1, Math.max(0, y / cell - 0.5));
+    const x0 = Math.floor(fx), y0 = Math.floor(fy), x1 = Math.min(gx - 1, x0 + 1), y1 = Math.min(gy - 1, y0 + 1), tx = fx - x0, ty = fy - y0;
+    return (bg[y0 * gx + x0] * (1 - tx) + bg[y0 * gx + x1] * tx) * (1 - ty) + (bg[y1 * gx + x0] * (1 - tx) + bg[y1 * gx + x1] * tx) * ty;
+  };
+  const T0 = 24, T1 = 72, a0 = new Uint8ClampedArray(N);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, diff = sampleBg(x, y) - L[i], a = (diff - T0) / (T1 - T0);
+    a0[i] = a <= 0 ? 0 : a >= 1 ? 255 : Math.round(a * 255);
+  }
+  const res = new Uint8ClampedArray(N * 4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; let a = a0[i];
+    if (a < 24) a = 0;
+    else { let strong = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < W && yy < H && a0[yy * W + xx] > 40) strong++; } if (strong < 2) a = 0; }  // drop isolated specks
+    const p = i * 4; res[p] = ink[0]; res[p + 1] = ink[1]; res[p + 2] = ink[2]; res[p + 3] = a;
+  }
+  return new ImageData(res, W, H);
+}
+
+function renderSignPreview() {
+  const c = $('#signPreview'); if (!c || !state.signUpload) return;
+  const sig = trim(extractSignature(state.signUpload, state.ink));
+  state.signProcessed = sig;
+  const cx = c.getContext('2d'); cx.clearRect(0, 0, c.width, c.height);
+  if (!sig) return;
+  const scale = Math.min(c.width / sig.width, c.height / sig.height, 1), dw = sig.width * scale, dh = sig.height * scale;
+  const tmp = document.createElement('canvas'); tmp.width = sig.width; tmp.height = sig.height; tmp.getContext('2d').putImageData(sig, 0, 0);
+  cx.drawImage(tmp, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh);
+}
+
 async function uploadSignature(file) {
   if (!file) return;
   try {
-    const img = await fileToImageData(file, 1600);
-    // make the paper transparent: light pixels -> clear, dark pixels -> ink-coloured
-    const d = img.data, ink = fromHex(state.ink);
-    for (let p = 0; p < d.length; p += 4) {
-      const lum = 0.299 * d[p] + 0.587 * d[p + 1] + 0.114 * d[p + 2];
-      const a = Math.max(0, Math.min(255, (205 - lum) * 2.2));
-      d[p] = ink[0]; d[p + 1] = ink[1]; d[p + 2] = ink[2]; d[p + 3] = Math.min(d[p + 3], a);
-    }
-    await placeSignature(trim(img));
+    state.signUpload = await fileToImageData(file, 1600);
+    state.signProcessed = null;
+    $('#signPreviewWrap').hidden = false;
+    renderSignPreview();
+    toast('Background removed. Pick a colour, then Place signature.');
   } catch (e) { toast('Could not read that image.', true); }
 }
 
@@ -1318,7 +1366,7 @@ function bind() {
   $('#signClear').addEventListener('click', clearPad);
   $('#signCancel').addEventListener('click', () => $('#signDialog').close());
   $('#signPlace').addEventListener('click', async () => {
-    if (state.signMode === 'upload') { $('#signInput').click(); return; }
+    if (state.signMode === 'upload' && !state.signProcessed) { $('#signInput').click(); return; }
     await placeSignature(await signatureImage());
   });
   $('#signUploadBtn').addEventListener('click', () => $('#signInput').click());
@@ -1326,6 +1374,7 @@ function bind() {
   $$('.psign-colors [data-ink]').forEach((b) => b.addEventListener('click', () => {
     state.ink = b.dataset.ink;
     $$('.psign-colors [data-ink]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+    if (state.signMode === 'upload' && state.signUpload) renderSignPreview();   // live recolour the preview
   }));
 
   bindOverlayEvents();

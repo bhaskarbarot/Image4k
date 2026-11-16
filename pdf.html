@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf26">
-  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf26">
+  <link rel="stylesheet" href="/assets/pdf/pdf.css?v=pdf27">
+  <link rel="modulepreload" href="/assets/pdf/editor.js?v=pdf27">
 </head>
 <body>
   <header class="pbar">
@@ -438,7 +438,11 @@
     </div>
     <div data-pane="draw"><canvas id="signPad" width="900" height="300" aria-label="Signature pad"></canvas><button class="plink" type="button" id="signClear">Clear</button></div>
     <div data-pane="type" hidden><input id="signName" class="pinput psign-type" placeholder="Type your name" maxlength="60"></div>
-    <div data-pane="upload" hidden><button class="pbtn pbtn-outline" type="button" id="signUploadBtn">Choose image</button><p class="pnote">A photo or scan of your signature on white paper works best — white is removed automatically.</p></div>
+    <div data-pane="upload" hidden>
+      <button class="pbtn pbtn-outline" type="button" id="signUploadBtn">Choose image</button>
+      <div id="signPreviewWrap" class="psign-preview" hidden><canvas id="signPreview" width="900" height="300" aria-label="Signature preview"></canvas></div>
+      <p class="pnote">Upload a photo of your signature on paper — the background is removed automatically and the ink is recoloured to your chosen colour below. Pick a colour to update the preview.</p>
+    </div>
     <div class="psign-colors" role="radiogroup" aria-label="Ink color">
       <button type="button" role="radio" aria-checked="true" data-ink="#111111" style="--c:#111111" aria-label="Black"></button>
       <button type="button" role="radio" aria-checked="false" data-ink="#1d3fbb" style="--c:#1d3fbb" aria-label="Blue"></button>
@@ -504,6 +508,6 @@
 
   <script src="/assets/vendor/jszip.min.js" defer></script>
   <script src="/assets/js/consent-gate.js?v=pdf11"></script>
-  <script type="module" src="/assets/pdf/editor.js?v=pdf26"></script>
+  <script type="module" src="/assets/pdf/editor.js?v=pdf27"></script>
 </body>
 </html>
