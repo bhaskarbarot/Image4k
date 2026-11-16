@@ -15,6 +15,8 @@ def load_headers():
                 continue
             if not line[0].isspace():
                 cur = (line.strip(), []); rules.append(cur)
+            elif cur and line.strip().startswith('!'):
+                cur[1].append((line.strip()[1:].strip(), None))   # "! Header" detaches a header set by an earlier rule
             elif cur and ':' in line:
                 k, v = line.strip().split(':', 1); cur[1].append((k.strip(), v.strip()))
     return rules
@@ -51,7 +53,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         for pattern, headers in RULES:
             if match(pattern, path):
                 for k, v in headers:
-                    chosen[k] = v          # later (more specific) rules override earlier ones
+                    if v is None:
+                        chosen.pop(k, None)
+                    else:
+                        chosen[k] = v      # later (more specific) rules override earlier ones
         for k, v in chosen.items():
             if k == 'Strict-Transport-Security':
                 continue                   # never pin HTTPS on localhost

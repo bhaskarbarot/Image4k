@@ -1,0 +1,68 @@
+/* QR Code Generator — builds on style.css, tools.css and dev.css */
+.qr-wrap { padding-bottom: 48px; }
+.qr-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 980px) { .qr-layout { grid-template-columns: minmax(0, 1fr) 400px; } }
+.qr-config { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.qr-config .dt-card { display: flex; flex-direction: column; gap: 14px; }
+.qr-step { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 17px; }
+.qr-step span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 13px; font-weight: 900; }
+.qr-step small { color: var(--muted); font-weight: 600; font-size: 13px; }
+
+.qr-types { display: flex; flex-wrap: wrap; gap: 6px; }
+.qr-type { border: 1px solid var(--line-2); background: var(--card-2); color: var(--text-2); font-weight: 700; font-size: 14px; border-radius: 999px; padding: 7px 14px; min-height: 36px; }
+.qr-type:hover { color: #fff; border-color: var(--muted); }
+.qr-type[aria-selected=true] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.qr-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+@media (min-width: 640px) { .qr-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .qr-fields .dt-field:has(textarea) { grid-column: 1 / -1; } }
+.qr-fields .dt-input { width: 100%; }
+.qr-ta { resize: vertical; min-height: 70px; font-family: inherit; }
+.qr-data-err { margin: 0; color: #ffb3b9; font-size: 13.5px; font-weight: 600; }
+
+.qr-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.qr-preset { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--card-2); color: var(--text-2); font-weight: 700; font-size: 12.5px; transition: border-color .15s, transform .15s; }
+.qr-preset:hover { border-color: var(--muted); transform: translateY(-2px); }
+.qr-preset[aria-pressed=true] { border-color: var(--accent); color: #fff; box-shadow: 0 0 0 3px var(--accent-soft); }
+.qr-thumb { display: block; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #fff; }
+.qr-thumb canvas, .qr-thumb svg { width: 100% !important; height: 100% !important; display: block; }
+
+.qr-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.qr-grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: end; }
+@media (min-width: 640px) { .qr-grid2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.qr-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.qr-row-center { justify-content: center; margin-top: 4px; }
+.qr-inline { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13.5px; font-weight: 600; }
+.qr-color { width: 100%; height: 42px; padding: 3px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-3); cursor: pointer; }
+.qr-color-sm { width: 52px; height: 34px; }
+.qr-color:disabled { opacity: .4; cursor: not-allowed; }
+.qr-config input[type=range] { width: 100%; accent-color: var(--accent); }
+.qr-config .dt-seg { max-width: 100%; }
+#logoCard.drag { border-color: var(--accent); background: var(--card-2); }
+
+.qr-side { min-width: 0; }
+.qr-sticky { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 980px) { .qr-sticky { position: sticky; top: 84px; } }
+.qr-preview-card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.qr-preview { width: 100%; max-width: 340px; aspect-ratio: 1; border-radius: 14px; overflow: hidden;
+  background-color: #fff; background-image: linear-gradient(45deg, #e5e5e5 25%, transparent 25%), linear-gradient(-45deg, #e5e5e5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e5e5 75%), linear-gradient(-45deg, transparent 75%, #e5e5e5 75%);
+  background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; }
+.qr-preview svg, .qr-preview canvas { width: 100% !important; height: 100% !important; display: block; }
+.qr-preview.is-empty { opacity: .25; }
+.qr-verify { margin: 0; text-align: center; font-weight: 700; font-size: 14px; border-radius: 10px; padding: 8px 12px; width: 100%; }
+.qr-verify.is-ok { background: var(--add-bg); color: var(--add); }
+.qr-verify.is-warn { background: var(--chg-bg); color: var(--chg); }
+.qr-verify.is-err { background: var(--del-bg); color: var(--del); }
+.qr-verify.is-wait { background: var(--card-2); color: var(--muted); }
+.qr-version { margin: 0; color: var(--muted); font-size: 12px; text-align: center; }
+.qr-warnings { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.qr-warnings li { font-size: 13px; line-height: 1.45; border-radius: 10px; padding: 8px 12px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--text-2); }
+.qr-warnings li.is-warn { border-color: rgba(255, 181, 71, .45); color: #ffdca3; }
+.qr-warnings li.is-err { border-color: rgba(255, 95, 109, .45); color: #ffb3b9; }
+.qr-export { display: flex; flex-direction: column; gap: 12px; }
+.qr-payload-box summary { cursor: pointer; color: var(--text-2); font-weight: 700; font-size: 13.5px; padding: 4px 2px; }
+.qr-payload-box .dt-pre { min-height: 0; max-height: 220px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin-top: 8px; font-size: 12.5px; }
+
+.qr-faq { max-width: 860px; margin: 40px auto 0; }
+.qr-faq h2 { font-size: 22px; margin: 0 0 12px; }
+.qr-faq details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; }
+.qr-faq summary { cursor: pointer; font-weight: 700; }
+.qr-faq p { color: var(--text-2); margin: 8px 0 0; font-size: 14.5px; }

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Free QR Code Generator with Logo, Colors &amp; Styles – PNG/SVG | Bhaskar Solution</title>
+  <meta name="description" content="Create custom QR codes for links, Wi-Fi, contacts (vCard), WhatsApp, email, SMS and text. Add your logo, colors, gradients and rounded styles, then download HD PNG or SVG. Every code is scan-verified. Free, no sign-up, no watermark.">
+  <link rel="canonical" href="https://image4k.org/qr">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bhaskar Solution">
+  <meta property="og:url" content="https://image4k.org/qr">
+  <meta property="og:title" content="Free QR Code Generator – logo, colors, styles, scan-verified">
+  <meta property="og:description" content="Custom QR codes for links, Wi-Fi, contacts and more. HD PNG &amp; SVG. Free and private.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/tools.css?v=ocr1">
+  <link rel="stylesheet" href="/assets/dev/dev.css?v=dev1">
+  <link rel="stylesheet" href="/assets/qr/qr.css?v=qr1">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"QR Code Generator","url":"https://image4k.org/qr","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Custom, scan-verified QR codes with logo, colors and styles. PNG and SVG export."}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Bhaskar Solution home"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/image">Image</a></li>
+        <li><a href="/qr" class="is-active" aria-current="page">QR code</a></li>
+        <li><a href="/pdf">PDF</a></li>
+        <li><a href="/dev">Developer</a></li>
+        <li><a href="/api-tools">API</a></li>
+        <li><a href="/workbench">Workbench</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>QR Code <span class="grad">Generator</span></h1>
+      <p class="lead">Links, Wi-Fi, contacts, WhatsApp and more — add your logo, colours and style, then download HD PNG or SVG. Every code is checked to make sure it really scans.</p>
+    </section>
+
+    <section class="wrap qr-wrap">
+      <div class="qr-layout">
+        <div class="qr-config">
+          <!-- 1. content -->
+          <section class="dt-card">
+            <h2 class="qr-step"><span>1</span> Content</h2>
+            <div class="qr-types" id="qrTypes" role="tablist" aria-label="QR content type"></div>
+            <div class="qr-fields" id="qrFields"></div>
+            <p class="qr-data-err" id="qrDataErr" role="alert" hidden></p>
+          </section>
+
+          <!-- 2. style -->
+          <section class="dt-card">
+            <h2 class="qr-step"><span>2</span> Pick a style</h2>
+            <div class="qr-presets" id="qrPresets"></div>
+          </section>
+
+          <!-- 3. customize -->
+          <section class="dt-card">
+            <h2 class="qr-step"><span>3</span> Customize</h2>
+            <div class="qr-grid">
+              <label class="dt-field"><span class="dt-label">Code colour</span><input type="color" id="fg" class="qr-color"></label>
+              <label class="dt-field" id="fg2Wrap"><span class="dt-label">Gradient end</span><input type="color" id="fg2" class="qr-color"></label>
+              <label class="dt-field"><span class="dt-label">Background</span><input type="color" id="bg" class="qr-color"></label>
+            </div>
+            <div class="qr-row">
+              <label class="dt-check"><input type="checkbox" id="gradient"><span>Gradient</span></label>
+              <span id="gradOpts" class="qr-row">
+                <select id="gradType" class="dt-input" aria-label="Gradient type"><option value="linear">Linear</option><option value="radial">Radial</option></select>
+                <label class="qr-inline">Angle <input type="range" id="gradRot" min="0" max="360" step="15"></label>
+              </span>
+              <label class="dt-check"><input type="checkbox" id="transparent"><span>Transparent background</span></label>
+            </div>
+            <div class="qr-row">
+              <label class="dt-check"><input type="checkbox" id="cornerColorOn"><span>Different corner colour</span></label>
+              <input type="color" id="cornerColor" class="qr-color qr-color-sm" aria-label="Corner colour">
+            </div>
+            <div class="dt-field"><span class="dt-label">Dot style</span><span id="dotsSlot"></span></div>
+            <div class="qr-grid2">
+              <div class="dt-field"><span class="dt-label">Corner frame</span><span id="cornersSlot"></span></div>
+              <div class="dt-field"><span class="dt-label">Corner centre</span><span id="cornerDotsSlot"></span></div>
+            </div>
+            <div class="qr-grid2">
+              <label class="dt-field"><span class="dt-label">Quiet zone (margin): <b id="marginOut">4</b> modules</span><input type="range" id="margin" min="0" max="8" step="1"></label>
+              <label class="dt-field"><span class="dt-label">Error correction</span>
+                <select id="ec" class="dt-input">
+                  <option value="auto">Auto (recommended)</option>
+                  <option value="L">L — 7% (smallest)</option>
+                  <option value="M">M — 15%</option>
+                  <option value="Q">Q — 25%</option>
+                  <option value="H">H — 30% (best with logo)</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <!-- 4. logo -->
+          <section class="dt-card" id="logoCard">
+            <h2 class="qr-step"><span>4</span> Logo <small>(optional)</small></h2>
+            <div class="qr-row">
+              <button class="btn btn-ghost btn-sm" type="button" id="logoBtn">Add logo / image</button>
+              <button class="btn btn-ghost btn-sm" type="button" id="logoRemove" hidden>Remove logo</button>
+              <input type="file" id="logoFile" accept="image/*" hidden>
+              <span class="dt-note">PNG, JPG, SVG or WebP — or drop it here. Error correction is raised to H automatically.</span>
+            </div>
+            <div id="logoOpts" class="qr-grid2" hidden>
+              <label class="dt-field"><span class="dt-label">Logo size: <b id="logoSizeOut">30%</b></span><input type="range" id="logoSize" min="0.1" max="0.5" step="0.02"></label>
+              <label class="dt-field"><span class="dt-label">Space around logo</span><input type="range" id="logoMargin" min="0" max="16" step="1"></label>
+              <label class="dt-check"><input type="checkbox" id="hideDots"><span>Clear dots behind logo</span></label>
+            </div>
+          </section>
+        </div>
+
+        <!-- preview & export -->
+        <aside class="qr-side">
+          <div class="qr-sticky">
+            <div class="qr-preview-card">
+              <div class="qr-preview" id="qrPreview" aria-label="QR code preview" role="img"></div>
+              <p class="qr-verify is-wait" id="qrVerify" role="status" aria-live="polite">Preparing…</p>
+              <p class="qr-version" id="qrVersion"></p>
+            </div>
+            <ul class="qr-warnings" id="qrWarnings" aria-live="polite"></ul>
+            <div class="dt-card qr-export">
+              <div class="qr-grid2">
+                <label class="dt-field"><span class="dt-label">Format</span>
+                  <select id="format" class="dt-input">
+                    <option value="png">PNG</option>
+                    <option value="png-t">PNG — transparent</option>
+                    <option value="svg">SVG (vector, any size)</option>
+                    <option value="jpeg">JPG</option>
+                    <option value="webp">WebP</option>
+                  </select>
+                </label>
+                <label class="dt-field"><span class="dt-label">Size</span>
+                  <select id="size" class="dt-input">
+                    <option value="256">256 px — web</option>
+                    <option value="512">512 px</option>
+                    <option value="1024">1024 px — HD</option>
+                    <option value="2048">2048 px — print</option>
+                    <option value="4096">4096 px — large print</option>
+                  </select>
+                </label>
+              </div>
+              <button class="btn btn-primary btn-block" type="button" id="qrDownload">Download QR code</button>
+              <div class="qr-row qr-row-center">
+                <button class="dt-mini" type="button" id="qrCopyImg">Copy image</button>
+                <button class="dt-mini" type="button" id="qrCopyText">Copy encoded text</button>
+                <button class="dt-mini" type="button" id="qrReset">Reset</button>
+              </div>
+            </div>
+            <details class="qr-payload-box">
+              <summary>Encoded content (<span id="qrBytes">0 B</span>)</summary>
+              <pre id="qrPayload" class="dt-pre"></pre>
+            </details>
+          </div>
+        </aside>
+      </div>
+
+      <section class="qr-faq">
+        <h2>Good to know</h2>
+        <details><summary>Will my QR code always work?</summary><p>Each code is decoded right after you change it (at a large and a small size) and you'll see “Scan verified” only when it decodes to exactly your content. Keep dark colours on a light background and leave the quiet zone around it.</p></details>
+        <details><summary>Do the codes expire?</summary><p>No. These are static QR codes — the content is stored inside the image itself, so they work forever and nothing is tracked.</p></details>
+        <details><summary>Is my data uploaded?</summary><p>No. The QR code, your logo and your Wi-Fi password are processed entirely in your browser.</p></details>
+        <details><summary>Which size should I print?</summary><p>At least 2–3 cm (about 1 inch) wide for short links, larger for long content like contacts. For print, download SVG or 2048 px PNG.</p></details>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/qr">QR code</a><a href="/pdf">PDF tools</a><a href="/dev">Developer tools</a><a href="/api-tools">API tools</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Bhaskar Solution</span>
+    </div>
+  </footer>
+
+  <script src="/assets/vendor/qr-code-styling-1.9.1/qr-code-styling.js"></script>
+  <script src="/assets/vendor/jsqr-1.4.0/jsQR.js"></script>
+  <script type="module" src="/assets/qr/qr.js?v=qr1"></script>
+</body>
+</html>

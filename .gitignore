@@ -18,3 +18,6 @@ node_modules/
 
 # Cloudflare local cache
 .wrangler/
+
+# Python virtualenv for tests
+.venv/

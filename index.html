@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Bhaskar Solution – Free, Private, In-Browser Image &amp; PDF Tools</title>
-  <meta name="description" content="Bhaskar Solution is a suite of fast, private tools that run entirely in your browser — image tools (4K upscale, resize, compress, remove background) and PDF tools (edit, merge, split, organize, protect, unlock). Nothing is ever uploaded.">
+  <title>Bhaskar Solution – Free Image, PDF, Developer &amp; API Tools in Your Browser</title>
+  <meta name="description" content="Bhaskar Solution: 45+ free, private tools — image upscaling, resize, compress, remove background, QR codes; PDF edit, merge, split, protect; developer tools (JSON, JWT, regex, hashes, diff, cURL), API tools (REST & GraphQL tester, webhooks, headers) and a data workbench. No sign-up.">
   <link rel="canonical" href="https://image4k.org/">
   <meta name="theme-color" content="#111111">
   <meta name="color-scheme" content="dark">
@@ -13,8 +13,8 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Bhaskar Solution">
   <meta property="og:url" content="https://image4k.org/">
-  <meta property="og:title" content="Bhaskar Solution – Free, Private Image &amp; PDF Tools">
-  <meta property="og:description" content="One home for private, in-browser image and PDF tools. Nothing is uploaded.">
+  <meta property="og:title" content="Bhaskar Solution – Free Image, PDF, Developer &amp; API Tools">
+  <meta property="og:description" content="45+ free, private tools in one place. No sign-up, no watermark, no limits.">
   <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
 
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
-  <link rel="stylesheet" href="/assets/css/home.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/home.css?v=20261116a">
 
   <script type="application/ld+json">
   {
@@ -34,10 +34,14 @@
     "@type": "WebSite",
     "name": "Bhaskar Solution",
     "url": "https://image4k.org/",
-    "description": "Free, private, in-browser image and PDF tools.",
+    "description": "Free, private image, PDF, developer and API tools.",
     "hasPart": [
       { "@type": "WebApplication", "name": "Image tools", "url": "https://image4k.org/image", "applicationCategory": "MultimediaApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
-      { "@type": "WebApplication", "name": "PDF tools", "url": "https://image4k.org/pdf", "applicationCategory": "BusinessApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+      { "@type": "WebApplication", "name": "QR Code Generator", "url": "https://image4k.org/qr", "applicationCategory": "DesignApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "WebApplication", "name": "PDF tools", "url": "https://image4k.org/pdf", "applicationCategory": "BusinessApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "WebApplication", "name": "Developer tools", "url": "https://image4k.org/dev", "applicationCategory": "DeveloperApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "WebApplication", "name": "API & Backend tools", "url": "https://image4k.org/api-tools", "applicationCategory": "DeveloperApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "WebApplication", "name": "Data Transformation Workbench", "url": "https://image4k.org/workbench", "applicationCategory": "DeveloperApplication", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
     ]
   }
   </script>
@@ -49,8 +53,12 @@
         <span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small>
       </a>
       <ul class="nav-links">
-        <li><a href="/image">Image tools</a></li>
-        <li><a href="/pdf">PDF tools</a></li>
+        <li><a href="/image">Image</a></li>
+        <li><a href="/qr">QR code</a></li>
+        <li><a href="/pdf">PDF</a></li>
+        <li><a href="/dev">Developer</a></li>
+        <li><a href="/api-tools">API</a></li>
+        <li><a href="/workbench">Workbench</a></li>
       </ul>
       <a class="btn btn-primary btn-sm nav-cta" href="#tools">Explore tools</a>
     </div>
@@ -59,53 +67,135 @@
   <main>
     <section class="hub-hero">
       <div class="wrap">
-        <span class="hub-kicker">100% private · in your browser</span>
-        <h1>One home for your <span class="grad">image &amp; PDF</span> work</h1>
-        <p class="lead">Bhaskar Solution brings fast, private tools together in one place. Pick what you need — everything runs on your device and nothing is ever uploaded.</p>
+        <span class="hub-kicker">Free · private · no sign-up</span>
+        <h1>One home for your <span class="grad">image, PDF &amp; developer</span> work</h1>
+        <p class="lead">45+ fast tools in one place — upscale and edit images, make QR codes, work with PDFs, format and convert data, test APIs and receive webhooks. Free, with no account and no limits.</p>
         <span class="hub-privacy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
-          No sign-up · no upload · no tracking
+          Files and data stay in your browser · only the API proxy &amp; webhook tester use our server
         </span>
       </div>
     </section>
 
-    <section id="tools" class="wrap">
-      <div class="hub-grid">
-        <a class="hub-card" href="/image">
-          <span class="hub-ico" aria-hidden="true">🖼</span>
-          <h2>Image operations</h2>
-          <p>Upscale photos to HD &amp; 4K with AI, resize to 80+ presets, compress to a target size, and remove backgrounds.</p>
-          <div class="hub-tags"><span>Make HD / 4K</span><span>Resize</span><span>Compress</span><span>Remove BG</span></div>
-          <span class="hub-go">Open image tools
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </span>
-        </a>
-
-        <a class="hub-card" href="/pdf">
-          <span class="hub-ico" aria-hidden="true">📄</span>
-          <h2>PDF operations</h2>
-          <p>Edit text in its original font, sign, merge, split, organize pages, and protect or unlock with a password.</p>
-          <div class="hub-tags"><span>Edit</span><span>Merge</span><span>Split</span><span>Organize</span><span>Protect / Unlock</span></div>
-          <span class="hub-go">Open PDF tools
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </span>
-        </a>
-
-        <div class="hub-card is-soon" aria-disabled="true">
-          <span class="hub-badge">Soon</span>
-          <span class="hub-ico" aria-hidden="true">📝</span>
-          <h2>Markdown operations</h2>
-          <p>Write, preview and convert Markdown to clean HTML or PDF — coming to Bhaskar Solution.</p>
+    <section id="tools" class="wrap hub-tools">
+      <div class="hub-bar">
+        <div class="hub-tabs" role="tablist" aria-label="Tool categories" id="hubTabs">
+          <button type="button" role="tab" data-tab="all" aria-selected="true">All <span>45</span></button>
+          <button type="button" role="tab" data-tab="image" aria-selected="false">Image <span>7</span></button>
+          <button type="button" role="tab" data-tab="pdf" aria-selected="false">PDF <span>11</span></button>
+          <button type="button" role="tab" data-tab="dev" aria-selected="false">Developer <span>17</span></button>
+          <button type="button" role="tab" data-tab="api" aria-selected="false">API &amp; Backend <span>9</span></button>
+          <button type="button" role="tab" data-tab="data" aria-selected="false">Data <span>1</span></button>
         </div>
-
-        <div class="hub-card is-soon" aria-disabled="true">
-          <span class="hub-badge">Soon</span>
-          <span class="hub-ico" aria-hidden="true">&lt;/&gt;</span>
-          <h2>HTML operations</h2>
-          <p>Format, minify and preview HTML, and turn pages into PDFs — right in your browser.</p>
-        </div>
+        <label class="hub-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="sr-only">Search tools</span>
+          <input type="search" id="hubSearch" placeholder="Search tools — e.g. json, resize, jwt, webhook" autocomplete="off" spellcheck="false">
+        </label>
       </div>
-      <p class="hub-more">More operations are on the way. Everything stays free and private.</p>
+      <p class="hub-empty" id="hubEmpty" hidden>No tool matches your search.</p>
+
+      <!-- ================= IMAGE ================= -->
+      <section class="hub-cat" data-cat="image" aria-labelledby="cat-image">
+        <header class="hub-cat-head">
+          <span class="hub-ico" aria-hidden="true">🖼</span>
+          <div><h2 id="cat-image">Image tools</h2><p>AI upscaling, resizing, compression, background removal, OCR and QR codes — processed on your device.</p></div>
+          <a class="hub-cat-link" href="/image">Open image tools →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item" href="/image#hd" data-k="upscale 4k 8k hd enhance ai super resolution"><strong>Make HD / 4K</strong><span>Upscale photos to HD, 4K or 8K with in-browser AI.</span></a>
+          <a class="hub-item" href="/image#resize" data-k="resize instagram youtube presets crop"><strong>Resize</strong><span>90+ presets for social media, print and screens.</span></a>
+          <a class="hub-item" href="/image#compress" data-k="compress reduce size kb jpg png webp"><strong>Compress</strong><span>Shrink images to a quality or exact target size.</span></a>
+          <a class="hub-item" href="/image#bg" data-k="remove background transparent cutout"><strong>Remove Background</strong><span>AI cut-out to transparent, colour or blur.</span></a>
+          <a class="hub-item" href="/ocr" data-k="ocr image to text extract text scan"><strong>Image to Text (OCR)</strong><span>Pull text out of photos, screenshots and scans.</span></a>
+          <a class="hub-item" href="/watermark" data-k="watermark object remover inpaint"><strong>Watermark Remover</strong><span>Erase objects and marks from images you own.</span></a>
+          <a class="hub-item is-new" href="/qr" data-k="qr code generator wifi vcard whatsapp logo"><strong>QR Code Generator</strong><span>Styled, scan-verified QR codes with your logo — PNG &amp; SVG.</span></a>
+        </div>
+      </section>
+
+      <!-- ================= PDF ================= -->
+      <section class="hub-cat" data-cat="pdf" aria-labelledby="cat-pdf">
+        <header class="hub-cat-head">
+          <span class="hub-ico is-pdf" aria-hidden="true">📄</span>
+          <div><h2 id="cat-pdf">PDF tools</h2><p>Edit text in its original font, sign, organise, convert, compress and protect PDFs — nothing is uploaded.</p></div>
+          <a class="hub-cat-link" href="/pdf">Open PDF tools →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item" href="/pdf" data-k="edit pdf text"><strong>Edit PDF</strong><span>Change text in its original font, add text and images.</span></a>
+          <a class="hub-item" href="/pdf" data-k="sign signature"><strong>Sign PDF</strong><span>Draw, type or upload your signature.</span></a>
+          <a class="hub-item" href="/pdf" data-k="merge combine join"><strong>Merge PDF</strong><span>Combine several PDFs, choose page ranges.</span></a>
+          <a class="hub-item" href="/pdf" data-k="split separate extract pages"><strong>Split PDF</strong><span>Split by pages, ranges or every N pages.</span></a>
+          <a class="hub-item" href="/pdf" data-k="organize rotate reorder delete crop pages"><strong>Organize pages</strong><span>Reorder, rotate, crop and delete pages.</span></a>
+          <a class="hub-item" href="/pdf" data-k="pdf to jpg png image convert"><strong>PDF → Image</strong><span>Export pages as JPG or PNG.</span></a>
+          <a class="hub-item" href="/pdf" data-k="image to pdf jpg png convert"><strong>Image → PDF</strong><span>Turn photos and scans into a PDF.</span></a>
+          <a class="hub-item" href="/pdf" data-k="extract text images tables"><strong>Extract</strong><span>Get text, images and tables out of a PDF.</span></a>
+          <a class="hub-item" href="/pdf" data-k="compress pdf reduce size"><strong>Compress PDF</strong><span>Smaller files, text stays sharp.</span></a>
+          <a class="hub-item" href="/pdf" data-k="protect password encrypt"><strong>Protect PDF</strong><span>Add a password and permissions.</span></a>
+          <a class="hub-item" href="/pdf" data-k="unlock remove password"><strong>Unlock PDF</strong><span>Remove a password you know.</span></a>
+        </div>
+      </section>
+
+      <!-- ================= DEVELOPER ================= -->
+      <section class="hub-cat" data-cat="dev" aria-labelledby="cat-dev">
+        <header class="hub-cat-head">
+          <span class="hub-ico is-dev" aria-hidden="true">&lt;/&gt;</span>
+          <div><h2 id="cat-dev">Developer tools</h2><p>Format, convert, encode, hash, diff and test — everything runs locally in your browser.</p></div>
+          <a class="hub-cat-link" href="/dev">Open developer tools →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item" href="/dev#json-formatter" data-k="json beautify minify validate"><strong>JSON Formatter</strong><span>Format, minify &amp; validate with exact error positions.</span></a>
+          <a class="hub-item" href="/dev#json-to-ts" data-k="json typescript interface types"><strong>JSON → TypeScript</strong><span>Interfaces from JSON, optional &amp; nullable aware.</span></a>
+          <a class="hub-item" href="/dev#json-diff" data-k="json diff compare"><strong>JSON Diff</strong><span>Added, removed and changed values by path.</span></a>
+          <a class="hub-item" href="/dev#yaml-json" data-k="yaml yml json convert"><strong>YAML ⇄ JSON</strong><span>Convert both ways with clear errors.</span></a>
+          <a class="hub-item" href="/dev#json-csv" data-k="json csv excel convert"><strong>JSON ⇄ CSV</strong><span>Quotes, commas and newlines handled.</span></a>
+          <a class="hub-item" href="/dev#xml-formatter" data-k="xml format minify validate"><strong>XML Formatter</strong><span>Format, minify &amp; validate — XXE-safe.</span></a>
+          <a class="hub-item" href="/dev#jwt-decoder" data-k="jwt decode token claims"><strong>JWT Decoder</strong><span>Header, claims and expiry at a glance.</span></a>
+          <a class="hub-item" href="/dev#jwt-generator" data-k="jwt sign generate hs256 rs256"><strong>JWT Generator</strong><span>Sign tokens with Web Crypto — keys stay local.</span></a>
+          <a class="hub-item" href="/dev#base64" data-k="base64 encode decode"><strong>Base64</strong><span>Encode / decode UTF-8 text and files.</span></a>
+          <a class="hub-item" href="/dev#url-encoder" data-k="url encode decode percent query"><strong>URL Encode / Decode</strong><span>Components, full URLs and query strings.</span></a>
+          <a class="hub-item" href="/dev#hash-generator" data-k="hash md5 sha1 sha256 sha512 checksum"><strong>Hash Generator</strong><span>MD5, SHA-1, SHA-256, SHA-512 for text &amp; files.</span></a>
+          <a class="hub-item" href="/dev#uuid-generator" data-k="uuid guid v4 v7"><strong>UUID Generator</strong><span>v4 and time-ordered v7, single or bulk.</span></a>
+          <a class="hub-item" href="/dev#regex-tester" data-k="regex regexp regular expression test"><strong>Regex Tester</strong><span>Live matches, groups — runaway patterns stopped.</span></a>
+          <a class="hub-item" href="/dev#sql-formatter" data-k="sql format postgres mysql"><strong>SQL Formatter</strong><span>Format or minify SQL for many dialects.</span></a>
+          <a class="hub-item" href="/dev#cron" data-k="cron crontab schedule"><strong>Cron Generator</strong><span>Build, explain and preview cron schedules.</span></a>
+          <a class="hub-item" href="/dev#text-diff" data-k="text diff compare"><strong>Text Diff</strong><span>Side-by-side or unified, word-level highlights.</span></a>
+          <a class="hub-item" href="/dev#curl-to-code" data-k="curl convert fetch axios python php go java ruby"><strong>cURL → Code</strong><span>Fetch, Axios, Python, PHP, Go, Java, Ruby.</span></a>
+        </div>
+      </section>
+
+      <!-- ================= API ================= -->
+      <section class="hub-cat" data-cat="api" aria-labelledby="cat-api">
+        <header class="hub-cat-head">
+          <span class="hub-ico is-api" aria-hidden="true">⇄</span>
+          <div><h2 id="cat-api">API &amp; Backend tools</h2><p>Send real requests, receive real webhooks, inspect headers and API specs.</p></div>
+          <a class="hub-cat-link" href="/api-tools">Open API tools →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item" href="/api-tools#rest-tester" data-k="rest api tester http client postman"><strong>REST API Tester</strong><span>Headers, params, auth, bodies — status, timing &amp; size.</span></a>
+          <a class="hub-item" href="/api-tools#graphql" data-k="graphql playground query mutation"><strong>GraphQL Playground</strong><span>Queries, mutations, variables &amp; introspection.</span></a>
+          <a class="hub-item" href="/api-tools#webhook" data-k="webhook tester receive requestbin"><strong>Webhook Tester</strong><span>A temporary URL that captures real requests.</span></a>
+          <a class="hub-item" href="/api-tools#header-checker" data-k="http headers security csp hsts cors"><strong>HTTP Header Checker</strong><span>Security, caching &amp; CORS headers graded.</span></a>
+          <a class="hub-item" href="/api-tools#curl-generator" data-k="curl generator command builder"><strong>cURL Generator</strong><span>Build a request visually, copy the command.</span></a>
+          <a class="hub-item" href="/api-tools#openapi-viewer" data-k="openapi swagger viewer spec"><strong>OpenAPI Viewer</strong><span>Browse OpenAPI 3 / Swagger 2 specs.</span></a>
+          <a class="hub-item" href="/api-tools#response-formatter" data-k="api response format json xml"><strong>Response Formatter</strong><span>Detect, validate and pretty-print responses.</span></a>
+          <a class="hub-item" href="/api-tools#mock-api" data-k="mock data fake json generator"><strong>Mock API Generator</strong><span>Realistic mock JSON / CSV from a schema.</span></a>
+          <a class="hub-item" href="/api-tools#http-status" data-k="http status codes 404 500 reference"><strong>HTTP Status Codes</strong><span>Every code explained, with troubleshooting.</span></a>
+        </div>
+      </section>
+
+      <!-- ================= DATA ================= -->
+      <section class="hub-cat" data-cat="data" aria-labelledby="cat-data">
+        <header class="hub-cat-head">
+          <span class="hub-ico is-data" aria-hidden="true">⚗</span>
+          <div><h2 id="cat-data">Data tools</h2><p>Chain operations into a recipe: encode, decode, hash, clean text, convert formats and extract data.</p></div>
+          <a class="hub-cat-link" href="/workbench">Open the workbench →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item is-wide" href="/workbench" data-k="workbench cyberchef recipe transform encode decode hex binary extract"><strong>Data Transformation Workbench</strong><span>Base64, URL, hex, binary &amp; HTML entities · MD5/SHA hashes · text clean-up · JSON/CSV/YAML/XML · extract URLs, emails, IPs and domains — chained in any order.</span></a>
+        </div>
+      </section>
+
+      <p class="hub-more">More tools are on the way — Markdown and HTML tools are next. Everything stays free.</p>
     </section>
   </main>
 
@@ -114,7 +204,11 @@
       <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
       <nav aria-label="Footer">
         <a href="/image">Image tools</a>
+        <a href="/qr">QR code</a>
         <a href="/pdf">PDF tools</a>
+        <a href="/dev">Developer tools</a>
+        <a href="/api-tools">API tools</a>
+        <a href="/workbench">Workbench</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
       </nav>
@@ -145,5 +239,6 @@
       </ul>
     </div>
   </footer>
+  <script src="/assets/js/home.js?v=20261116a" defer></script>
 </body>
 </html>

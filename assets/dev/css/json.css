@@ -1,0 +1,56 @@
+/* json tools — tool-specific styles (shared components live in dev.css) */
+
+/* JSON ⇄ CSV preview */
+.jc-preview { max-height: 420px; }
+.jc-preview td { white-space: pre-wrap; max-width: 320px; word-break: break-word; font-size: 13px; }
+.jc-preview .jc-n { color: var(--muted); font-variant-numeric: tabular-nums; width: 1%; }
+.jc-preview .jc-missing { background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.03) 6px 12px); }
+.jc-opts { align-items: center; }
+
+/* JSON Diff */
+.jd-list { display: flex; flex-direction: column; gap: 6px; }
+.jd-item { display: grid; grid-template-columns: 22px minmax(0, auto) auto; align-items: start; gap: 8px 10px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--line-2); border-radius: 10px; padding: 8px 12px; }
+.jd-item.jd-added { border-left-color: var(--add); }
+.jd-item.jd-removed { border-left-color: var(--del); }
+.jd-item.jd-changed { border-left-color: var(--chg); }
+.jd-sign { font: 800 15px/1.4 var(--mono); text-align: center; }
+.jd-added .jd-sign { color: var(--add); } .jd-removed .jd-sign { color: var(--del); } .jd-changed .jd-sign { color: var(--chg); }
+.jd-path { font: 600 13px/1.5 var(--mono); color: #fff; word-break: break-all; }
+.jd-vals { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.jd-val { font: 12.5px/1.5 var(--mono); padding: 1px 6px; border-radius: 6px; word-break: break-all; max-width: 100%; }
+.jd-arrow { color: var(--muted); }
+.jd-s-add b { color: var(--add); } .jd-s-del b { color: var(--del); } .jd-s-chg b { color: var(--chg); }
+.jd-filters { align-items: center; }
+
+/* Text Diff */
+.td-busy { display: flex; align-items: center; gap: 10px; color: var(--text-2); font-weight: 600; }
+.td-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: td-spin .8s linear infinite; }
+@keyframes td-spin { to { transform: rotate(360deg); } }
+.td-s-add b { color: var(--add); } .td-s-del b { color: var(--del); } .td-s-mod b { color: var(--chg); }
+.td-result { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.td-result:empty { display: none; }
+.td-table { font: 13px/1.55 var(--mono); min-width: 100%; }
+.td-row { display: grid; }
+.td-table.is-split .td-row { grid-template-columns: 3.2em minmax(0, 1fr) 3.2em minmax(0, 1fr); }
+.td-table.is-unified .td-row { grid-template-columns: 3.2em 3.2em 1.4em minmax(0, 1fr); }
+.td-n { color: var(--muted); text-align: right; padding: 0 8px; user-select: none; font-variant-numeric: tabular-nums; border-right: 1px solid var(--line); }
+.td-cell, .td-row > .td-text { padding: 0 10px; white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.td-sign { text-align: center; color: var(--muted); user-select: none; }
+.td-cell.is-del, .td-n.is-del, .td-row.is-del { background: var(--del-bg); }
+.td-cell.is-add, .td-n.is-add, .td-row.is-add { background: var(--add-bg); }
+.td-row.is-del .td-sign { color: var(--del); } .td-row.is-add .td-sign { color: var(--add); }
+.td-cell.is-empty { background: repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,.025) 6px 12px); }
+.td-text ins.dt-add { background: rgba(61, 220, 151, .32); color: #fff; text-decoration: none; border-radius: 2px; }
+.td-text del.dt-del { background: rgba(255, 95, 109, .32); color: #fff; text-decoration: none; border-radius: 2px; }
+.td-fold { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); color: var(--muted); font: 600 12.5px/1 var(--font); padding: 8px 12px; }
+.td-fold:hover { color: var(--accent); }
+.td-more { margin: 10px; }
+@media (max-width: 600px) {
+  .td-table.is-split .td-row { grid-template-columns: 2.4em minmax(0, 1fr) 2.4em minmax(0, 1fr); }
+  .td-table { font-size: 12px; }
+  .td-n { padding: 0 4px; }
+  .td-cell { padding: 0 5px; }
+}
+
+/* SQL formatter */
+.sq-safe { margin: 0; }

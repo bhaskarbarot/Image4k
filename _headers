@@ -20,6 +20,12 @@
 /assets/pdf/*
   Cache-Control: public, max-age=0, must-revalidate
 
+/assets/dev/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/qr/*
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Images: one week
 /assets/img/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
@@ -33,3 +39,19 @@
 
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
+
+# API tester / GraphQL / header checker talk to any HTTPS API the user enters (browser-direct),
+# plus http://localhost for local development. Replace (detach) the site-wide CSP on this page only.
+/api-tools
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob: data: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' blob: data: https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+/api-tools.html
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob: data: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' blob: data: https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+# Backend endpoints: Pages Functions set these headers themselves (Cloudflare applies _headers to static
+# files only); this rule keeps the local preview server (serve.py) consistent.
+/api/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex

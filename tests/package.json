@@ -1,0 +1,14 @@
+{
+  "name": "bhaskar-solution-tests",
+  "private": true,
+  "type": "module",
+  "description": "Test suite for the static site (repo-only, never deployed). Python decoder for QR tests: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+  "scripts": {
+    "unit": "node --test unit/**/*.test.mjs",
+    "e2e": "node --test --test-concurrency=1 e2e/**/*.e2e.mjs",
+    "test": "node --test unit/**/*.test.mjs && node --test --test-concurrency=1 e2e/**/*.e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

@@ -10,3 +10,11 @@ node_modules
 __pycache__
 PDF_TOOLS_PLAN.md
 ANTIGRAVITY_PROMPT.md
+docs
+tests
+scripts
+functions
+server
+migrations
+package.json
+package-lock.json

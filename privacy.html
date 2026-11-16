@@ -21,9 +21,18 @@
   </header>
   <main class="legal">
     <h1>Privacy Policy</h1>
-    <p>Last updated: November 14, 2026</p>
+    <p>Last updated: November 16, 2026</p>
     <h2>Your images stay on your device</h2>
     <p>Image4k processes every image entirely inside your web browser. Your images are never uploaded to our servers or any third party, and we never see, store or share them. When you close or reload the page, the images and results are gone.</p>
+    <h2>Developer, data and QR tools</h2>
+    <p>The QR code generator, the developer tools (JSON, XML, YAML, CSV, JWT, Base64, hashes, UUID, regex, SQL, cron, diff, cURL) and the data workbench run entirely in your browser. What you type or open there is not uploaded. JWT secrets and private keys never leave your device. The QR generator remembers only your style choices, never the content you encode (such as Wi-Fi passwords).</p>
+    <h2>API tools that use our server</h2>
+    <p>Two features need a server, and you choose when to use them:</p>
+    <ul>
+      <li><b>Secure proxy</b> (REST API tester, GraphQL playground, HTTP header checker) — when you select “Secure proxy”, or use the header checker, your request (URL, headers and body) is sent to our server, which forwards it to the address you entered and returns the response. It is relayed in memory and not stored or logged. Only public internet addresses can be reached. In “Direct” mode your browser contacts the API itself and nothing passes through our server.</li>
+      <li><b>Webhook tester</b> — requests that other services send to your temporary webhook URL (method, path, query, headers, up to 256 KB of body, and the sender’s IP address) are stored so you can view them. Only someone with the endpoint’s secret token (kept in your browser) can read them. Data is deleted automatically after 24 hours without activity (7 days at most), and you can delete it at any time. Do not send real passwords or personal data to a test webhook.</li>
+    </ul>
+    <p>These features run on Cloudflare Pages Functions; Cloudflare processes the requests as our hosting provider.</p>
     <h2>Metadata</h2>
     <p>Images you download from Image4k are re-encoded, which removes embedded metadata such as EXIF camera data and GPS location. (In the Compress tool, if your original file is already smaller than any result, the original file is offered unchanged and keeps its metadata.)</p>
     <h2>Third-party resources</h2>
@@ -32,7 +41,7 @@
       <li><b>AI engines</b> — the first time you use AI upscaling or the background remover, the AI engine is downloaded from cdn.jsdelivr.net (and, for the background remover, the model from huggingface.co). Only program and model files are downloaded; your images are never sent anywhere. The files are cached by your browser for later visits.</li>
     </ul>
     <h2>Local storage</h2>
-    <p>We save your tool preferences (for example your chosen format or quality) in your browser's local storage so they are remembered next time. You can clear this at any time from your browser settings.</p>
+    <p>We save your tool preferences (for example your chosen format or quality), and on the API tools a short request history with passwords and tokens removed, in your browser's local storage so they are remembered next time. You can clear this at any time from your browser settings.</p>
     <h2>Cookies and analytics</h2>
     <p>Image4k does not set cookies and does not use analytics or advertising trackers.</p>
     <h2>Children</h2>
