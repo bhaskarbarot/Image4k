@@ -1,9 +1,9 @@
 /* Image4k PDF editor — UI. Uses engine.js (PDFium) for every real PDF change. */
-import { PdfDoc } from './engine.js?v=pdf25';
-import { initPageTools, pageTools } from './pages.js?v=pdf25';
-import { initSecureTools, secureTools } from './secure.js?v=pdf25';
-import { initConvertTools, convertTools } from './convert.js?v=pdf25';
-import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf25';
+import { PdfDoc } from './engine.js?v=pdf26';
+import { initPageTools, pageTools } from './pages.js?v=pdf26';
+import { initSecureTools, secureTools } from './secure.js?v=pdf26';
+import { initConvertTools, convertTools } from './convert.js?v=pdf26';
+import { initOptimizeTools, optimizeTools } from './optimize.js?v=pdf26';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -415,6 +415,7 @@ function requiet(i, k, prevBox) {
 async function applyLive() {
   const sel = state.sel, item = selItem();
   if (!sel || !item || item.kind !== 'text') return;
+  if (/\n/.test($('#propText').value)) return;   // multi-line is applied on commit, not live
   if (_liveBusy) { _liveAgain = true; return; }
   const i = sel.page, prevBox = { ...item.box };
   const text = $('#propText').value.replace(/\r?\n/g, ' ');
@@ -470,8 +471,14 @@ function onStyleInput(immediate) {
 
 /** "Done" button: bake in the new text, or flush a live edit, then close the panel. */
 async function commitText() {
-  if (state.editing && state.editing.isNew) { await finishEdit(true); return; }
-  clearTimeout(_liveT); await applyLive(); select(null);
+  if (state.editing) { await finishEdit(true); return; }
+  clearTimeout(_liveT);
+  const item = selItem();
+  if (item && item.kind === 'text') {
+    const raw = $('#propText').value.replace(/\r/g, '');
+    if (/\n/.test(raw)) { await writeMultiline(state.sel.page, item, raw.split('\n')); select(null); return; }  // Shift+Enter line breaks from the panel
+  }
+  await applyLive(); select(null);
 }
 
 // =====================================================================
@@ -543,7 +550,7 @@ function startNewText(i, vx, vy, opts = {}) {
 }
 
 function onEditKey(e) {
-  if (e.key === 'Enter') { e.preventDefault(); finishEdit(true); }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finishEdit(true); }   // Enter finishes; Shift+Enter makes a new line
   else if (e.key === 'Escape') { e.preventDefault(); finishEdit(false); }
   e.stopPropagation();
 }
@@ -552,22 +559,28 @@ async function finishEdit(commit) {
   const ed = state.editing;
   if (!ed || ed.closing) return;
   ed.closing = true;
-  let text = ed.el.textContent.replace(/\r?\n/g, ' ');
-  if (ed.isNew && !text.trim()) text = ($('#propText').value || '').replace(/\r?\n/g, ' ');   // allow content typed in the panel
+  let raw = ed.el.textContent.replace(/\r/g, '');
+  if (ed.isNew && !raw.trim()) raw = ($('#propText').value || '').replace(/\r/g, '');   // allow content typed in the panel
+  const lines = raw.split('\n');
+  const text = raw.replace(/\n/g, ' ');
   ed.el.remove();
   state.editing = null;
   if (ed.isNew) {
-    if (commit && text.trim()) {
+    if (commit && raw.trim()) {
       const baseline = ed.vy + ed.size * 0.95;
-      await mutate(ed.i, () => state.doc.addText(ed.i, ed.vx, baseline, text, { size: ed.size, color: ed.color, family: ed.family, bold: ed.bold, italic: ed.italic }), 'Add text');
+      const opts = { size: ed.size, color: ed.color, family: ed.family, bold: ed.bold, italic: ed.italic };
+      await mutate(ed.i, () => addStacked(ed.i, ed.vx, baseline, lines, opts), 'Add text');
       selectLastText(ed.i);     // keep the new text selected so it stays movable/resizable & stylable
     } else { rerender(ed.i); select(null); }
     return;
   }
   state.doc.setHidden(ed.item.objs, false, ed.colors);
   if (commit && text !== ed.item.text) {
-    if (!text.trim()) {
+    if (!raw.trim()) {
       await mutate(ed.i, () => state.doc.remove(ed.i, ed.item.objs), 'Delete text');
+      select(null);
+    } else if (lines.length > 1) {
+      await writeMultiline(ed.i, ed.item, lines);                 // Shift+Enter added line breaks
       select(null);
     } else {
       const r = await mutate(ed.i, () => state.doc.editText(ed.i, ed.item, text), 'Edit text');
@@ -577,6 +590,22 @@ async function finishEdit(commit) {
   } else {
     renderCanvas(ed.i);
   }
+}
+
+/** Add one text line per entry, stacked downward from the baseline. */
+async function addStacked(i, vx, baseline, lines, opts) {
+  const lh = (opts.size || 14) * 1.3;
+  for (let k = 0; k < lines.length; k++) if (lines[k].trim() !== '') await state.doc.addText(i, vx, baseline + k * lh, lines[k], opts);
+}
+
+/** Replace an existing text line with several stacked lines (first keeps its font, the rest use its size/colour). */
+async function writeMultiline(i, item, lines) {
+  const opts = { size: item.size, color: item.color, family: (item.font && item.font.mono) ? 'Mono' : (item.font && item.font.serif) ? 'Serif' : 'Sans', bold: !!(item.font && item.font.bold), italic: !!(item.font && item.font.italic) };
+  const baseline = item.box.y + item.size * 0.95, lh = item.size * 1.3;
+  await mutate(i, async () => {
+    await state.doc.editText(i, item, lines[0] || ' ');
+    for (let k = 1; k < lines.length; k++) if (lines[k].trim() !== '') await state.doc.addText(i, item.box.x, baseline + k * lh, lines[k], opts);
+  }, 'Edit text');
 }
 
 // =====================================================================
@@ -750,9 +779,9 @@ function startAnno(i, sx, sy, pageEl, kind) {
     svg.remove();
     const x1 = sx, y1 = sy, x2 = cur.x, y2 = cur.y;
     const minx = Math.min(x1, x2), maxx = Math.max(x1, x2), miny = Math.min(y1, y2), maxy = Math.max(y1, y2), w = maxx - minx, h = maxy - miny;
-    if (kind === 'draw') { if (pts.length >= 2) await mutate(i, () => state.doc.addPath(i, pts, color, width), 'Draw'); }
-    else if (kind === 'line') { if (Math.hypot(x2 - x1, y2 - y1) >= 3) await mutate(i, () => state.doc.addLine(i, { x1, y1, x2, y2 }, color, width), 'Line'); }
-    else if (kind === 'rect') { if (w >= 3 && h >= 3) await mutate(i, () => state.doc.addRectOutline(i, { x: minx, y: miny, w, h }, color, width), 'Rectangle'); }
+    if (kind === 'draw') { if (pts.length >= 2) { await mutate(i, () => state.doc.addPath(i, pts, color, width), 'Draw'); afterAnno(i); } }
+    else if (kind === 'line') { if (Math.hypot(x2 - x1, y2 - y1) >= 3) { await mutate(i, () => state.doc.addLine(i, { x1, y1, x2, y2 }, color, width), 'Line'); afterAnno(i); } }
+    else if (kind === 'rect') { if (w >= 3 && h >= 3) { await mutate(i, () => state.doc.addRectOutline(i, { x: minx, y: miny, w, h }, color, width), 'Rectangle'); afterAnno(i); } }
     else if (kind === 'underline') { if (w >= 3) { const t = Math.max(1.5, width); await mutate(i, () => state.doc.addRect(i, { x: minx, y: maxy - t, w, h: t }, color), 'Underline'); } }
     else if (kind === 'strike') { if (w >= 3) { const t = Math.max(1.5, width), my = (miny + maxy) / 2; await mutate(i, () => state.doc.addRect(i, { x: minx, y: my - t / 2, w, h: t }, color), 'Strikethrough'); } }
   };
@@ -1021,6 +1050,13 @@ function selectLastText(i) {
   const items = state.pages[i].items;
   for (let k = items.length - 1; k >= 0; k--) if (items[k].kind === 'text') { select({ page: i, k }); return; }
 }
+function selectLastShape(i) {
+  const items = state.pages[i].items; let best = -1, bk = -1;
+  items.forEach((it, k) => { if (it.kind === 'shape' && it.index > best) { best = it.index; bk = k; } });
+  if (bk >= 0) select({ page: i, k: bk });
+}
+/** After drawing a line/box/pen stroke, switch to the select tool and select it so it can be moved right away. */
+function afterAnno(i) { setTool('edit'); selectLastShape(i); }
 
 async function replaceSelectedImage(file) {
   const item = selItem();
@@ -1260,10 +1296,9 @@ function bind() {
   $('#propSize').addEventListener('input', () => onStyleInput(false));
   $('#propColor').addEventListener('input', () => onStyleInput(false));
   $('#propText').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); commitText(); }   // Enter / Shift+Enter commit — never a new line (PDF text is single-line)
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitText(); }   // Enter finishes; Shift+Enter makes a new line
   });
-  $('#propText').addEventListener('input', (e) => {
-    if (/[\r\n]/.test(e.target.value)) { const p = e.target.selectionStart; e.target.value = e.target.value.replace(/[\r\n]+/g, ' '); e.target.setSelectionRange(p, p); }  // strip pasted newlines
+  $('#propText').addEventListener('input', () => {
     if (state.editing && state.editing.isNew) styleNewTextLive(); else queueLive(320);
   });
   $('#propEyedrop').addEventListener('click', () => {
