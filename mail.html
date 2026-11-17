@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
   <link rel="stylesheet" href="/assets/dev/dev.css?v=dev1">
-  <link rel="stylesheet" href="/assets/mail/mail.css?v=mail1">
+  <link rel="stylesheet" href="/assets/mail/mail.css?v=mail2">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Temp Mail","url":"https://image4k.org/mail","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free disposable temporary email address that receives real messages and OTP codes."}</script>
 </head>
 <body>
@@ -50,6 +50,10 @@
     </section>
 
     <section class="wrap mail-wrap" id="mailApp" hidden>
+      <div class="mail-demo-banner" id="mailDemoBanner" hidden>
+        <span class="mail-demo-badge">DEMO</span>
+        <span>You're trying the demo — these are sample emails generated in your browser. To receive <b>real</b> email &amp; OTP codes, the owner enables it in a few minutes (see below).</span>
+      </div>
       <!-- address bar -->
       <div class="mail-addrbar">
         <span class="mail-addr-label">Your temporary address</span>
@@ -127,6 +131,8 @@
       <div class="dt-msg is-info" style="max-width:720px;margin:0 auto">
         <strong>Temp mail isn't switched on for this website yet.</strong>
         <div class="dt-msg-detail" id="mailOffDetail">Receiving real email needs a verified email domain and a database. The site owner can enable it by following <code>docs/DEPLOYMENT.md</code> → “Temp-mail”. Every other tool works normally.</div>
+        <button class="btn btn-primary" type="button" id="demoBtn" style="margin-top:14px">▶ Try the demo (no setup)</button>
+        <div class="dt-msg-detail" style="margin-top:8px;opacity:.85">The demo shows exactly how real mail will look and behave — sample Groq, OpenAI and GitHub codes arrive live in your browser.</div>
       </div>
     </section>
 
@@ -147,6 +153,6 @@
     </div>
   </footer>
 
-  <script type="module" src="/assets/mail/mail.js?v=mail1"></script>
+  <script type="module" src="/assets/mail/mail.js?v=mail2"></script>
 </body>
 </html>

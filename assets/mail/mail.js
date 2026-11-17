@@ -31,12 +31,49 @@ const fmtTime = (ms) => {
   return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
+/* ---------- demo mode (no backend) ----------
+ * Lets anyone try the full experience in their browser when the real inbox isn't switched on yet.
+ * Sample emails are clearly labelled as a demo; nothing is sent or received over the network. */
+let demo = false;
+const demoFull = new Map();
+const DEMO_SAMPLES = [
+  { delay: 1500, from: 'login@stytch.com', fromName: 'Groq', subject: 'Your Groq login code', otp: '628413',
+    text: 'Your Groq login code is 628413.\n\nEnter this code to finish signing in. It expires in 10 minutes.\nIf you didn’t request this, you can ignore this email.' },
+  { delay: 4000, from: 'noreply@tm.openai.com', fromName: 'OpenAI', subject: 'Your OpenAI verification code', otp: '915042',
+    text: 'Your OpenAI verification code is: 915042\n\nThis code expires in 15 minutes. Don’t share it with anyone.' },
+  { delay: 7000, from: 'noreply@github.com', fromName: 'GitHub', subject: '[GitHub] Please verify your device', otp: '839201',
+    text: 'Hey! A sign-in attempt needs verification. Your authentication code is 839201.\nIf this wasn’t you, change your password right away.' },
+];
+function startDemo() {
+  demo = true;
+  state = { id: 'demo', token: 'demo', address: 'you' + Math.floor(Math.random() * 9000 + 1000) + '@demo-inbox.test', expiresAt: Date.now() + 15 * 60000, domains: ['demo-inbox.test'] };
+  messages = []; lastId = 0; openId = null; demoFull.clear();
+  $('#mailOff').hidden = true;
+  $('#mailApp').hidden = false;
+  document.getElementById('mailDemoBanner')?.removeAttribute('hidden');
+  renderAddress(); renderList(); showView(null);
+  bind();
+  startCountdown();
+  for (const s of DEMO_SAMPLES) setTimeout(() => addDemoMessage(s), s.delay);
+}
+function addDemoMessage(s) {
+  if (!demo) return;
+  const id = ++lastId;
+  const full = { id, receivedAt: Date.now(), from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, text: s.text, attachments: [], seen: false };
+  demoFull.set(id, full);
+  messages.unshift({ id, receivedAt: full.receivedAt, from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, hasHtml: false, seen: false, size: s.text.length, preview: s.text.slice(0, 140) });
+  renderList();
+  toast(`New email · code ${s.otp} from ${s.fromName}`, 'ok', 4000);
+}
+
 /* ---------- boot ---------- */
 async function boot() {
   const { data } = await api('/config', { auth: false });
   if (!data.configured) {
     $('#mailApp').hidden = true; $('#mailOff').hidden = false;
     if (!data.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). The site owner can enable it from docs/DEPLOYMENT.md → “Temp-mail”. Every other tool works normally.';
+    const dbtn = $('#demoBtn'); if (dbtn) dbtn.addEventListener('click', startDemo);
+    window.__mail = { get state() { return state; }, get messages() { return messages; }, startDemo };
     return;
   }
   state.domains = data.domains || [];
@@ -150,11 +187,18 @@ function renderList() {
 async function openMessage(id) {
   openId = id;
   renderList();
-  const { res, data } = await api(`/inboxes/${state.id}/messages/${id}`);
-  if (!res.ok) { toast(data.error || 'Could not open the message.', 'err'); return; }
-  const m = data.message;
+  let m;
+  if (demo) {
+    m = demoFull.get(id);
+    if (!m) return;
+  } else {
+    const { res, data } = await api(`/inboxes/${state.id}/messages/${id}`);
+    if (!res.ok) { toast(data.error || 'Could not open the message.', 'err'); return; }
+    m = data.message;
+  }
   // mark seen locally
   const sum = messages.find((x) => x.id === id); if (sum) sum.seen = true;
+  if (demo && demoFull.get(id)) demoFull.get(id).seen = true;
   renderList();
   $('#mailViewEmpty').hidden = true;
   $('#mailMessage').hidden = false;
@@ -180,13 +224,20 @@ function showView(id) {
 
 /* ---------- actions ---------- */
 function bind() {
+  if (bind._bound) return; // demo re-enters bind(); wire listeners only once
+  bind._bound = true;
   $('#copyAddr').addEventListener('click', (e) => state.address && copyText(state.address, e.currentTarget));
-  $('#newAddr').addEventListener('click', async () => { if (confirm('Get a new address? The current inbox and its messages will be dropped.')) await createInbox(); });
-  $('#refreshBtn').addEventListener('click', () => refresh());
+  $('#newAddr').addEventListener('click', async () => {
+    if (!confirm('Get a new address? The current inbox and its messages will be dropped.')) return;
+    if (demo) { for (const s of DEMO_SAMPLES) setTimeout(() => addDemoMessage(s), s.delay); messages = []; lastId = 0; demoFull.clear(); state.address = 'you' + Math.floor(Math.random() * 9000 + 1000) + '@demo-inbox.test'; renderAddress(); renderList(); showView(null); }
+    else await createInbox();
+  });
+  $('#refreshBtn').addEventListener('click', () => { if (!demo) refresh(); });
   $('#copyOtp').addEventListener('click', (e) => copyText($('#mailOtpCode').textContent, e.currentTarget));
   $('#msgBack').addEventListener('click', () => showView(null));
   $('#msgDelete').addEventListener('click', async () => {
     if (openId == null) return;
+    if (demo) { demoFull.delete(openId); messages = messages.filter((m) => m.id !== openId); showView(null); renderList(); toast('Message deleted'); return; }
     const { res } = await api(`/inboxes/${state.id}/messages/${openId}`, { method: 'DELETE' });
     if (res.ok) { messages = messages.filter((m) => m.id !== openId); showView(null); renderList(); toast('Message deleted'); }
   });
@@ -196,8 +247,9 @@ function bind() {
   $('#customCancel').addEventListener('click', () => { form.hidden = true; });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const v = $('#customLocal').value.trim();
+    const v = $('#customLocal').value.trim().toLowerCase();
     if (!v) return;
+    if (demo) { state.address = v + '@demo-inbox.test'; renderAddress(); form.hidden = true; return; }
     if (await createInbox(v)) form.hidden = true;
   });
   // pause fast polling when the tab is hidden (save battery + D1 budget)
