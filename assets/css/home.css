@@ -49,6 +49,7 @@
 .hub-ico.is-dev { background: rgba(121, 192, 255, .14); color: #79c0ff; font-size: 18px; font-family: ui-monospace, Menlo, Consolas, monospace; }
 .hub-ico.is-api { background: rgba(61, 220, 151, .13); color: #3ddc97; }
 .hub-ico.is-data { background: rgba(255, 181, 71, .14); color: #ffb547; }
+.hub-ico.is-email { background: rgba(244, 63, 245, .14); color: var(--accent); }
 
 .hub-list { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .hub-item {

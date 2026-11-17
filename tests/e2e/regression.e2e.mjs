@@ -9,7 +9,7 @@ let srv, b;
 before(async () => { srv = await startServer(8881); b = await launch(); });
 after(async () => { await b?.browser.close(); srv?.stop(); });
 
-const PAGES = ['/', '/image', '/qr', '/pdf', '/ocr', '/watermark', '/dev', '/api-tools', '/workbench', '/privacy', '/terms'];
+const PAGES = ['/', '/image', '/qr', '/mail', '/pdf', '/ocr', '/watermark', '/dev', '/api-tools', '/workbench', '/privacy', '/terms'];
 
 test('every page loads (200) without console errors and fits 390px', async () => {
   for (const p of PAGES) {
@@ -18,7 +18,11 @@ test('every page loads (200) without console errors and fits 390px', async () =>
       const res = await page.goto(srv.url + p);
       assert.equal(res.status(), 200, p);
       await page.waitForLoadState('networkidle');
-      assert.deepEqual(page.errors, [], `${p} @${width}`);
+      // serve.py (static test server) can't run Pages Functions, so pages that probe a backend on load
+      // (temp-mail asks /api/mail/config) log one expected 404 here; production serves that function (200).
+      const backendProbe = /Failed to load resource.*404/;
+      const real = page.errors.filter((e) => !(p === '/mail' && backendProbe.test(e)));
+      assert.deepEqual(real, [], `${p} @${width}`);
       if (width === 390) assert.equal(await noHorizontalScroll(page), true, `${p} horizontal scroll at 390px`);
       await page.close();
     }
@@ -43,7 +47,7 @@ test('all internal links on the hub and tool pages resolve', async () => {
 test('hub: category tabs filter, search spans categories, deep link #api', async () => {
   const page = await newPage(b.context);
   await page.goto(srv.url + '/');
-  assert.equal(await page.locator('.hub-item').count(), 45);
+  assert.equal(await page.locator('.hub-item').count(), 46);
   await page.click('[data-tab=dev]');
   assert.deepEqual(await page.locator('.hub-cat:not([hidden])').evaluateAll((e) => e.map((x) => x.dataset.cat)), ['dev']);
   assert.equal(await page.locator('.hub-cat[data-cat=dev] .hub-item:not([hidden])').count(), 17);

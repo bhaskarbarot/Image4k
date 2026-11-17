@@ -21,3 +21,6 @@ node_modules/
 
 # Python virtualenv for tests
 .venv/
+
+# Unrelated tool dropped in the working dir — never commit or publish
+DEMON-PDF-Crack-main/

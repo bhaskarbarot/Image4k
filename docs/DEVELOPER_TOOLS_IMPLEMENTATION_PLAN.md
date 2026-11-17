@@ -76,6 +76,17 @@ zero console errors). Test files are named after the tool group.
 | 28 | QR Code Generator | /qr (+ tab on /image) | browser; exports re-decoded by zxing-cpp in tests | VERIFIED | unit/qr-payload · e2e/qr |
 | – | Hub tabs + search, regressions | / , all pages | — | VERIFIED | e2e/regression (all 11 pages, links, image tool still processes) |
 
+### Temp Mail (added 2026-11-17)
+Self-hosted disposable inbox that receives REAL e-mail + OTP codes. Architecture: Cloudflare Email Routing →
+standalone Email Worker (`email-worker/`) parses the raw MIME and writes to D1 → Pages Functions `/api/mail/*`
+serve it → `/mail` page polls (7 s) and shows the auto-detected verification code. Pure MIME parser +
+OTP extractor in `server/mime.js`; inbox/auth/storage in `server/mail-core.js`. Addresses auto-expire
+(1 h idle / 24 h max); inbox readable only with a per-inbox token (SHA-256 stored). Page renders message text
+only (HTML converted to text server-side) → no HTML-injection surface. Needs a live domain + Email Routing +
+`MAIL_DB`/`MAIL_DOMAIN` bindings to go live (docs/DEPLOYMENT.md); shows "not switched on yet" until then.
+Tests: unit/mime (18), unit/mailcore (3), unit/mailworker (3); e2e/mail (8, real delivery via wrangler + D1).
+Parser verified against real Groq/Stytch, OpenAI, GitHub, Google, Microsoft, Discord, Amazon formats (7/7).
+
 ### Test results (executed 2026-11-16)
 - Unit: `node --test unit/*.test.mjs` → **530 tests, 526 pass, 0 fail, 4 skipped** (PHP ×2, Ruby, Go toolchains not installed).
 - E2E: 8 suites, **59 tests, 59 pass, 0 fail** (api-tools suite also run 3× in a row: 9/9 each time).

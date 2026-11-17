@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Temp Mail – Free Disposable Email Address with Real OTP Inbox | Bhaskar Solution</title>
+  <meta name="description" content="Get a free temporary email address that receives real messages and OTP codes instantly — no sign-up. Protect your real inbox from spam. Addresses auto-expire. Private and disposable.">
+  <link rel="canonical" href="https://image4k.org/mail">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Bhaskar Solution">
+  <meta property="og:url" content="https://image4k.org/mail">
+  <meta property="og:title" content="Temp Mail – free disposable email with real OTP inbox">
+  <meta property="og:description" content="A throwaway email address that actually receives messages and verification codes. No sign-up, auto-expires.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/dev/dev.css?v=dev1">
+  <link rel="stylesheet" href="/assets/mail/mail.css?v=mail1">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Temp Mail","url":"https://image4k.org/mail","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free disposable temporary email address that receives real messages and OTP codes."}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Bhaskar Solution home"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/image">Image</a></li>
+        <li><a href="/qr">QR code</a></li>
+        <li><a href="/mail" class="is-active" aria-current="page">Temp mail</a></li>
+        <li><a href="/pdf">PDF</a></li>
+        <li><a href="/dev">Developer</a></li>
+        <li><a href="/api-tools">API</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>Temp <span class="grad">Mail</span></h1>
+      <p class="lead">A free, disposable email address that really receives messages and OTP codes — no sign-up. Use it instead of your real address to avoid spam. It disappears on its own.</p>
+    </section>
+
+    <section class="wrap mail-wrap" id="mailApp" hidden>
+      <!-- address bar -->
+      <div class="mail-addrbar">
+        <span class="mail-addr-label">Your temporary address</span>
+        <div class="mail-addr-row">
+          <output class="mail-addr" id="mailAddr" aria-live="polite">…</output>
+          <button class="btn btn-primary btn-sm" type="button" id="copyAddr">Copy</button>
+        </div>
+        <div class="mail-addr-actions">
+          <button class="dt-mini" type="button" id="newAddr" title="Get a fresh random address">↻ New address</button>
+          <button class="dt-mini" type="button" id="editAddr" title="Choose your own name">✎ Custom name</button>
+          <span class="mail-expiry" id="mailExpiry"></span>
+        </div>
+        <form class="mail-custom" id="customForm" hidden>
+          <input class="dt-input" id="customLocal" placeholder="your-name" autocomplete="off" spellcheck="false" aria-label="Custom address name" maxlength="30">
+          <span class="mail-at" id="customDomain">@…</span>
+          <button class="btn btn-primary btn-sm" type="submit">Create</button>
+          <button class="dt-mini" type="button" id="customCancel">Cancel</button>
+        </form>
+      </div>
+
+      <div class="mail-grid">
+        <!-- inbox list -->
+        <div class="mail-inbox">
+          <div class="mail-inbox-head">
+            <h2>Inbox <span class="mail-count" id="mailCount">0</span></h2>
+            <div class="mail-inbox-actions">
+              <span class="mail-status" id="mailStatus" aria-live="polite"></span>
+              <button class="dt-mini" type="button" id="refreshBtn" title="Check now">Refresh</button>
+            </div>
+          </div>
+          <ul class="mail-list" id="mailList" aria-live="polite"></ul>
+          <div class="mail-empty" id="mailEmpty">
+            <div class="mail-empty-ic" aria-hidden="true">✉️</div>
+            <p><b>Waiting for messages…</b></p>
+            <p class="dt-note">Send an email to the address above, or paste it into any sign-up form. New mail appears here automatically, usually within a few seconds.</p>
+          </div>
+        </div>
+
+        <!-- message view -->
+        <div class="mail-view" id="mailView">
+          <div class="mail-view-empty" id="mailViewEmpty">
+            <p class="dt-note">Select a message to read it. Verification codes are detected and shown at the top so you can copy them in one tap.</p>
+          </div>
+          <article class="mail-message" id="mailMessage" hidden>
+            <div class="mail-msg-head">
+              <button class="dt-mini mail-back" type="button" id="msgBack">← Inbox</button>
+              <div class="mail-msg-actions">
+                <button class="dt-mini" type="button" id="msgDelete">Delete</button>
+              </div>
+            </div>
+            <div class="mail-otp" id="mailOtp" hidden>
+              <span class="mail-otp-label">Verification code</span>
+              <span class="mail-otp-code" id="mailOtpCode"></span>
+              <button class="btn btn-primary btn-sm" type="button" id="copyOtp">Copy code</button>
+            </div>
+            <h3 class="mail-subject" id="msgSubject"></h3>
+            <div class="mail-meta">
+              <span id="msgFrom"></span>
+              <span id="msgTime"></span>
+            </div>
+            <div class="mail-attachments" id="msgAttachments" hidden></div>
+            <pre class="mail-body" id="msgBody"></pre>
+          </article>
+        </div>
+      </div>
+
+      <p class="dt-privacy" style="margin-top:20px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        Only you can read this inbox — it's protected by a secret key kept in your browser, not by the address alone. Messages and the address are deleted automatically when it expires. Don't use temp mail for anything important: it's disposable and can't be recovered.
+      </p>
+    </section>
+
+    <!-- not-configured state -->
+    <section class="wrap" id="mailOff" hidden>
+      <div class="dt-msg is-info" style="max-width:720px;margin:0 auto">
+        <strong>Temp mail isn't switched on for this website yet.</strong>
+        <div class="dt-msg-detail" id="mailOffDetail">Receiving real email needs a verified email domain and a database. The site owner can enable it by following <code>docs/DEPLOYMENT.md</code> → “Temp-mail”. Every other tool works normally.</div>
+      </div>
+    </section>
+
+    <section class="wrap mail-faq">
+      <h2>How temp mail works</h2>
+      <details open><summary>Does it really receive email and OTP codes?</summary><p>Yes. The address is a real mailbox on our server. Any email sent to it — including sign-up confirmations and one-time passwords — arrives here within a few seconds, and we automatically highlight the verification code.</p></details>
+      <details><summary>Is it private?</summary><p>The inbox can only be read with a secret key stored in your browser, not by anyone who merely knows the address. Everything auto-deletes when the address expires (about an hour of inactivity, 24 hours maximum). Don't send anything sensitive or important — it's disposable by design.</p></details>
+      <details><summary>Can I keep the same address?</summary><p>Your address stays in this browser until it expires or you pick a new one. Reopening this page keeps the same inbox. You can also choose a custom name.</p></details>
+      <details><summary>Why shouldn't I use it for real accounts?</summary><p>Because it's temporary: once it expires you lose access, and you could never recover a real account tied to it. Use it for throwaway sign-ups, testing and avoiding spam.</p></details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/qr">QR code</a><a href="/mail">Temp mail</a><a href="/pdf">PDF tools</a><a href="/dev">Developer tools</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Bhaskar Solution</span>
+    </div>
+  </footer>
+
+  <script type="module" src="/assets/mail/mail.js?v=mail1"></script>
+</body>
+</html>

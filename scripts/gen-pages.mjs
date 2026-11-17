@@ -10,7 +10,7 @@ const V = process.env.DEV_V || 'dev1';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export const NAV = [
-  ['/', 'Home'], ['/image', 'Image'], ['/qr', 'QR code'], ['/pdf', 'PDF'],
+  ['/', 'Home'], ['/image', 'Image'], ['/qr', 'QR code'], ['/mail', 'Temp mail'], ['/pdf', 'PDF'],
   ['/dev', 'Developer'], ['/api-tools', 'API'], ['/workbench', 'Workbench'],
 ];
 
@@ -43,7 +43,7 @@ ${NAV.map(([href, label]) => `        <li><a href="${href}"${href === active ? '
 const footer = `  <footer class="site-footer">
     <div class="wrap foot">
       <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
-      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/pdf">PDF tools</a><a href="/dev">Developer tools</a><a href="/api-tools">API tools</a><a href="/workbench">Workbench</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/mail">Temp mail</a><a href="/pdf">PDF tools</a><a href="/dev">Developer tools</a><a href="/api-tools">API tools</a><a href="/workbench">Workbench</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
       <span>© 2026 Bhaskar Solution</span>
     </div>
   </footer>`;

@@ -11,6 +11,8 @@ no build-setting changes needed):
 | `POST /api/proxy` | “Secure proxy” for REST tester / GraphQL / HTTP header checker (APIs without CORS, full response headers) | none | **yes** |
 | `POST /api/hooks` · `GET/DELETE /api/hooks/:id/requests` · `DELETE /api/hooks/:id` | create / read / delete temporary webhook endpoints | D1 | needs D1 binding (below) |
 | `ANY /api/hook/:id[/…]` | the public webhook URL that records requests | D1 | needs D1 binding |
+| `GET/POST/DELETE /api/mail/*` | temp-mail: create inbox, poll messages, read/delete | D1 | needs D1 + a mail domain |
+| Email Worker (`email-worker/`) | receives inbound mail → D1 (deployed separately) | D1 | needs Email Routing |
 
 Shared server code lives in `server/` (SSRF guard, limits, proxy and webhook logic). `functions/`, `server/`,
 `migrations/`, `docs/`, `tests/` and `scripts/` are listed in `.assetsignore`, so they are never published as static files.
@@ -37,6 +39,38 @@ npx wrangler d1 execute bhaskar-webhooks --remote --file=migrations/0001_webhook
 npx wrangler d1 execute bhaskar-webhooks --remote --file=migrations/0001_webhooks.down.sql
 ```
 
+## One-time setup: enable Temp Mail (receives real email + OTP codes)
+
+Temp Mail needs three things: a **domain you control on Cloudflare**, **Cloudflare Email Routing** (to accept
+inbound mail) pointed at a small **Email Worker** (`email-worker/`), and a **D1 database** shared by the Worker
+and the website. Until this is done, `/mail` shows *"not switched on for this website yet"*; everything else works.
+
+You cannot receive email on a `*.pages.dev` subdomain — you must use a real domain (e.g. `image4k.org`).
+
+1. **Add your domain to Cloudflare** (Websites → Add a site) and point its nameservers to Cloudflare so DNS is
+   managed there. A subdomain is nice for mail, e.g. use `mail.image4k.org` as the address domain.
+2. **Create the D1 database:** Storage & Databases → D1 → Create → e.g. `bhaskar-tempmail` (free plan is fine).
+3. **Deploy the Email Worker** (it receives the mail and writes it to D1):
+   ```bash
+   cd email-worker
+   # edit wrangler.toml → uncomment the [[d1_databases]] block and paste the database_id from step 2
+   npx wrangler deploy
+   ```
+4. **Turn on Email Routing:** your domain → Email → Email Routing → enable (Cloudflare adds the MX + SPF records
+   automatically). Then **Routes → Catch-all address → Action: Send to a Worker → `tempmail-receiver`** (and Save).
+   Verify a destination address if Cloudflare asks. (A catch-all is what lets `anything@mail.image4k.org` work.)
+5. **Bind the same D1 + the domain to the Pages site:** Workers & Pages → image4k → Settings → Bindings →
+   - **D1 database** → variable name **`MAIL_DB`** → `bhaskar-tempmail` (add for **Production** and **Preview**).
+   - **Environment variable** → **`MAIL_DOMAIN`** → the address domain, e.g. `mail.image4k.org`
+     (comma-separate several). Do **not** set `ALLOW_TEST_INGEST` in production — it must stay unset.
+6. **Redeploy** the Pages project (Deployments → Retry) so the new bindings apply.
+7. **Test for real:** open `/mail`, copy the address, and from any other email account send it a message — it
+   appears within a few seconds. Then try a real signup (Groq, OpenAI, GitHub…): the verification code shows at
+   the top of the message. `wrangler d1 execute bhaskar-tempmail --remote --command "SELECT COUNT(*) FROM mail_messages"`
+   confirms storage.
+
+The D1 tables are created automatically on first use; `migrations/0002_tempmail.sql` is the explicit version.
+
 ## Limits (edit in `server/`)
 
 | Feature | Limit | Where |
@@ -47,6 +81,8 @@ npx wrangler d1 execute bhaskar-webhooks --remote --file=migrations/0001_webhook
 | Proxy redirects | 5, each hop re-validated | same |
 | Proxy rate | 60 requests / minute / IP (best effort, per isolate) | same |
 | Proxy ports | 80, 443, 8080, 8443, 8000, 8008, 8888, 3000, 4000, 5000, 9000 | `server/ssrf.js` `ALLOWED_PORTS` |
+| Temp-mail address | 1 h idle, 24 h max; 50 messages kept; 40 addresses/hour per IP | `server/mail-core.js` `MAIL_LIMITS` |
+| Temp-mail e-mail | ignored above 2 MB; 128 KB of text/html kept per body | same |
 | Webhook body | > 1 MB rejected with 413 (not stored); first 256 KB stored | `server/hooks-core.js` `HOOK_LIMITS` |
 | Webhook storage | newest 100 requests per endpoint | same |
 | Webhook burst | 30 requests / 10 s per endpoint (429) | same |

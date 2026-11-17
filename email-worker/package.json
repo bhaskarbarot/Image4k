@@ -1,0 +1,6 @@
+{
+  "name": "tempmail-receiver",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Email Worker that receives temp-mail into D1 (deploy separately from the Pages site)."
+}

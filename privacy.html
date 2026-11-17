@@ -21,7 +21,7 @@
   </header>
   <main class="legal">
     <h1>Privacy Policy</h1>
-    <p>Last updated: November 16, 2026</p>
+    <p>Last updated: November 17, 2026</p>
     <h2>Your images stay on your device</h2>
     <p>Image4k processes every image entirely inside your web browser. Your images are never uploaded to our servers or any third party, and we never see, store or share them. When you close or reload the page, the images and results are gone.</p>
     <h2>Developer, data and QR tools</h2>
@@ -31,8 +31,9 @@
     <ul>
       <li><b>Secure proxy</b> (REST API tester, GraphQL playground, HTTP header checker) — when you select “Secure proxy”, or use the header checker, your request (URL, headers and body) is sent to our server, which forwards it to the address you entered and returns the response. It is relayed in memory and not stored or logged. Only public internet addresses can be reached. In “Direct” mode your browser contacts the API itself and nothing passes through our server.</li>
       <li><b>Webhook tester</b> — requests that other services send to your temporary webhook URL (method, path, query, headers, up to 256 KB of body, and the sender’s IP address) are stored so you can view them. Only someone with the endpoint’s secret token (kept in your browser) can read them. Data is deleted automatically after 24 hours without activity (7 days at most), and you can delete it at any time. Do not send real passwords or personal data to a test webhook.</li>
+      <li><b>Temp mail (disposable inbox)</b> — when you open the temp-mail tool you get a throwaway email address on our domain. Any email sent to it is received by our mail server and stored so you can read it: the sender, subject, message text and the time, plus the names and sizes of attachments (attachment contents are not kept). The inbox can only be read with a secret key stored in your browser. Everything is deleted automatically after the address expires (about an hour of inactivity, 24 hours at most), and you can delete it sooner. Please don't send sensitive or important mail to a temporary address. Don't use it for accounts you need to keep.</li>
     </ul>
-    <p>These features run on Cloudflare Pages Functions; Cloudflare processes the requests as our hosting provider.</p>
+    <p>These features run on Cloudflare Pages Functions and a Cloudflare Email Worker; Cloudflare processes the requests and inbound email as our hosting provider.</p>
     <h2>Metadata</h2>
     <p>Images you download from Image4k are re-encoded, which removes embedded metadata such as EXIF camera data and GPS location. (In the Compress tool, if your original file is already smaller than any result, the original file is offered unchanged and keeps its metadata.)</p>
     <h2>Third-party resources</h2>

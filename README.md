@@ -16,6 +16,7 @@ The only server-side parts are two small Cloudflare Pages Functions — the API 
 | `/dev` | JSON formatter · JSON→TypeScript · JSON diff · YAML⇄JSON · JSON⇄CSV · XML formatter · JWT decoder · JWT generator · Base64 · URL encode/decode · hash generator · UUID v4/v7 · regex tester · SQL formatter · cron generator · text diff · cURL→code |
 | `/api-tools` | REST API tester · GraphQL playground · webhook tester · HTTP header checker · cURL generator · OpenAPI/Swagger viewer · response formatter · mock API generator · HTTP status codes |
 | `/workbench` | CyberChef-inspired recipe workbench (46 chained operations) |
+| `/mail` | **Temp Mail** — disposable inbox that receives real email & OTP codes (Cloudflare Email Routing + Email Worker + D1) |
 | `/qr` | QR code generator (URL, text, email, phone, SMS, WhatsApp, Wi-Fi, vCard) with styles, logo, PNG/SVG export and scan verification |
 
 Architecture: `assets/dev/registry.js` lists every tool; `assets/dev/shell.js` renders the sidebar/search and
