@@ -67,14 +67,16 @@
 .mail-demo-badge { flex: none; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 2px 8px; }
 
 /* ============ Brighter, animated temp-mail look (scoped to the mail page) ============ */
-body.mail-page { background: #0d0a14; }
+body.mail-page { background: #171226; }
 body.mail-page::before {
   content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
   background:
-    radial-gradient(55% 45% at 18% 8%, rgba(244, 63, 245, .20), transparent 60%),
-    radial-gradient(50% 45% at 88% 14%, rgba(139, 61, 255, .22), transparent 60%),
-    radial-gradient(60% 55% at 50% 108%, rgba(183, 123, 255, .16), transparent 60%);
-  animation: mailGlow 18s ease-in-out infinite alternate;
+    radial-gradient(60% 55% at 12% -2%, rgba(244, 63, 245, .38), transparent 60%),
+    radial-gradient(55% 55% at 94% 6%, rgba(139, 61, 255, .42), transparent 60%),
+    radial-gradient(70% 60% at 50% 112%, rgba(183, 123, 255, .30), transparent 60%),
+    radial-gradient(45% 40% at 75% 55%, rgba(122, 208, 255, .14), transparent 60%),
+    linear-gradient(180deg, rgba(90, 40, 120, .35), transparent 38%);
+  animation: mailGlow 16s ease-in-out infinite alternate;
 }
 body.mail-page::after {
   content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
@@ -88,7 +90,7 @@ body.mail-page::after {
 /* lift the cards off the background with a soft glass look */
 body.mail-page .mail-addrbar,
 body.mail-page .mail-inbox,
-body.mail-page .mail-view { background: linear-gradient(180deg, rgba(40,34,52,.72), rgba(24,20,32,.72)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,.08); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+body.mail-page .mail-view { background: linear-gradient(180deg, rgba(52,44,70,.74), rgba(30,24,44,.74)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,.08); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
 body.mail-page .tool-hero h1 .grad { background: linear-gradient(90deg, var(--accent), #c99bff 60%, #7ad0ff); -webkit-background-clip: text; background-clip: text; }
 body.mail-page .mail-addr { background: rgba(8,6,14,.55); }
 
