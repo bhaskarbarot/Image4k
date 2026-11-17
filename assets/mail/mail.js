@@ -71,7 +71,7 @@ async function boot() {
   const { data } = await api('/config', { auth: false });
   if (!data.configured) {
     $('#mailApp').hidden = true; $('#mailOff').hidden = false;
-    if (!data.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). The site owner can enable it from docs/DEPLOYMENT.md → “Temp-mail”. Every other tool works normally.';
+    if (!data.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). It can be enabled for FREE with a eu.org domain (no paid domain needed) — owner: see docs/TEMPMAIL_FREE_DOMAIN.md. Meanwhile, try the demo below.';
     const dbtn = $('#demoBtn'); if (dbtn) dbtn.addEventListener('click', startDemo);
     window.__mail = { get state() { return state; }, get messages() { return messages; }, startDemo };
     return;
