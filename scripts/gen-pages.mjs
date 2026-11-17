@@ -16,15 +16,15 @@ export const NAV = [
 
 const PAGES = {
   dev: {
-    file: 'dev.html', title: 'Free Developer Tools – JSON, JWT, Regex, Hash, Diff & more | Bhaskar Solution',
+    file: 'dev.html', title: 'Free Developer Tools – JSON, JWT, Regex, Hash, Diff & more | Professional Developer',
     desc: 'Free, private developer tools that run in your browser: JSON formatter, JSON to TypeScript, JSON diff, YAML/CSV converters, XML formatter, JWT decoder & generator, Base64, URL encode, hashes, UUID, regex tester, SQL formatter, cron, text diff and cURL to code.',
   },
   api: {
-    file: 'api-tools.html', title: 'Free API Tools – REST & GraphQL Tester, Webhook Tester, Headers | Bhaskar Solution',
+    file: 'api-tools.html', title: 'Free API Tools – REST & GraphQL Tester, Webhook Tester, Headers | Professional Developer',
     desc: 'Free online API tools: REST API tester, GraphQL playground, webhook tester with real temporary endpoints, HTTP header checker, cURL generator, OpenAPI/Swagger viewer, response formatter, mock data generator and HTTP status codes.',
   },
   data: {
-    file: 'workbench.html', title: 'Data Transformation Workbench – Encode, Decode, Hash, Convert | Bhaskar Solution',
+    file: 'workbench.html', title: 'Data Transformation Workbench – Encode, Decode, Hash, Convert | Professional Developer',
     desc: 'Chain data operations in your browser: Base64, URL, hex, binary and HTML entity encoding, MD5/SHA hashes, text clean-up, JSON/CSV/YAML/XML conversion and extraction of URLs, emails, IPs and domains.',
     single: 'workbench',
   },
@@ -33,7 +33,7 @@ const PAGES = {
 function header(active) {
   return `  <header class="site-header">
     <div class="wrap nav">
-      <a class="logo" href="/" aria-label="Bhaskar Solution home"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <a class="logo" href="/" aria-label="Professional Developer home"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
       <ul class="nav-links">
 ${NAV.map(([href, label]) => `        <li><a href="${href}"${href === active ? ' class="is-active" aria-current="page"' : ''}>${label}</a></li>`).join('\n')}
       </ul>
@@ -42,9 +42,9 @@ ${NAV.map(([href, label]) => `        <li><a href="${href}"${href === active ? '
 }
 const footer = `  <footer class="site-footer">
     <div class="wrap foot">
-      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">B</span>Bhaskar<small>Solution</small></a>
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
       <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/mail">Temp mail</a><a href="/pdf">PDF tools</a><a href="/dev">Developer tools</a><a href="/api-tools">API tools</a><a href="/workbench">Workbench</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
-      <span>© 2026 Bhaskar Solution</span>
+      <span>© 2026 Professional Developer</span>
     </div>
   </footer>`;
 
@@ -67,9 +67,9 @@ for (const [cat, p] of Object.entries(PAGES)) {
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="index, follow">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Bhaskar Solution">
+  <meta property="og:site_name" content="Professional Developer">
   <meta property="og:url" content="https://image4k.org${c.page}">
-  <meta property="og:title" content="${esc(c.name)} – free &amp; private | Bhaskar Solution">
+  <meta property="og:title" content="${esc(c.name)} – free &amp; private | Professional Developer">
   <meta property="og:description" content="${esc(c.blurb)}">
   <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
