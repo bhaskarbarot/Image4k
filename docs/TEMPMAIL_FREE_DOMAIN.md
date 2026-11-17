@@ -10,15 +10,12 @@ can take a few days to ~2 weeks. Everything else is ready and waiting.
 
 Until this is done, `/mail` shows "not switched on yet" and the **Demo** button still lets anyone try it.
 
-## Your chosen name
+## Your chosen name: `prodevtools.eu.org`
 
-You wanted `professional.developer.eu.org`. Two things to know about eu.org + Cloudflare email:
-- eu.org registers **one label** under `eu.org`, and Cloudflare's free Email Routing receives mail on that
-  registered domain (the zone **root**), not on a deeper sub-subdomain.
-- So the clean, working choice is **`professional-developer.eu.org`** (one registration, mail =
-  `you@professional-developer.eu.org`). This guide uses that.
-- Alternatives: register `developer.eu.org` (mail = `you@developer.eu.org`), or `professionaldeveloper.eu.org`.
-  Whatever you register, you set `MAIL_DOMAIN` (Step 6) to exactly that — the code works with any domain.
+Addresses will be `you@prodevtools.eu.org`. It's one label under `eu.org`, which registers cleanly and lets
+Cloudflare Email Routing receive mail on the root (so every `anything@prodevtools.eu.org` works).
+Set `MAIL_DOMAIN` (Step 6) to exactly `prodevtools.eu.org`. Have a backup name ready (e.g. `prodev.eu.org`,
+`bhaskardev.eu.org`) in case eu.org says it's taken.
 
 ---
 
@@ -29,15 +26,15 @@ You wanted `professional.developer.eu.org`. Two things to know about eu.org + Cl
 
 You do this *before* eu.org, so you know which nameservers to give eu.org.
 
-1. Pick a name, e.g. `professional-developer.eu.org` (mail will be `anything@professional-developer.eu.org`).
-2. Cloudflare dashboard → **Websites → Add a site** → enter `professional-developer.eu.org` → **Free** plan → Continue.
+1. Pick a name, e.g. `prodevtools.eu.org` (mail will be `anything@prodevtools.eu.org`).
+2. Cloudflare dashboard → **Websites → Add a site** → enter `prodevtools.eu.org` → **Free** plan → Continue.
 3. Cloudflare shows **two nameservers** like `ada.ns.cloudflare.com` and `rob.ns.cloudflare.com`.
    **Copy them** — you need them in Step 2. (The zone will sit "pending" until eu.org delegates to it.)
 
 ## Step 2 — Request the free eu.org domain (10 min + the wait)
 
 1. Go to **https://nic.eu.org/** → create an account (it's free).
-2. **Register a new domain** → enter your name (`professional-developer.eu.org`).
+2. **Register a new domain** → enter your name (`prodevtools.eu.org`).
 3. When it asks for **name servers / DNS**, enter the **two Cloudflare nameservers** from Step 1.
 4. Submit. Now wait for the manual approval email from eu.org (days → ~2 weeks). You can't rush this part.
 5. When approved, Cloudflare (Step 1's zone) flips from "Pending" to **Active** automatically within a few hours.
@@ -61,19 +58,19 @@ npx wrangler deploy
 
 ## Step 5 — Turn on Email Routing (3 min, after the zone is Active)
 
-1. Cloudflare → your `professional-developer.eu.org` zone → **Email → Email Routing → Enable** (it auto-adds MX + SPF records).
+1. Cloudflare → your `prodevtools.eu.org` zone → **Email → Email Routing → Enable** (it auto-adds MX + SPF records).
 2. **Routes → Catch-all address → Edit → Action: Send to a Worker → `tempmail-receiver` → Save.**
    (Catch-all is what makes every `anything@…` address work.)
 3. If it asks you to verify a destination address, do it (any inbox you own).
 
-> Addresses will look like `name@professional-developer.eu.org`. Set `MAIL_DOMAIN` (Step 6) to exactly the
+> Addresses will look like `name@prodevtools.eu.org`. Set `MAIL_DOMAIN` (Step 6) to exactly the
 > domain you enabled here.
 
 ## Step 6 — Connect it to the website (2 min)
 
 Cloudflare → **Workers & Pages → image4k → Settings → Bindings** (add to **Production** *and* **Preview**):
 - **D1 database** → variable name **`MAIL_DB`** → `bhaskar-tempmail`.
-- **Environment variable** → **`MAIL_DOMAIN`** → the domain you enabled, e.g. `professional-developer.eu.org`.
+- **Environment variable** → **`MAIL_DOMAIN`** → the domain you enabled, e.g. `prodevtools.eu.org`.
 - Do **not** add `ALLOW_TEST_INGEST` (that's test-only).
 
 Then **Deployments → Retry deployment** so the bindings take effect.
