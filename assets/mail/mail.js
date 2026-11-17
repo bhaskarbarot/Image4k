@@ -11,6 +11,7 @@ let state = { id: null, token: null, address: null, expiresAt: 0, domains: [] };
 let messages = [];       // summaries, newest first
 let lastId = 0;          // highest message id seen
 let openId = null;
+const justArrived = new Set(); // ids that should play the entrance animation on next render
 let pollTimer = null, countdownTimer = null, polling = false;
 
 /* ---------- api helpers ---------- */
@@ -61,6 +62,7 @@ function addDemoMessage(s) {
   const id = ++lastId;
   const full = { id, receivedAt: Date.now(), from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, text: s.text, attachments: [], seen: false };
   demoFull.set(id, full);
+  justArrived.add(id);
   messages.unshift({ id, receivedAt: full.receivedAt, from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, hasHtml: false, seen: false, size: s.text.length, preview: s.text.slice(0, 140) });
   renderList();
   toast(`New email · code ${s.otp} from ${s.fromName}`, 'ok', 4000);
@@ -115,9 +117,11 @@ function startPolling() {
 }
 function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
 
+function setChecking(on) { document.querySelector('.mail-inbox-head')?.classList.toggle('is-loading', !!on); }
+
 async function refresh(initial) {
   if (!state.id || !state.token) return false;
-  polling = true; if (!initial) setStatus('Checking…');
+  polling = true; setChecking(true); if (!initial) setStatus('Checking…');
   try {
     const { res, data } = await api(`/inboxes/${state.id}/messages?after=0`);
     if (res.status === 404 || res.status === 410) { // inbox gone/expired
@@ -131,6 +135,7 @@ async function refresh(initial) {
     const newOnes = fresh.filter((m) => m.id > lastId);
     const prevLast = lastId;
     lastId = fresh.reduce((mx, m) => Math.max(mx, m.id), lastId);
+    for (const m of newOnes) justArrived.add(m.id);
     messages = fresh;
     renderList();
     renderAddress();
@@ -141,7 +146,7 @@ async function refresh(initial) {
     }
     return true;
   } catch (e) { setStatus('Offline — will retry'); return false; }
-  finally { polling = false; }
+  finally { polling = false; setChecking(false); }
 }
 
 function setStatus(t) { $('#mailStatus').textContent = t || ''; }
@@ -170,7 +175,7 @@ function renderList() {
   clear(list);
   for (const m of messages) {
     const li = h('li', {
-      class: 'mail-item' + (m.seen ? '' : ' is-unread') + (m.id === openId ? ' is-open' : ''),
+      class: 'mail-item' + (m.seen ? '' : ' is-unread') + (m.id === openId ? ' is-open' : '') + (justArrived.has(m.id) ? ' mail-item-new' : ''),
       attrs: { role: 'button', tabindex: '0' },
       on: { click: () => openMessage(m.id), keydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMessage(m.id); } } },
     },
@@ -182,6 +187,7 @@ function renderList() {
     );
     list.appendChild(li);
   }
+  justArrived.clear();
 }
 
 async function openMessage(id) {

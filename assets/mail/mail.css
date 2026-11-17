@@ -65,3 +65,64 @@
 /* Demo mode */
 .mail-demo-banner { display: flex; align-items: center; gap: 10px; background: linear-gradient(90deg, var(--accent-soft), transparent); border: 1px solid var(--accent-soft-2); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 13.5px; color: var(--text-2); line-height: 1.45; }
 .mail-demo-badge { flex: none; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 2px 8px; }
+
+/* ============ Brighter, animated temp-mail look (scoped to the mail page) ============ */
+body.mail-page { background: #0d0a14; }
+body.mail-page::before {
+  content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 18% 8%, rgba(244, 63, 245, .20), transparent 60%),
+    radial-gradient(50% 45% at 88% 14%, rgba(139, 61, 255, .22), transparent 60%),
+    radial-gradient(60% 55% at 50% 108%, rgba(183, 123, 255, .16), transparent 60%);
+  animation: mailGlow 18s ease-in-out infinite alternate;
+}
+body.mail-page::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+  background-image: radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000, transparent 75%);
+}
+@keyframes mailGlow { from { transform: translate3d(0,-2%,0) scale(1); } to { transform: translate3d(0,2%,0) scale(1.1); } }
+
+/* lift the cards off the background with a soft glass look */
+body.mail-page .mail-addrbar,
+body.mail-page .mail-inbox,
+body.mail-page .mail-view { background: linear-gradient(180deg, rgba(40,34,52,.72), rgba(24,20,32,.72)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,.08); box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+body.mail-page .tool-hero h1 .grad { background: linear-gradient(90deg, var(--accent), #c99bff 60%, #7ad0ff); -webkit-background-clip: text; background-clip: text; }
+body.mail-page .mail-addr { background: rgba(8,6,14,.55); }
+
+/* address copy — gentle attention pulse on the whole bar when it first appears */
+.mail-addrbar { animation: cardIn .5s ease both; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* animated envelope empty state */
+.mail-empty-ic { position: relative; width: 92px; height: 92px; margin: 0 auto 14px; display: grid; place-items: center; }
+.mail-env { font-size: 40px; filter: drop-shadow(0 6px 14px rgba(244,63,245,.5)); animation: envFloat 3.2s ease-in-out infinite; }
+@keyframes envFloat { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
+.mail-ring { position: absolute; inset: 0; margin: auto; width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: ring 2.6s ease-out infinite; }
+.mail-ring:nth-child(2) { animation-delay: 1.3s; }
+@keyframes ring { 0% { transform: scale(.5); opacity: .7; } 100% { transform: scale(2.1); opacity: 0; } }
+.mail-dots i { animation: blink 1.4s infinite both; } .mail-dots i:nth-child(2){animation-delay:.2s} .mail-dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+/* new mail slides in + glows once */
+.mail-item-new { animation: itemIn .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes itemIn { from { opacity: 0; transform: translateX(-14px); box-shadow: inset 3px 0 0 var(--accent); } to { opacity: 1; transform: none; } }
+.mail-item-new .mail-item-otp { animation: otpPop .6s ease both; }
+@keyframes otpPop { 0%{transform:scale(.8)} 60%{transform:scale(1.12)} 100%{transform:scale(1)} }
+
+/* OTP banner subtle shine */
+.mail-otp { position: relative; overflow: hidden; }
+.mail-otp::after { content:''; position:absolute; inset:0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.14) 50%, transparent 70%); transform: translateX(-120%); animation: shine 3.5s ease-in-out infinite; }
+@keyframes shine { 0%,60%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
+.mail-otp-code { animation: codePulse 2.4s ease-in-out infinite; }
+@keyframes codePulse { 0%,100%{text-shadow:0 0 0 rgba(244,63,245,0)} 50%{text-shadow:0 0 18px rgba(244,63,245,.6)} }
+
+/* refresh spinner while checking */
+.mail-inbox-head.is-loading .mail-status::before {
+  content:''; display:inline-block; width:12px; height:12px; margin-right:6px; vertical-align:-1px;
+  border:2px solid var(--line-2); border-top-color: var(--accent); border-radius:50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { body.mail-page::before, .mail-env, .mail-ring, .mail-dots i, .mail-item-new, .mail-otp::after, .mail-otp-code, .mail-addrbar { animation: none !important; } }
