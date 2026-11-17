@@ -1,14 +1,14 @@
 # Standalone Cloudflare Email Worker that receives temp-mail and writes it to D1.
 # This is SEPARATE from the Pages site (Email Routing cannot target a Pages Function).
 # Deploy from this folder:  npx wrangler deploy
-# Then: Cloudflare dashboard → your domain → Email → Email Routing → Routes →
-#       catch-all / an address → "Send to a Worker" → tempmail-receiver.
+# Then: Cloudflare dashboard → prodevtools.net.eu.org → Email → Email Routing → Routes →
+#       Catch-all address → "Send to a Worker" → tempmail-receiver.
 name = "tempmail-receiver"
 main = "src/worker.js"
 compatibility_date = "2026-11-01"
 
-# Bind the SAME D1 database the Pages site uses as MAIL_DB (create it once, see docs/DEPLOYMENT.md).
-# [[d1_databases]]
-# binding = "MAIL_DB"
-# database_name = "bhaskar-tempmail"
-# database_id = "<paste the database id from the dashboard>"
+# Same D1 database the Pages site binds as MAIL_DB (name + id from the Cloudflare D1 dashboard).
+[[d1_databases]]
+binding = "MAIL_DB"
+database_name = "bhaskar-tempmail"
+database_id = "166641f6-35c1-43be-9866-6d3861c5218d"
