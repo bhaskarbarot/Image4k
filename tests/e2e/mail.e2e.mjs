@@ -52,10 +52,10 @@ after(async () => {
 });
 
 async function openMail(page) {
-  // Start every test with a clean inbox (the shared browser context persists localStorage between tests).
+  // Clear storage BEFORE the page boots so every test gets a brand-new inbox (the browser context is shared,
+  // and clearing after boot raced with the async inbox creation → a stale inbox could be restored).
+  await page.addInitScript(() => { try { localStorage.clear(); } catch (e) {} });
   await page.goto(BASE + '/mail');
-  await page.evaluate(() => { try { localStorage.clear(); } catch (e) {} });
-  await page.reload();
   await page.waitForFunction(() => window.__mail && window.__mail.state.address, null, { timeout: 20000 });
   return page.evaluate(() => window.__mail.state.address);
 }

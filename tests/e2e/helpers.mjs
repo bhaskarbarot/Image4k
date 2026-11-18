@@ -32,6 +32,12 @@ export async function newPage(context, { width = 1280, height = 900 } = {}) {
   page.errors = [];
   page.on('console', (m) => { if (m.type() === 'error') page.errors.push('console: ' + m.text()); });
   page.on('pageerror', (e) => page.errors.push('pageerror: ' + e.message));
+  // Never let tests hit the real mail.tm service. A test that wants it mocks it with its own page.route
+  // (registered later → higher priority). Everything else gets a clean 503 so the temp-mail page falls
+  // back to its demo/off state instead of creating real throwaway mailboxes.
+  // 200 with no domains → the mail.tm provider gives up cleanly (falls back to demo/off) and, unlike a
+  // non-2xx status, the browser logs no console error.
+  await page.route('https://api.mail.tm/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"hydra:member":[]}' }));
   return page;
 }
 
