@@ -1,16 +1,16 @@
 /* Temp Mail — centered temp-mail.org-style inbox. Works with whichever backend is live:
  *   self-hosted (our Cloudflare D1 + Email Worker) when a mail domain is configured, otherwise the free
- *   mail.tm API (instant, no domain), and a built-in demo if neither is reachable. See providers.js.
+ *   and a built-in demo when it isn’t. See providers.js.
  * Message content is rendered with textContent only — no HTML from e-mails is ever inserted into the page. */
 import { h, clear, toast, copyText, store, formatBytes, loadScript } from '/assets/dev/ui.js';
-import { makeSelfHosted, makeMailTm } from './providers.js';
+import { makeSelfHosted } from './providers.js';
 
 const $ = (s) => document.querySelector(s);
 const KEY = 'mail-inbox';
 
 let live = null;          // active provider (self | mailtm)
 let demo = false;
-let address = null, expiresAt = 0, domains = [], thirdParty = false, supportsCustom = true;
+let address = null, expiresAt = 0, domains = [];
 let messages = [];        // summaries, newest first
 let openId = null;
 const seenIds = new Set();      // message ids already shown (new-mail detection)
@@ -32,34 +32,14 @@ async function boot() {
   try { cfg = await (await fetch('/api/mail/config')).json(); } catch (e) { /* static host → stays unconfigured */ }
 
   if (cfg.configured) {
-    live = makeSelfHosted(); live.setDomains(cfg.domains || []); domains = cfg.domains || []; thirdParty = false; supportsCustom = true;
+    live = makeSelfHosted(); live.setDomains(cfg.domains || []); domains = cfg.domains || [];
     return startLive();
   }
-  // no private backend yet → try the free instant mail.tm service
-  try {
-    const m = makeMailTm();
-    await m.init();
-    live = m; domains = m.domains(); thirdParty = true; supportsCustom = true;
-    await startLive();
-    showProviderNote();
-    return;
-  } catch (e) {
-    // nothing reachable → offer the demo
-    $('#mailApp').hidden = true; $('#mailOff').hidden = false;
-    $('#mailOffDetail').textContent = 'The free instant inbox (mail.tm) could not be reached right now, and this site’s own mail backend isn’t switched on yet. Try the demo below, or reload in a moment.';
-    $('#demoBtn')?.addEventListener('click', startDemo);
-    window.__mail = { get state() { return { address }; }, get messages() { return messages; }, startDemo, provider: 'none' };
-  }
-}
-
-function showProviderNote() {
-  const el = $('#mailDemoBanner'); if (!el) return;
-  clear(el);
-  el.appendChild(h('span', { class: 'mail-demo-badge' }, 'FREE'));
-  el.appendChild(h('span', null,
-    'Instant inbox powered by ', h('b', null, 'mail.tm'), ' — real email & OTP codes arrive here, free. Note: mail passes through their servers, so it isn’t private. Your own private address (',
-    h('b', null, 'prodevtools.net.eu.org'), ') switches on automatically once it’s approved.'));
-  el.hidden = false;
+  // Private backend not switched on yet → show the off-state + the in-browser demo.
+  $('#mailApp').hidden = true; $('#mailOff').hidden = false;
+  if (!cfg.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). It can be enabled for FREE with a eu.org domain — owner: see docs/TEMPMAIL_FREE_DOMAIN.md. Meanwhile, try the demo below.';
+  $('#demoBtn')?.addEventListener('click', startDemo);
+  window.__mail = { get state() { return { address }; }, get messages() { return messages; }, startDemo, provider: 'none' };
 }
 
 async function startLive() {
@@ -216,7 +196,7 @@ const DEMO_SAMPLES = [
   { delay: 7000, from: 'noreply@github.com', fromName: 'GitHub', subject: '[GitHub] Please verify your device', otp: '839201', text: 'Your authentication code is 839201.\nIf this wasn’t you, change your password.' },
 ];
 function startDemo() {
-  demo = true; live = null; thirdParty = false;
+  demo = true; live = null;
   address = 'you' + rand() + '@demo-inbox.test'; expiresAt = Date.now() + 15 * 60000;
   messages = []; seenIds.clear(); justArrived.clear(); openId = null; demoFull.clear();
   $('#mailOff').hidden = true; $('#mailApp').hidden = false;
