@@ -156,6 +156,8 @@ function msgSummary(r) {
 /** GET /api/mail/inboxes/:id/messages?after=N */
 export async function listMessages(request, env, id, now = Date.now()) {
   const bad = sameOriginOnly(request); if (bad) return bad;
+  const rl = rateLimit('mail-read:' + clientIp(request), { capacity: 150, windowMs: 60000, now });
+  if (!rl.ok) return fail(429, 'rate_limited', `Polling too fast — wait ${rl.retryAfter} s.`, { 'Retry-After': String(rl.retryAfter) });
   const a = await authed(request, env, id, now); if (a.res) return a.res;
   const { d, row } = a;
   if (now - row.last_activity > 300000) { await d.prepare('UPDATE mail_inboxes SET last_activity = ?2 WHERE id = ?1').bind(id, now).run(); row.last_activity = now; }
@@ -168,6 +170,8 @@ export async function listMessages(request, env, id, now = Date.now()) {
 /** GET /api/mail/inboxes/:id/messages/:mid — full message (marks it seen). */
 export async function getMessage(request, env, id, mid, now = Date.now()) {
   const bad = sameOriginOnly(request); if (bad) return bad;
+  const rl = rateLimit('mail-read:' + clientIp(request), { capacity: 150, windowMs: 60000, now });
+  if (!rl.ok) return fail(429, 'rate_limited', `Too many requests — wait ${rl.retryAfter} s.`, { 'Retry-After': String(rl.retryAfter) });
   const a = await authed(request, env, id, now); if (a.res) return a.res;
   const { d } = a;
   const r = await d.prepare('SELECT * FROM mail_messages WHERE inbox_id = ?1 AND id = ?2').bind(id, parseInt(mid, 10) || -1).first();

@@ -34,19 +34,36 @@ export function json(data, status = 200, extra = {}) {
 export function fail(status, code, error, extra) { return json({ ok: false, code, error }, status, extra); }
 
 export function clientIp(request) {
-  return request.headers.get('CF-Connecting-IP') || request.headers.get('X-Real-IP') || 'local';
+  // CF-Connecting-IP is set by Cloudflare and cannot be spoofed by the client. We do NOT fall back to
+  // client-supplied headers (X-Real-IP / X-Forwarded-For), which an attacker could rotate to evade per-IP limits.
+  return request.headers.get('CF-Connecting-IP') || 'local';
 }
 
 /**
- * Management endpoints may only be called by our own pages: a browser always sends Origin on
- * cross-site POST/DELETE, so a foreign Origin is refused. (Non-browser clients can still call them;
- * they are protected by tokens and rate limits instead.)
+ * Our own pages only: a browser always sends Origin on cross-site POST/DELETE, so a foreign Origin is
+ * refused. A request with no Origin (a same-origin GET, or a non-browser client) is allowed here because
+ * these endpoints are additionally protected by secret tokens and rate limits. Used by the hooks/mail
+ * management endpoints. (The proxy, which is an open relay, uses the stricter check below.)
  */
 export function sameOriginOnly(request) {
   const origin = request.headers.get('Origin');
   if (!origin) return null;
   const self = new URL(request.url).origin;
   if (origin === self) return null;
+  return fail(403, 'forbidden_origin', 'This endpoint can only be used from this website.');
+}
+
+/**
+ * Strict same-origin for the open-relay proxy (POST-only): require a real same-origin BROWSER signal —
+ * an Origin matching our origin (browsers always send it on fetch POST), or Sec-Fetch-Site: same-origin.
+ * A request with neither (curl / scripts / other servers) is refused, so /api/proxy cannot be used as an
+ * open proxy by non-browser clients.
+ */
+export function strictSameOrigin(request) {
+  const self = new URL(request.url).origin;
+  const origin = request.headers.get('Origin');
+  if (origin) return origin === self ? null : fail(403, 'forbidden_origin', 'This endpoint can only be used from this website.');
+  if (request.headers.get('Sec-Fetch-Site') === 'same-origin') return null;
   return fail(403, 'forbidden_origin', 'This endpoint can only be used from this website.');
 }
 

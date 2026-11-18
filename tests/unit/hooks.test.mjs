@@ -21,7 +21,7 @@ const O = 'https://tools.example';
 let env, raw;
 beforeEach(() => { raw = new DatabaseSync(':memory:'); env = { HOOKS_DB: d1(raw) }; _resetSchema(); _resetLimits(); });
 
-const mk = (path, init = {}) => new Request(O + path, { ...init, headers: { 'CF-Connecting-IP': '203.0.113.7', ...(init.headers || {}) } });
+const mk = (path, init = {}) => new Request(O + path, { ...init, headers: { 'CF-Connecting-IP': '203.0.113.7', 'Sec-Fetch-Site': 'same-origin', ...(init.headers || {}) } });
 async function create(now) {
   const r = await createHook(mk('/api/hooks', { method: 'POST', headers: { Origin: O } }), env, now);
   return { status: r.status, ...(await r.json()) };

@@ -2,14 +2,14 @@
  * does not allow browser (CORS) access. Not an open proxy: public destinations only (see ssrf.js),
  * size / time / rate limits, no cookies or client IP forwarded, nothing logged. */
 import { assertPublicUrl, SsrfError } from './ssrf.js';
-import { json, fail, rateLimit, clientIp, sameOriginOnly, readCapped, encodeBody, base64ToBytes } from './limits.js';
+import { json, fail, rateLimit, clientIp, strictSameOrigin, readCapped, encodeBody, base64ToBytes } from './limits.js';
 
 export const LIMITS = {
   requestBody: 1024 * 1024,      // 1 MB
-  responseBody: 5 * 1024 * 1024, // 5 MB
+  responseBody: 2 * 1024 * 1024, // 2 MB (abuse-resistant; the API tester shows a "truncated" flag)
   timeoutMs: 15000,
   maxRedirects: 5,
-  perMinute: 60,
+  perMinute: 30,
 };
 const METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']);
 // Never forwarded from the user's header list (hop-by-hop, routing, identity of the caller).
@@ -20,7 +20,7 @@ export async function handleProxy(request, env = {}, deps = {}) {
   const fetchImpl = deps.fetchImpl || fetch;
   const resolve = deps.resolve;
   if (request.method !== 'POST') return fail(405, 'method_not_allowed', 'Use POST', { Allow: 'POST' });
-  const bad = sameOriginOnly(request);
+  const bad = strictSameOrigin(request);
   if (bad) return bad;
   if (!/^application\/json\b/i.test(request.headers.get('Content-Type') || '')) return fail(415, 'unsupported_media_type', 'Send the proxy request as application/json');
   const rl = rateLimit('proxy:' + clientIp(request), { capacity: LIMITS.perMinute, windowMs: 60000 });

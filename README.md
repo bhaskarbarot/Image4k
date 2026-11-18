@@ -130,3 +130,7 @@ COOP/COEP enable multi-threaded WebAssembly, which makes background removal ~3�
 - `'unsafe-eval'` in the CSP is required by the HEIC decoder (heic2any).
 - Max output is capped to ~40 MP on desktop and ~16 MP on phones / low-memory devices to avoid browser crashes; the UI says when this happens.
 - Licenses: pica, JSZip, heic2any — MIT; Transformers.js, ormbg, MODNet — Apache-2.0. All allow commercial use.
+
+## License & security
+MIT (see `LICENSE`). Third-party components keep their own licenses (`docs/OPEN_SOURCE_ATTRIBUTION.md`).
+Security policy & disclosure: `SECURITY.md`. Full audit, threat model and residual risks: `docs/SECURITY_AUDIT.md`.

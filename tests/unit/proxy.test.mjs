@@ -103,7 +103,7 @@ test('followRedirects:false returns the 3xx itself', async () => {
   assert.equal(r.data.status, 302);
 });
 
-test('response larger than 5 MB is truncated', async () => {
+test('a response larger than the cap is truncated', async () => {
   const big = new Uint8Array(LIMITS.responseBody + 1000).fill(97);
   const r = await call({ url: 'https://api.example.com/big' }, async () => new Response(big, { headers: { 'Content-Type': 'text/plain' } }));
   assert.equal(r.data.truncated, true);
@@ -125,6 +125,16 @@ test('timeout returns 504', async () => {
   } finally { LIMITS.timeoutMs = orig; }
 });
 
+test('open-proxy guard: no Origin AND no Sec-Fetch-Site (curl/script) is refused', async () => {
+  const r = await handleProxy(req({ url: 'https://api.example.com/' }, { origin: null }), {}, { fetchImpl: async () => new Response('x'), resolve });
+  assert.equal(r.status, 403);
+  assert.equal((await r.json()).code, 'forbidden_origin');
+});
+test('open-proxy guard: no Origin but Sec-Fetch-Site: same-origin (browser) is allowed', async () => {
+  const request = new Request(ORIGIN + '/api/proxy', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', 'CF-Connecting-IP': '203.0.113.9' }, body: JSON.stringify({ url: 'https://api.example.com/' }) });
+  const res = await handleProxy(request, {}, { fetchImpl: async () => new Response('{"ok":1}', { headers: { 'Content-Type': 'application/json' } }), resolve });
+  assert.equal(res.status, 200);
+});
 test('foreign Origin, wrong content type, GET method and bad JSON are refused', async () => {
   const f = async () => new Response('x');
   assert.equal((await call({ url: 'https://api.example.com/' }, f, { origin: 'https://evil.example' })).status, 403);
@@ -133,7 +143,7 @@ test('foreign Origin, wrong content type, GET method and bad JSON are refused', 
   assert.equal((await call('{not json', f)).status, 400);
 });
 
-test('rate limit: 61st request in a minute gets 429', async () => {
+test('rate limit: a request over the per-minute cap gets 429', async () => {
   const f = async () => new Response('x');
   for (let i = 0; i < LIMITS.perMinute; i++) assert.equal((await call({ url: 'https://api.example.com/' }, f)).status, 200);
   const r = await call({ url: 'https://api.example.com/' }, f);

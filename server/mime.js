@@ -165,7 +165,7 @@ function parseEntity(bytes, acc, depth) {
 }
 
 function addr(value) {
-  const v = decodeEncodedWords(value || '');
+  const v = decodeEncodedWords(String(value || '').slice(0, 2000));
   const m = /^\s*(?:"?([^"<]*?)"?\s*)?<([^>]+)>\s*$/.exec(v) || /^\s*([^<>\s]+@[^<>\s]+)\s*$/.exec(v);
   if (!m) return { name: '', address: v.trim() };
   if (m.length === 3) return { name: (m[1] || '').trim(), address: (m[2] || '').trim() };
@@ -186,7 +186,7 @@ export function parseEmail(raw) {
     from: from.address,
     fromName: from.name,
     to: addr(h.get('to')).address,
-    subject: decodeEncodedWords(h.get('subject')),
+    subject: decodeEncodedWords((h.get('subject') || '').slice(0, 2000)),
     date: Number.isFinite(date) ? date : null,
     messageId: h.get('message-id'),
     text: acc.text.trim(),
@@ -199,6 +199,8 @@ const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', 
 /** Strip HTML to readable text (for a preview and for OTP scanning when only an HTML body exists). */
 export function htmlToText(html) {
   if (!html) return '';
+  html = String(html);
+  if (html.length > 512 * 1024) html = html.slice(0, 512 * 1024); // bound regex work on hostile input
   return html
     .replace(/<(script|style|head|title)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
