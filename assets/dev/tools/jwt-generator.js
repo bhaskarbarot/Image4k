@@ -24,6 +24,7 @@ export function mount(root) {
     try { const p = readJson(payload, 'Payload'); if (v === undefined) delete p[k]; else p[k] = v; payload.set(JSON.stringify(p, null, 2)); msg.hide(); } catch (e) { msg.error(e.message); }
   }
   const helpers = toolbar(
+    h('span', { class: 'jwt-claims-label' }, 'Quick-add claim:'),
     btn('iat = now', () => setClaim('iat', now()), 'dt-mini'),
     btn('exp = +1 hour', () => setClaim('exp', now() + 3600), 'dt-mini'),
     btn('exp = +1 day', () => setClaim('exp', now() + 86400), 'dt-mini'),
@@ -96,7 +97,8 @@ export function mount(root) {
   root.append(
     toolbar(field('Algorithm', algSel), primary('Sign token', sign, { 'data-act': 'sign' }), copyTok),
     msg.el,
-    grid2(header.el, h('div', null, payload.el, helpers)),
+    grid2(header.el, payload.el),
+    helpers,
     card('Signing key', hsBox, asymBox),
     card('Token', tokenOut),
     h('div', { class: 'dt-msg is-info' }, h('strong', null, 'Handle tokens and keys like passwords.'),

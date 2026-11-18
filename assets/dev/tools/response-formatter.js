@@ -70,7 +70,7 @@ export function mount(root) {
   }
   input.ta.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run('pretty'); } });
   root.append(
-    toolbar(primary('Format', () => run('pretty'), { 'data-act': 'format' }), btn('Minify', () => run('minify'), undefined, { 'data-act': 'minify' }), field('Format', as), indent),
+    toolbar(primary('Format', () => run('pretty'), { 'data-act': 'format' }), btn('Minify', () => run('minify'), undefined, { 'data-act': 'minify' }), field('Detect as', as), indent),
     status, msg.el,
     grid2(input.el, out.el),
     formTable,

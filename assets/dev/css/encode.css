@@ -141,3 +141,6 @@
 .wb-io .dt-code { min-height: 200px; }
 .wb-io .dt-pre { min-height: 200px; }
 .wb-info { min-height: 28px; }
+
+/* JWT: quick-add claim row label */
+.jwt-claims-label { font-size: 12.5px; font-weight: 700; color: var(--muted); align-self: center; margin-right: 2px; }
