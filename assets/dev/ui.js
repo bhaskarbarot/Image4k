@@ -1,4 +1,4 @@
-/* Bhaskar Solution — Developer tools: shared UI helpers (no framework, no innerHTML with user data).
+/* Professional Developer — Developer tools: shared UI helpers (no framework, no innerHTML with user data).
  * Every tool module imports from here so clipboard, downloads, notifications, editors and errors
  * behave the same everywhere. */
 
@@ -197,7 +197,7 @@ export function uid(p = 'u') { return p + '-' + (++uidN) + '-' + Math.random().t
 export function editor(opts = {}) {
   const ta = h('textarea', {
     class: 'dt-code', placeholder: opts.placeholder || '',
-    attrs: { spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off', 'aria-label': opts.label || 'Editor', rows: opts.rows || 14, wrap: opts.wrap === false ? 'off' : null },
+    attrs: { spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off', 'aria-label': opts.label || 'Editor', rows: opts.rows || 12, wrap: opts.wrap === false ? 'off' : null },
   });
   if (opts.readonly) ta.readOnly = true;
   if (opts.value) ta.value = opts.value;

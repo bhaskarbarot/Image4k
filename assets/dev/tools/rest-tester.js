@@ -203,7 +203,7 @@ export function mount(root) {
 
   root.append(
     h('div', { class: 'api-reqline' }, method, url, sendBtn),
-    toolbar(curlBtn, h('label', { class: 'dt-check' }, h('span', null, 'Timeout (s)'), timeoutIn), h('span', { class: 'dt-meta' }, 'Enter or Ctrl+Enter sends · the secure proxy stops at 15 s')),
+    h('div', { class: 'api-subbar' }, curlBtn, h('label', { class: 'api-timeout-field' }, h('span', null, 'Timeout'), timeoutIn, h('small', null, 'sec')), h('span', { class: 'dt-meta api-subhint' }, 'Enter or Ctrl+Enter to send')),
     via.el,
     formMsg.el,
     h('section', { class: 'dt-card' }, reqTabs.el, paneHost),

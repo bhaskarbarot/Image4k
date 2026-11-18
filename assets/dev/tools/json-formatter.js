@@ -2,7 +2,7 @@
 import { h, editor, output, msgBox, seg, checkbox, primary, btn, toolbar, grid2, store, debounce, toast } from '../ui.js';
 import { reformat, validateJson, hasUnsafeNumbers, sortKeysDeep } from '../lib/json.js';
 
-const SAMPLE = `{"id":12345678901234567890,"name":"Bhaskar Solution","tags":["free","private","dev-tools"],"active":true,"owner":{"name":"Zoë","languages":["en","hi","gu"],"emoji":"🚀"},"ratio":0.75,"deleted_at":null}`;
+const SAMPLE = `{"id":12345678901234567890,"name":"Professional Developer","tags":["free","private","dev-tools"],"active":true,"owner":{"name":"Zoë","languages":["en","hi","gu"],"emoji":"🚀"},"ratio":0.75,"deleted_at":null}`;
 
 export function mount(root) {
   const saved = store.get('json-formatter', { indent: '2', sort: false });

@@ -107,3 +107,11 @@
 .hc-f.is-bad .hc-ico { background: var(--del-bg); color: var(--err); }
 .hc-f.is-info .hc-ico { background: rgba(121, 192, 255, .14); color: #79c0ff; }
 .api-timeout { width: 76px; }
+
+/* REST tester sub-bar: Copy-as-cURL + Timeout + hint, cleanly aligned */
+.api-subbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.api-timeout-field { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.api-timeout-field .api-timeout { width: 68px; text-align: center; }
+.api-timeout-field small { color: var(--muted); font-weight: 600; }
+.api-subhint { margin-left: auto; }
+@media (max-width: 560px) { .api-subhint { margin-left: 0; width: 100%; } }

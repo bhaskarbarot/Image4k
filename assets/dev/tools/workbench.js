@@ -20,7 +20,7 @@ function hexPreview(bytes, max = 4096) {
 }
 
 export function mount(root) {
-  const saved = store.get('workbench', { steps: [{ op: 'base64-encode' }], input: 'Hello, Bhaskar Solution! 👋', auto: true });
+  const saved = store.get('workbench', { steps: [{ op: 'base64-encode' }], input: 'Hello, Professional Developer! 👋', auto: true });
   const fromHash = location.hash.startsWith('#recipe=') ? decodeRecipe(location.hash.slice(8)) : null;
   let steps = sanitizeRecipe(fromHash && fromHash.length ? fromHash : saved.steps);
   let inputBytes = null, inputName = '';

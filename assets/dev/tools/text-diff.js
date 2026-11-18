@@ -22,13 +22,13 @@ function runWorker(url, message, { timeout = 30000 } = {}) {
 const BIG = 150000;          // characters (A+B) above which the diff runs in a worker
 const RENDER_ROWS = 4000;    // rows rendered at once (the rest on demand)
 const CONTEXT = 3;           // unchanged lines kept around changes when collapsing
-const A_SAMPLE = `Bhaskar Solution — release notes
+const A_SAMPLE = `Professional Developer — release notes
 Version 1.4
 - Faster image upscaling
 - Fixed PDF merge order
 Contact: support@example.com
 Thanks for using our tools!`;
-const B_SAMPLE = `Bhaskar Solution — release notes
+const B_SAMPLE = `Professional Developer — release notes
 Version 1.5
 - Faster image upscaling with WebGPU
 - Fixed PDF merge order

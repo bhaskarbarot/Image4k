@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { CATEGORIES, TOOLS } from '../assets/dev/registry.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const V = process.env.DEV_V || 'dev1';
+const V = process.env.DEV_V || 'dev2';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export const NAV = [

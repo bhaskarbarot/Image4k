@@ -10,7 +10,7 @@ export function sendViaControl(storeKey) {
   const info = h('p', { class: 'dt-note api-via-note' });
   const explain = (v) => {
     info.textContent = v === 'proxy'
-      ? 'Secure proxy: our server (a Cloudflare function) makes the request for you, so CORS does not apply and every response header is visible. Only public internet addresses are allowed; the request passes through our server but is never stored or logged. Limits: 15 s, 1 MB request, 5 MB response, 60 requests/min.'
+      ? 'Secure proxy: our server (a Cloudflare function) makes the request for you, so CORS does not apply and every response header is visible. Only public internet addresses are allowed; the request passes through our server but is never stored or logged. Limits: 15 s, 1 MB request, 2 MB response, 30 requests/min.'
       : 'Direct: your browser sends the request itself — nothing touches our servers. The API must allow this website via CORS, and browsers only expose CORS-safelisted response headers. Works with http://localhost APIs.';
   };
   const control = seg([['direct', 'Direct (browser)'], ['proxy', 'Secure proxy']], saved, (v) => { store.set(storeKey, v); explain(v); }, 'Send via');

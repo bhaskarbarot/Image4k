@@ -1,4 +1,4 @@
-/* Bhaskar Solution — hub home page. Builds on style.css (shared dark theme). */
+/* Professional Developer — hub home page. Builds on style.css (shared dark theme). */
 .hub-hero { text-align: center; padding: clamp(44px, 8vw, 92px) 0 clamp(26px, 4vw, 44px); }
 .hub-kicker {
   display: inline-block; font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase;

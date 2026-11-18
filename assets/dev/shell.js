@@ -57,7 +57,7 @@ function renderNav(q = '') {
     }
     if (!groups.size && !others.length) nav.appendChild(h('p', { class: 'dt-nav-empty' }, 'No tool matches “' + q.trim() + '”.'));
   } else {
-    nav.appendChild(h('div', { class: 'dt-nav-group' }, 'More from Bhaskar Solution'));
+    nav.appendChild(h('div', { class: 'dt-nav-group' }, 'More from Professional Developer'));
     for (const c of Object.values(CATEGORIES)) if (c.id !== CAT) nav.appendChild(h('a', { class: 'dt-nav-link is-ext', href: c.page }, c.name));
     nav.appendChild(h('a', { class: 'dt-nav-link is-ext', href: '/qr' }, 'QR Code Generator'));
     nav.appendChild(h('a', { class: 'dt-nav-link is-ext', href: '/image' }, 'Image tools'));
@@ -114,7 +114,7 @@ async function route() {
   }
   current = { id: t.id };
   renderNav(search.value);
-  document.title = t.name + ' – Free Online Tool | Bhaskar Solution';
+  document.title = t.name + ' – Free Online Tool | Professional Developer';
   setDesc(t.desc);
   const root = h('div', { class: 'dt-tool', id: 'tool-' + t.id });
   main.append(

@@ -25,7 +25,7 @@ async function add(page, id) { await page.click(`#tool-workbench .wb-op[data-op=
 test('workbench: default recipe runs; palette search adds ops; chained transformations in order', async () => {
   const page = await open();
   await waitDone(page);
-  assert.equal(await outText(page), Buffer.from('Hello, Bhaskar Solution! 👋').toString('base64'));
+  assert.equal(await outText(page), Buffer.from('Hello, Professional Developer! 👋').toString('base64'));
   await clearRecipe(page);
   await fillArea(page.locator('#tool-workbench .wb-io textarea'), 'Zoë says hi');
   await page.fill('.wb-search', 'upper');
