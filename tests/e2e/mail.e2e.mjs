@@ -66,10 +66,10 @@ async function waitForItems(page, n, ms = 15000) {
   const t0 = Date.now();
   while (Date.now() - t0 < ms) {
     await sync(page);
-    try { await page.waitForFunction((k) => document.querySelectorAll('.mail-item').length >= k, n, { timeout: 1500 }); return; }
+    try { await page.waitForFunction((k) => document.querySelectorAll('.mail-row').length >= k, n, { timeout: 1500 }); return; }
     catch (e) { /* retry */ }
   }
-  throw new Error(`only ${await page.locator('.mail-item').count()} of ${n} messages appeared`);
+  throw new Error(`only ${await page.locator('.mail-row').count()} of ${n} messages appeared`);
 }
 
 test('config reports configured with the test domain', async () => {
@@ -91,12 +91,12 @@ test('create address → deliver real email → page receives it live and shows 
 
   // the page receives it on the next poll (forced here for a deterministic test)
   await waitForItems(page, 1);
-  assert.equal(await page.locator('.mail-item').count(), 1);
-  assert.match(await page.textContent('.mail-item-from'), /GitHub/);
-  assert.match(await page.textContent('.mail-item-otp'), /482913/);
+  assert.equal(await page.locator('.mail-row').count(), 1);
+  assert.match(await page.textContent('.mail-row-sender'), /GitHub/);
+  assert.match(await page.textContent('.mail-row-otp'), /482913/);
 
   // open it → OTP banner + body
-  await page.click('.mail-item');
+  await page.click('.mail-row');
   await page.waitForSelector('#mailMessage:not([hidden])');
   assert.equal(await page.textContent('#mailOtpCode'), '482913');
   assert.match(await page.textContent('#msgSubject'), /Your code/);
@@ -114,14 +114,14 @@ test('two emails arrive in order; unread + count update; delete works', async ()
   await waitForItems(page, 1);
   await deliver(address, email({ from: 'Shop <no@shop.test>', subject: 'Second', text: 'code 909090' }));
   await waitForItems(page, 2);
-  assert.equal(await page.textContent('#mailCount'), '2');
+  assert.equal(await page.locator('.mail-row').count(), 2);
   // newest first
-  assert.match(await page.locator('.mail-item').first().textContent(), /Shop|Second|909090/);
+  assert.match(await page.locator('.mail-row').first().textContent(), /Shop|Second|909090/);
   // delete the open one
-  await page.locator('.mail-item').first().click();
+  await page.locator('.mail-row').first().click();
   await page.waitForSelector('#mailMessage:not([hidden])');
   await page.click('#msgDelete');
-  await page.waitForFunction(() => document.querySelectorAll('.mail-item').length === 1);
+  await page.waitForFunction(() => document.querySelectorAll('.mail-row').length === 1);
   assert.deepEqual(page.errors, []);
 });
 
@@ -145,7 +145,7 @@ test('mail to an unknown / non-existent address is not stored', async () => {
 test('custom address name works and is reflected', async () => {
   const page = await newPage(b.context);
   await openMail(page);
-  await page.click('#editAddr');
+  await page.click('#changeBtn');
   const name = 'bhaskar' + Math.floor(Math.random() * 100000);
   await page.fill('#customLocal', name);
   await page.click('#customForm button[type=submit]');
@@ -153,7 +153,7 @@ test('custom address name works and is reflected', async () => {
   assert.match(await page.textContent('#mailAddr'), new RegExp('^' + name + '@'));
   await deliver(`${name}@${DOMAIN}`, email({ subject: 'Hi custom', text: 'your pin 778899' }));
   await waitForItems(page, 1);
-  assert.match(await page.textContent('.mail-item-otp'), /778899/);
+  assert.match(await page.textContent('.mail-row-otp'), /778899/);
   assert.deepEqual(page.errors, []);
 });
 

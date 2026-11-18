@@ -1,7 +1,7 @@
-/* Temp Mail — disposable inbox that receives real e-mail. Talks to /api/mail/* (server/mail-core.js).
+/* Temp Mail — centered temp-mail.org-style inbox that receives real e-mail. Talks to /api/mail/*.
  * The server stores only plain text (HTML e-mails are converted to text server-side) and extracts the OTP,
  * so this page renders message content with textContent only — no HTML from e-mails is ever inserted. */
-import { h, clear, toast, copyText, store, formatBytes } from '/assets/dev/ui.js';
+import { h, clear, toast, copyText, store, formatBytes, loadScript } from '/assets/dev/ui.js';
 
 const $ = (s) => document.querySelector(s);
 const API = '/api/mail';
@@ -25,16 +25,14 @@ async function api(path, { method = 'GET', body, auth = true } = {}) {
   return { res, data };
 }
 const fmtTime = (ms) => {
-  const d = new Date(ms), now = Date.now(), diff = now - ms;
+  const d = new Date(ms), diff = Date.now() - ms;
   if (diff < 60000) return 'just now';
   if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
   if (d.toDateString() === new Date().toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-/* ---------- demo mode (no backend) ----------
- * Lets anyone try the full experience in their browser when the real inbox isn't switched on yet.
- * Sample emails are clearly labelled as a demo; nothing is sent or received over the network. */
+/* ---------- demo mode (no backend) ---------- */
 let demo = false;
 const demoFull = new Map();
 const DEMO_SAMPLES = [
@@ -47,34 +45,33 @@ const DEMO_SAMPLES = [
 ];
 function startDemo() {
   demo = true;
-  state = { id: 'demo', token: 'demo', address: 'you' + Math.floor(Math.random() * 9000 + 1000) + '@demo-inbox.test', expiresAt: Date.now() + 15 * 60000, domains: ['demo-inbox.test'] };
+  state = { id: 'demo', token: 'demo', address: 'you' + rand() + '@demo-inbox.test', expiresAt: Date.now() + 15 * 60000, domains: ['demo-inbox.test'] };
   messages = []; lastId = 0; openId = null; demoFull.clear();
   $('#mailOff').hidden = true;
   $('#mailApp').hidden = false;
-  document.getElementById('mailDemoBanner')?.removeAttribute('hidden');
+  $('#mailDemoBanner')?.removeAttribute('hidden');
   renderAddress(); renderList(); showView(null);
-  bind();
-  startCountdown();
+  bind(); startCountdown();
   for (const s of DEMO_SAMPLES) setTimeout(() => addDemoMessage(s), s.delay);
 }
 function addDemoMessage(s) {
   if (!demo) return;
   const id = ++lastId;
-  const full = { id, receivedAt: Date.now(), from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, text: s.text, attachments: [], seen: false };
-  demoFull.set(id, full);
+  demoFull.set(id, { id, receivedAt: Date.now(), from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, text: s.text, attachments: [], seen: false });
   justArrived.add(id);
-  messages.unshift({ id, receivedAt: full.receivedAt, from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, hasHtml: false, seen: false, size: s.text.length, preview: s.text.slice(0, 140) });
+  messages.unshift({ id, receivedAt: Date.now(), from: s.from, fromName: s.fromName, subject: s.subject, otp: s.otp, seen: false, preview: s.text.slice(0, 140) });
   renderList();
   toast(`New email · code ${s.otp} from ${s.fromName}`, 'ok', 4000);
 }
+const rand = () => Math.floor(Math.random() * 9000 + 1000);
 
 /* ---------- boot ---------- */
 async function boot() {
   const { data } = await api('/config', { auth: false });
   if (!data.configured) {
     $('#mailApp').hidden = true; $('#mailOff').hidden = false;
-    if (!data.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). It can be enabled for FREE with a eu.org domain (no paid domain needed) — owner: see docs/TEMPMAIL_FREE_DOMAIN.md. Meanwhile, try the demo below.';
-    const dbtn = $('#demoBtn'); if (dbtn) dbtn.addEventListener('click', startDemo);
+    if (!data.hasStorage) $('#mailOffDetail').textContent = 'Receiving real email needs a Cloudflare D1 database (MAIL_DB) and a verified email domain (MAIL_DOMAIN). It can be enabled for FREE with a eu.org domain — owner: see docs/TEMPMAIL_FREE_DOMAIN.md. Meanwhile, try the demo below.';
+    $('#demoBtn')?.addEventListener('click', startDemo);
     window.__mail = { get state() { return state; }, get messages() { return messages; }, startDemo };
     return;
   }
@@ -83,18 +80,13 @@ async function boot() {
   const saved = store.get(KEY, null);
   if (saved && saved.id && saved.token) {
     state = { ...state, ...saved };
-    const ok = await refresh(true);
-    if (!ok) await createInbox();
-  } else {
-    await createInbox();
-  }
-  bind();
-  startPolling();
-  startCountdown();
+    if (!(await refresh(true))) await createInbox();
+  } else await createInbox();
+  bind(); startPolling(); startCountdown();
 }
 
 async function createInbox(localPart) {
-  setStatus('Creating address…');
+  setStatus('Creating…');
   const { res, data } = await api('/inboxes', { method: 'POST', body: localPart ? { localPart } : {}, auth: false });
   if (!res.ok) {
     if (data.code === 'address_taken') { toast('That name is taken — try another.', 'err'); return false; }
@@ -103,33 +95,42 @@ async function createInbox(localPart) {
   state = { id: data.id, token: data.token, address: data.address, expiresAt: data.expiresAt, domains: data.domains || state.domains };
   store.set(KEY, { id: state.id, token: state.token, address: state.address, expiresAt: state.expiresAt });
   messages = []; lastId = 0; openId = null;
-  renderAddress(); renderList(); showView(null);
-  setStatus('');
+  renderAddress(); renderList(); showView(null); setStatus('');
+  bumpFast(); // poll quickly right after getting a new address (a sign-up OTP is likely coming)
   return true;
 }
 
-/* ---------- polling ---------- */
+/* ---------- auto-refresh (no manual refresh needed) ----------
+ * Self-scheduling poll: checks every ~2.5 s for the first 40 s after you get/open an address (so a sign-up
+ * OTP shows almost instantly), then settles to ~5 s to save the database's free quota. Paused when the tab
+ * is hidden. A new message extends the fast window (more are often on the way). */
+let fastUntil = 0, pollStop = false;
+function bumpFast() { fastUntil = Date.now() + 40000; }
 function startPolling() {
-  stopPolling();
-  const tick = () => { if (!polling) refresh(); };
-  pollTimer = setInterval(tick, 7000);
-  refresh();
+  stopPolling(); pollStop = false; bumpFast();
+  const loop = async () => {
+    if (pollStop || demo) return;
+    await refresh();
+    if (pollStop || demo) return;
+    pollTimer = setTimeout(loop, Date.now() < fastUntil ? 2500 : 5000);
+  };
+  loop();
 }
-function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
-
-function setChecking(on) { document.querySelector('.mail-inbox-head')?.classList.toggle('is-loading', !!on); }
+function stopPolling() { pollStop = true; if (pollTimer) clearTimeout(pollTimer); pollTimer = null; }
+function setChecking(on) { document.querySelector('.mail-thead')?.classList.toggle('is-loading', !!on); setRefreshSpin(on); }
+function setRefreshSpin(on) { $('#refreshBtn')?.classList.toggle('is-spin', !!on); }
 
 async function refresh(initial) {
-  if (!state.id || !state.token) return false;
+  if (!state.id || !state.token || demo) return false;
   polling = true; setChecking(true); if (!initial) setStatus('Checking…');
   try {
     const { res, data } = await api(`/inboxes/${state.id}/messages?after=0`);
-    if (res.status === 404 || res.status === 410) { // inbox gone/expired
+    if (res.status === 404 || res.status === 410) {
       if (initial) return false;
       toast('Your address expired — made a new one.', 'warn');
       await createInbox(); return true;
     }
-    if (!res.ok) { setStatus('Offline — will retry'); return false; }
+    if (!res.ok) { setStatus('offline'); return false; }
     state.expiresAt = data.inbox.expiresAt;
     const fresh = data.messages || [];
     const newOnes = fresh.filter((m) => m.id > lastId);
@@ -137,76 +138,63 @@ async function refresh(initial) {
     lastId = fresh.reduce((mx, m) => Math.max(mx, m.id), lastId);
     for (const m of newOnes) justArrived.add(m.id);
     messages = fresh;
-    renderList();
-    renderAddress();
-    setStatus(fresh.length ? '' : 'Waiting for mail…');
-    if (prevLast > 0 && newOnes.length) {
-      const n = newOnes[0];
-      toast(`New email${n.otp ? ' · code ' + n.otp : ''} from ${n.fromName || n.from}`, 'ok', 4000);
-    }
+    renderList(); renderAddress(); setStatus('');
+    if (prevLast > 0 && newOnes.length) { const n = newOnes[0]; toast(`New email${n.otp ? ' · code ' + n.otp : ''} from ${n.fromName || n.from}`, 'ok', 4000); }
     return true;
-  } catch (e) { setStatus('Offline — will retry'); return false; }
+  } catch (e) { setStatus('offline'); return false; }
   finally { polling = false; setChecking(false); }
 }
-
-function setStatus(t) { $('#mailStatus').textContent = t || ''; }
+function setStatus(t) { const el = $('#mailStatus'); if (el) el.textContent = t || ''; }
 
 /* ---------- render ---------- */
-function renderAddress() {
-  $('#mailAddr').textContent = state.address || '…';
-}
+function renderAddress() { $('#mailAddr').textContent = state.address || '…'; }
 function startCountdown() {
   if (countdownTimer) clearInterval(countdownTimer);
   const upd = () => {
-    if (!state.expiresAt) { $('#mailExpiry').textContent = ''; return; }
+    const el = $('#mailExpiry'); if (!el) return;
+    if (!state.expiresAt) { el.textContent = ''; return; }
     const left = state.expiresAt - Date.now();
-    const el = $('#mailExpiry');
-    if (left <= 0) { el.textContent = 'expired'; return; }
+    if (left <= 0) { el.textContent = '· expired'; return; }
     const mins = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-    el.textContent = mins >= 60 ? `expires in ${Math.floor(mins / 60)}h ${mins % 60}m` : `expires in ${mins}:${String(s).padStart(2, '0')}`;
+    el.textContent = mins >= 60 ? `· expires in ${Math.floor(mins / 60)}h ${mins % 60}m` : `· expires in ${mins}:${String(s).padStart(2, '0')}`;
   };
   upd(); countdownTimer = setInterval(upd, 1000);
 }
 
 function renderList() {
   const list = $('#mailList');
-  $('#mailCount').textContent = String(messages.length);
   $('#mailEmpty').hidden = messages.length > 0;
   clear(list);
   for (const m of messages) {
-    const li = h('li', {
-      class: 'mail-item' + (m.seen ? '' : ' is-unread') + (m.id === openId ? ' is-open' : '') + (justArrived.has(m.id) ? ' mail-item-new' : ''),
+    const row = h('li', {
+      class: 'mail-row' + (m.seen ? '' : ' is-unread') + (justArrived.has(m.id) ? ' mail-row-new' : ''),
       attrs: { role: 'button', tabindex: '0' },
       on: { click: () => openMessage(m.id), keydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMessage(m.id); } } },
     },
-      h('div', { class: 'mail-item-top' },
-        h('span', { class: 'mail-item-from' }, m.fromName || m.from || 'Unknown'),
-        h('span', { class: 'mail-item-time' }, fmtTime(m.receivedAt))),
-      h('div', { class: 'mail-item-subject' }, m.subject || '(no subject)'),
-      m.otp ? h('span', { class: 'mail-item-otp' }, 'Code ' + m.otp) : (m.preview ? h('div', { class: 'mail-item-preview' }, m.preview) : null),
+      h('div', { class: 'mail-row-sender' }, m.fromName || m.from || 'Unknown', h('span', { class: 'mail-row-time' }, fmtTime(m.receivedAt))),
+      h('div', { class: 'mail-row-subject' },
+        h('span', { class: 's' }, m.subject || '(no subject)'),
+        m.otp ? h('span', { class: 'mail-row-otp' }, 'Code ' + m.otp) : null),
+      h('button', { class: 'mail-view-btn', type: 'button', attrs: { tabindex: '-1' } }, 'View'),
     );
-    list.appendChild(li);
+    list.appendChild(row);
   }
   justArrived.clear();
 }
 
 async function openMessage(id) {
-  openId = id;
-  renderList();
+  openId = id; renderList();
   let m;
-  if (demo) {
-    m = demoFull.get(id);
-    if (!m) return;
-  } else {
+  if (demo) { m = demoFull.get(id); if (!m) return; }
+  else {
     const { res, data } = await api(`/inboxes/${state.id}/messages/${id}`);
     if (!res.ok) { toast(data.error || 'Could not open the message.', 'err'); return; }
     m = data.message;
   }
-  // mark seen locally
   const sum = messages.find((x) => x.id === id); if (sum) sum.seen = true;
   if (demo && demoFull.get(id)) demoFull.get(id).seen = true;
   renderList();
-  $('#mailViewEmpty').hidden = true;
+  $('#inboxView').hidden = true;
   $('#mailMessage').hidden = false;
   const otpWrap = $('#mailOtp');
   if (m.otp) { otpWrap.hidden = false; $('#mailOtpCode').textContent = m.otp; } else otpWrap.hidden = true;
@@ -220,36 +208,68 @@ async function openMessage(id) {
     at.appendChild(h('span', { class: 'mail-att-label' }, '📎 Attachments (not downloadable):'));
     for (const a of m.attachments) at.appendChild(h('span', { class: 'mail-att' }, `${a.filename} · ${formatBytes(a.size)}`));
   } else at.hidden = true;
-  $('#mailView').classList.add('is-showing');
+  $('.mail-inbox-card').scrollIntoView({ block: 'nearest' });
 }
 
 function showView(id) {
   openId = id;
-  if (id == null) { $('#mailMessage').hidden = true; $('#mailViewEmpty').hidden = false; $('#mailView').classList.remove('is-showing'); }
+  if (id == null) { $('#mailMessage').hidden = true; $('#inboxView').hidden = false; }
 }
+
+/* ---------- QR of the address ---------- */
+async function openQr() {
+  if (!state.address) return;
+  $('#qrAddr').textContent = state.address;
+  $('#qrModal').hidden = false;
+  const holder = $('#qrCanvas'); clear(holder);
+  try {
+    const QR = await loadScript('/assets/vendor/qr-code-styling-1.9.1/qr-code-styling.js', 'QRCodeStyling');
+    new QR({ width: 200, height: 200, type: 'canvas', data: state.address, margin: 0,
+      qrOptions: { errorCorrectionLevel: 'M' },
+      dotsOptions: { type: 'rounded', color: '#15121f' },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#b0129f' },
+      cornersDotOptions: { type: 'dot', color: '#b0129f' },
+      backgroundOptions: { color: '#ffffff' } }).append(holder);
+  } catch (e) { holder.textContent = 'QR code unavailable'; }
+}
+function closeQr() { $('#qrModal').hidden = true; }
 
 /* ---------- actions ---------- */
 function bind() {
-  if (bind._bound) return; // demo re-enters bind(); wire listeners only once
+  if (bind._bound) return;
   bind._bound = true;
-  $('#copyAddr').addEventListener('click', (e) => state.address && copyText(state.address, e.currentTarget));
-  $('#newAddr').addEventListener('click', async () => {
-    if (!confirm('Get a new address? The current inbox and its messages will be dropped.')) return;
-    if (demo) { for (const s of DEMO_SAMPLES) setTimeout(() => addDemoMessage(s), s.delay); messages = []; lastId = 0; demoFull.clear(); state.address = 'you' + Math.floor(Math.random() * 9000 + 1000) + '@demo-inbox.test'; renderAddress(); renderList(); showView(null); }
-    else await createInbox();
+  const copy = (e) => state.address && copyText(state.address, e.currentTarget);
+  $('#copyAddr').addEventListener('click', copy);
+  $('#copyBtn').addEventListener('click', copy);
+  $('#qrBtn').addEventListener('click', openQr);
+  $('#qrClose').addEventListener('click', closeQr);
+  $('#qrModal').addEventListener('click', (e) => { if (e.target === $('#qrModal')) closeQr(); });
+  $('#refreshBtn').addEventListener('click', () => { if (demo) { setRefreshSpin(true); setTimeout(() => setRefreshSpin(false), 600); } else { bumpFast(); refresh(); } });
+  $('#changeBtn').addEventListener('click', () => {
+    const form = $('#customForm');
+    const show = form.hidden; form.hidden = !show;
+    if (show) { $('#customDomain').textContent = '@' + (state.domains[0] || 'demo-inbox.test'); $('#customLocal').focus(); }
   });
-  $('#refreshBtn').addEventListener('click', () => { if (!demo) refresh(); });
+  $('#deleteBtn').addEventListener('click', async () => {
+    if (!confirm('Delete this address and get a new one? The current inbox and its messages are removed.')) return;
+    if (demo) {
+      messages = []; lastId = 0; demoFull.clear(); openId = null;
+      state.address = 'you' + rand() + '@demo-inbox.test';
+      renderAddress(); renderList(); showView(null);
+      for (const s of DEMO_SAMPLES) setTimeout(() => addDemoMessage(s), s.delay);
+      return;
+    }
+    try { await api(`/inboxes/${state.id}`, { method: 'DELETE' }); } catch (e) { /* best effort */ }
+    await createInbox();
+  });
   $('#copyOtp').addEventListener('click', (e) => copyText($('#mailOtpCode').textContent, e.currentTarget));
   $('#msgBack').addEventListener('click', () => showView(null));
   $('#msgDelete').addEventListener('click', async () => {
     if (openId == null) return;
-    if (demo) { demoFull.delete(openId); messages = messages.filter((m) => m.id !== openId); showView(null); renderList(); toast('Message deleted'); return; }
-    const { res } = await api(`/inboxes/${state.id}/messages/${openId}`, { method: 'DELETE' });
-    if (res.ok) { messages = messages.filter((m) => m.id !== openId); showView(null); renderList(); toast('Message deleted'); }
+    if (demo) { demoFull.delete(openId); } else { try { await api(`/inboxes/${state.id}/messages/${openId}`, { method: 'DELETE' }); } catch (e) {} }
+    messages = messages.filter((m) => m.id !== openId); showView(null); renderList(); toast('Message deleted');
   });
-  // custom address
   const form = $('#customForm');
-  $('#editAddr').addEventListener('click', () => { form.hidden = false; $('#customDomain').textContent = '@' + (state.domains[0] || ''); $('#customLocal').focus(); });
   $('#customCancel').addEventListener('click', () => { form.hidden = true; });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -258,14 +278,10 @@ function bind() {
     if (demo) { state.address = v + '@demo-inbox.test'; renderAddress(); form.hidden = true; return; }
     if (await createInbox(v)) form.hidden = true;
   });
-  // pause fast polling when the tab is hidden (save battery + D1 budget)
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stopPolling();
-    else if (state.id) startPolling();
-  });
-  window.addEventListener('beforeunload', () => { stopPolling(); });
-  // test hook
-  window.__mail = { get state() { return state; }, get messages() { return messages; }, refresh, createInbox, openMessage };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeQr(); if (!$('#mailMessage').hidden) showView(null); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopPolling(); else if (state.id && !demo) startPolling(); });
+  window.addEventListener('beforeunload', stopPolling);
+  window.__mail = { get state() { return state; }, get messages() { return messages; }, refresh, createInbox, openMessage, startDemo, openQr };
 }
 
 boot();
