@@ -9,7 +9,7 @@ let srv, b;
 before(async () => { srv = await startServer(8881); b = await launch(); });
 after(async () => { await b?.browser.close(); srv?.stop(); });
 
-const PAGES = ['/', '/image', '/qr', '/mail', '/pdf', '/ocr', '/watermark', '/dev', '/api-tools', '/workbench', '/privacy', '/terms'];
+const PAGES = ['/', '/image', '/qr', '/send', '/mail', '/pdf', '/ocr', '/watermark', '/dev', '/api-tools', '/workbench', '/privacy', '/terms'];
 
 test('every page loads (200) without console errors and fits 390px', async () => {
   for (const p of PAGES) {

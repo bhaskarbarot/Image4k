@@ -14,7 +14,20 @@ const HIGH_WATER = 4 * 1024 * 1024;                // pause sending above 4 MB b
 const LOW_WATER = 256 * 1024;                      // resume once drained to 256 KB
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L — unambiguous to read aloud
 const CODE_LEN = 6;
-const ICE = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] }] };
+// Direct-connection fallback. The real config (incl. a TURN relay for strict networks) comes from /api/ice.
+const ICE_FALLBACK = { iceServers: [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] }] };
+let ICE_CACHE = null;
+
+/** Fetch ICE servers (STUN + TURN relay if configured) so transfers also work across strict NATs. */
+async function getIceConfig() {
+  if (ICE_CACHE) return ICE_CACHE;
+  try {
+    const r = await fetch('/api/ice', { headers: { 'Sec-Fetch-Site': 'same-origin' } });
+    if (r.ok) { const j = await r.json(); if (j && Array.isArray(j.iceServers) && j.iceServers.length) { ICE_CACHE = { iceServers: j.iceServers }; return ICE_CACHE; } }
+  } catch (e) { /* endpoint not deployed (e.g. local static preview) → fall back to STUN */ }
+  ICE_CACHE = ICE_FALLBACK;
+  return ICE_CACHE;
+}
 
 /* ---------- helpers ---------- */
 const $ = (id) => document.getElementById(id);
@@ -81,7 +94,7 @@ async function startSend(file) {
   showSendStage('wait', { file, code });
 
   const ws = new WebSocket(base + '?code=' + code + '&role=sender');
-  const pc = new RTCPeerConnection(ICE);
+  const pc = new RTCPeerConnection(await getIceConfig());
   const dc = pc.createDataChannel('file', { ordered: true });
   dc.binaryType = 'arraybuffer';
   dc.bufferedAmountLowThreshold = LOW_WATER;
@@ -140,7 +153,7 @@ async function startReceive(code) {
 
   showRecvStage('connect', { code });
   const ws = new WebSocket(base + '?code=' + code + '&role=receiver');
-  const pc = new RTCPeerConnection(ICE);
+  const pc = new RTCPeerConnection(await getIceConfig());
   const pending = []; let haveRemote = false; let cleaned = false;
   let meta = null; const chunks = []; let received = 0;
   const prog = makeProgress($('recvBar'), $('recvProgTxt'));

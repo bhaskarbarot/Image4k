@@ -9,6 +9,10 @@ import { startServer, launch, newPage, captureDownload } from './helpers.mjs';
 const SIGNAL = process.env.SIGNAL_WS || 'ws://localhost:8787/ws';
 const PORT = 8097;
 
+// The static preview server has no /api/ice function (it's a Pages Function in production). Stand in for
+// it with a STUN-only config so the page doesn't 404 — production serves the real STUN+TURN config here.
+const mockIce = (page) => page.route('**/api/ice', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }], turn: false }) }));
+
 test('P2P transfer: sender generates a code, receiver gets the exact file', async (t) => {
   // skip gracefully if the signaling worker isn't up
   try { const ws = await import('ws').catch(() => null); if (ws) { await new Promise((res, rej) => { const s = new ws.WebSocket(SIGNAL + '?code=PING&role=sender'); s.onopen = () => { s.close(); res(); }; s.onerror = () => rej(new Error('no signaling server')); setTimeout(() => rej(new Error('timeout')), 2000); }); } }
@@ -20,11 +24,11 @@ test('P2P transfer: sender generates a code, receiver gets the exact file', asyn
     const inject = `window.__SIGNAL_URL__ = ${JSON.stringify(SIGNAL)};`;
 
     const sender = await newPage(context);
-    await sender.addInitScript(inject);
+    await sender.addInitScript(inject); await mockIce(sender);
     await sender.goto(server.url + '/send');
 
     const receiver = await newPage(context);
-    await receiver.addInitScript(inject);
+    await receiver.addInitScript(inject); await mockIce(receiver);
     await receiver.goto(server.url + '/send#receive');
 
     // a multi-chunk file with known content
@@ -64,7 +68,7 @@ test('receiver rejects an invalid code', async (t) => {
   const { browser, context } = await launch();
   try {
     const page = await newPage(context);
-    await page.addInitScript(`window.__SIGNAL_URL__ = ${JSON.stringify(SIGNAL)};`);
+    await page.addInitScript(`window.__SIGNAL_URL__ = ${JSON.stringify(SIGNAL)};`); await mockIce(page);
     await page.goto(server.url + '/send#receive');
     await page.locator('#tab-receive').click();
     await page.locator('#recvCode').fill('AB');          // too short

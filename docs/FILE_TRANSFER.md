@@ -43,6 +43,25 @@ npx wrangler deploy -c wrangler.toml      # or:  npm run deploy
 That's it. With `SIGNAL_URL` set, `/send` works for everyone. Until it's set, `/api/signal-config` returns
 `{"url":null}` and the page shows a friendly "not configured yet" message instead of half-working.
 
+## TURN relay (makes it work across strict networks)
+
+With STUN only, transfers work when the two devices can reach each other directly (same Wi-Fi, friendly
+routers). Across different networks — e.g. **laptop on Wi-Fi + phone on mobile data**, or strict corporate
+NAT — there's often no direct path and the connection fails. A **TURN relay** fixes that by forwarding the
+(still end-to-end-encrypted) packets.
+
+`functions/api/ice.js` mints Cloudflare TURN credentials. To enable it:
+
+1. Cloudflare Dashboard → **Realtime** → **TURN** → **Create** an app. It gives you a **Turn Token ID** and
+   an **API Token**.
+2. On the Pages project (**image4k → Settings → Variables and Secrets**) add:
+   - `TURN_KEY_ID` = the Turn Token ID
+   - `TURN_KEY_API_TOKEN` = the API Token (add it as an **encrypted Secret**)
+3. Redeploy. `/api/ice` now returns STUN **+** TURN, and strict-network transfers connect.
+
+Free tier: Cloudflare TURN includes ~1000 GB/month. Without these vars, `/api/ice` returns STUN only and
+the tool behaves exactly as before (direct-P2P, strict networks fail with a clear message).
+
 ## Cost / limits
 
 - Durable Objects (SQLite-backed) are **free** on the Workers free plan: 100k requests/day, well beyond what
