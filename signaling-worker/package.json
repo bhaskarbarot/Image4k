@@ -1,1 +1,10 @@
-{ "name": "pd-signaling", "private": true, "type": "module", "description": "WebRTC signaling (Durable Object) for the P2P file transfer. Deploy separately from the Pages site." }
+{
+  "name": "pd-signaling",
+  "private": true,
+  "type": "module",
+  "description": "WebRTC signaling (Durable Object) for the P2P file transfer. Deploy separately from the Pages site.",
+  "scripts": {
+    "deploy": "wrangler deploy -c wrangler.toml",
+    "dev": "wrangler dev --local --port 8787 -c wrangler.toml"
+  }
+}

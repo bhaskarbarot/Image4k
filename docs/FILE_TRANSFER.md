@@ -22,9 +22,14 @@ The static site auto-deploys from the repo on Cloudflare Pages. The signaling se
 you deploy once, then point the site at it with an environment variable.
 
 ```bash
-# 1. Deploy the signaling Worker (uses your existing Cloudflare login)
+# 0. Log in once (opens a browser to authorize your Cloudflare account)
 cd signaling-worker
-npx wrangler deploy
+npx wrangler login
+
+# 1. Deploy the signaling Worker.
+#    IMPORTANT: pass -c wrangler.toml. Without it wrangler walks UP to the repo's
+#    root wrangler.jsonc (the Pages/static-assets config) and deploys the wrong thing.
+npx wrangler deploy -c wrangler.toml      # or:  npm run deploy
 #   → prints a URL like:  https://pd-signaling.<your-subdomain>.workers.dev
 ```
 
@@ -50,7 +55,7 @@ That's it. With `SIGNAL_URL` set, `/send` works for everyone. Until it's set, `/
 
 ```bash
 # terminal 1 — signaling server
-cd signaling-worker && npx wrangler dev --local --port 8787
+cd signaling-worker && npx wrangler dev --local --port 8787 -c wrangler.toml   # or: npm run dev
 
 # terminal 2 — the site + the e2e transfer test (real 2-browser WebRTC transfer, verifies bytes match)
 NODE_PATH=<playwright-core+ws> node --test tests/e2e/send.e2e.mjs
