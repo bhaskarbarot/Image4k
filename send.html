@@ -23,7 +23,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
-  <link rel="stylesheet" href="/assets/send/send.css?v=send1">
+  <link rel="stylesheet" href="/assets/css/tools.css?v=ocr1">
+  <link rel="stylesheet" href="/assets/send/send.css?v=send2">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"P2P File Transfer","url":"https://image4k.org/send","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Send files browser to browser over WebRTC with a short pairing code. No upload or storage."}</script>
 </head>
 <body>
@@ -131,7 +132,7 @@
         The file never touches our servers — it's sent over an encrypted browser-to-browser (WebRTC) connection. We only help the two browsers find each other. There's no stored copy and no download link.
       </p>
 
-      <section class="qr-faq" style="max-width:720px;margin:48px auto 0">
+      <section class="send-faq">
         <h2>Good to know</h2>
         <details><summary>Where does the file go?</summary><p>Directly from your browser to theirs. A tiny server only passes the initial "handshake" so the two browsers can connect; after that the file streams peer-to-peer and we never see it. Nothing is saved and there is no link anyone could find later.</p></details>
         <details><summary>Do we both need to be online?</summary><p>Yes. This is a live transfer — like a phone call for files. Keep both tabs open until the progress bar reaches 100%. There's no mailbox holding the file for later.</p></details>
