@@ -51,7 +51,29 @@
       <p class="lead">Straight from your browser to your friend's — no upload, no storage, no link to leak. Share a short code, they type it in, and the file streams directly between your two devices.</p>
     </section>
 
-    <section class="send-wrap">
+    <!-- ===== COMING-SOON GATE =====
+         To re-enable the tool: delete this whole block (style + section), remove `hidden` from the
+         <section class="send-wrap"> below, and un-comment the send.js <script> at the bottom. -->
+    <style>
+      .coming-soon { display: flex; justify-content: center; padding: 8px 16px 90px; }
+      .cs-card { max-width: 540px; width: 100%; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: clamp(36px, 6vw, 56px) clamp(24px, 5vw, 40px); }
+      .cs-ico { width: 74px; height: 74px; margin: 0 auto 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+      .cs-ico svg { width: 34px; height: 34px; }
+      .cs-badge { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #1a1300; background: var(--warn); border-radius: 999px; padding: 3px 11px; margin-bottom: 16px; }
+      .cs-card h2 { font-size: clamp(24px, 3.5vw, 30px); margin: 0 0 12px; }
+      .cs-card p { color: var(--text-2); margin: 0 auto 26px; line-height: 1.65; max-width: 430px; }
+    </style>
+    <section class="wrap coming-soon">
+      <div class="cs-card">
+        <div class="cs-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <span class="cs-badge">Coming soon</span>
+        <h2>Almost ready</h2>
+        <p>We're putting the final touches on the file-transfer tool — it'll be live here very soon. Thanks for your patience!</p>
+        <a class="btn btn-primary" href="/#tools">Explore the other tools</a>
+      </div>
+    </section>
+
+    <section class="send-wrap" hidden>
       <div class="send-tabs" role="tablist" aria-label="Send or receive">
         <button class="send-tab is-active" id="tab-send" role="tab" aria-selected="true" aria-controls="panel-send" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Send
@@ -151,6 +173,7 @@
     </div>
   </footer>
 
-  <script type="module" src="/assets/send/send.js?v=send3"></script>
+  <!-- COMING-SOON GATE: re-enable the line below to turn the tool back on -->
+  <!-- <script type="module" src="/assets/send/send.js?v=send3"></script> -->
 </body>
 </html>

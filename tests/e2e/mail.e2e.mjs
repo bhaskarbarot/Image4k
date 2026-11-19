@@ -2,7 +2,7 @@
 // Proves the REAL flow: create an address in the browser → deliver a raw MIME e-mail to the server
 // (via the test-only ingest route, the same storeIncoming() the Email Worker uses) → the page receives it
 // live by polling and shows the detected OTP. Wrangler: set WRANGLER_BIN, else npx wrangler@4.156.2.
-import { test, before, after } from 'node:test';
+import { test as rawTest, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -44,8 +44,14 @@ const email = ({ from = 'GitHub <noreply@github.com>', subject = 'Verify', text,
     `Content-Type: multipart/alternative; boundary="${bnd}"`, '', '', `--${bnd}`, parts.join(`\r\n--${bnd}\r\n`), `--${bnd}--`, ''].join('\r\n');
 };
 
-before(async () => { wr = startWrangler(); await waitFor(BASE + '/mail'); b = await launch(); });
+// /mail is behind a "coming soon" gate in mail.html, so these live-tool tests are skipped.
+// To re-run them: set GATED = false AND remove the coming-soon gate from mail.html.
+const GATED = true;
+const test = GATED ? rawTest.skip : rawTest;
+
+before(async () => { if (GATED) return; wr = startWrangler(); await waitFor(BASE + '/mail'); b = await launch(); });
 after(async () => {
+  if (GATED) return;
   await b?.browser.close();
   if (wr) { try { process.kill(-wr.pid, 'SIGTERM'); } catch (e) { /* gone */ } }
   if (persist) rmSync(persist, { recursive: true, force: true });

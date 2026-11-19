@@ -1,12 +1,17 @@
 // Temp Mail DEMO mode — runs against the static server (serve.py), no backend needed.
 // Proves anyone can try the full experience in-browser when the real inbox isn't switched on yet.
-import { test, before, after } from 'node:test';
+import { test as rawTest, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { startServer, launch, newPage, noHorizontalScroll } from './helpers.mjs';
 
+// /mail is behind a "coming soon" gate in mail.html, so the demo tests are skipped.
+// To re-run them: set GATED = false AND remove the coming-soon gate from mail.html.
+const GATED = true;
+const test = GATED ? rawTest.skip : rawTest;
+
 let srv, b;
-before(async () => { srv = await startServer(8814); b = await launch(); });
-after(async () => { await b?.browser.close(); srv?.stop(); });
+before(async () => { if (GATED) return; srv = await startServer(8814); b = await launch(); });
+after(async () => { if (GATED) return; await b?.browser.close(); srv?.stop(); });
 
 test('off-state shows a demo button; demo delivers live OTP emails you can open and copy', async () => {
   const page = await newPage(b.context);

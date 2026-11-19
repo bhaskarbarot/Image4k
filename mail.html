@@ -45,6 +45,28 @@
   </header>
 
   <main class="tool-main">
+    <!-- ===== COMING-SOON GATE =====
+         To re-enable the tool: delete this whole block (style + section), remove `hidden` from the
+         <section class="wrap mail-faq"> below, and un-comment the mail.js <script> at the bottom. -->
+    <style>
+      .coming-soon { display: flex; justify-content: center; padding: 56px 16px 90px; }
+      .cs-card { max-width: 540px; width: 100%; text-align: center; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: clamp(36px, 6vw, 56px) clamp(24px, 5vw, 40px); }
+      .cs-ico { width: 74px; height: 74px; margin: 0 auto 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+      .cs-ico svg { width: 34px; height: 34px; }
+      .cs-badge { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #1a1300; background: var(--warn); border-radius: 999px; padding: 3px 11px; margin-bottom: 16px; }
+      .cs-card h2 { font-size: clamp(24px, 3.5vw, 30px); margin: 0 0 12px; }
+      .cs-card p { color: var(--text-2); margin: 0 auto 26px; line-height: 1.65; max-width: 430px; }
+    </style>
+    <section class="wrap coming-soon">
+      <div class="cs-card">
+        <div class="cs-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <span class="cs-badge">Coming soon</span>
+        <h2>Almost ready</h2>
+        <p>We're putting the final touches on the temp-mail inbox — it'll be live here very soon. Thanks for your patience!</p>
+        <a class="btn btn-primary" href="/#tools">Explore the other tools</a>
+      </div>
+    </section>
+
     <section class="wrap mail-wrap" id="mailApp" hidden>
       <div class="mail-demo-banner" id="mailDemoBanner" hidden>
         <span class="mail-demo-badge">DEMO</span>
@@ -148,7 +170,7 @@
       </div>
     </section>
 
-    <section class="wrap mail-faq">
+    <section class="wrap mail-faq" hidden>
       <h2>How temp mail works</h2>
       <details open><summary>Does it really receive email and OTP codes?</summary><p>Yes. The address is a real mailbox on our server. Any email sent to it — including sign-up confirmations and one-time passwords — arrives here within a few seconds, and we automatically highlight the verification code.</p></details>
       <details><summary>Is it private?</summary><p>The inbox can only be read with a secret key stored in your browser, not by anyone who merely knows the address. Everything auto-deletes when the address expires (about an hour of inactivity, 24 hours at most). Don't send anything sensitive or important — it's disposable by design.</p></details>
@@ -175,6 +197,7 @@
     </div>
   </footer>
 
-  <script type="module" src="/assets/mail/mail.js?v=mail10"></script>
+  <!-- COMING-SOON GATE: re-enable the line below to turn the tool back on -->
+  <!-- <script type="module" src="/assets/mail/mail.js?v=mail10"></script> -->
 </body>
 </html>

@@ -1,10 +1,15 @@
 // Real peer-to-peer file transfer: two browser pages, a live WebRTC data channel, received bytes == sent.
 // Needs the signaling worker running locally:  cd signaling-worker && npx wrangler dev --local --port 8787
 // (override with SIGNAL_WS). The file streams page-to-page; this asserts the bytes arrive intact.
-import { test } from 'node:test';
+import { test as rawTest } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { startServer, launch, newPage, captureDownload } from './helpers.mjs';
+
+// /send is behind a "coming soon" gate in send.html, so these live-tool tests are skipped.
+// To re-run them: set GATED = false AND remove the coming-soon gate from send.html.
+const GATED = true;
+const test = GATED ? rawTest.skip : rawTest;
 
 const SIGNAL = process.env.SIGNAL_WS || 'ws://localhost:8787/ws';
 const PORT = 8097;
