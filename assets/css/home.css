@@ -60,6 +60,7 @@
 .hub-item strong { color: #fff; font-size: 15.5px; }
 .hub-item:hover { border-color: var(--accent); background: #262126; color: var(--text-2); transform: translateY(-2px); }
 .hub-item.is-new::after { content: 'New'; position: absolute; top: 10px; right: 10px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 1px 8px; }
+.hub-item.is-soon::after { content: 'Soon'; position: absolute; top: 10px; right: 10px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #1a1300; background: var(--warn); border-radius: 999px; padding: 1px 8px; }
 .hub-item.is-wide { grid-column: 1 / -1; }
 
 .hub-more { text-align: center; color: var(--muted); font-size: 13px; margin: 28px 0 44px; }
