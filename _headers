@@ -27,6 +27,9 @@
 /assets/qr/*
   Cache-Control: public, max-age=0, must-revalidate
 
+/assets/send/*
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Images: one week
 /assets/img/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
@@ -50,6 +53,18 @@
 /api-tools.html
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob: data: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' blob: data: https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+
+# P2P file transfer opens a WebSocket to the signaling worker (wss://…workers.dev, or ws://localhost for
+# local dev) for the WebRTC handshake only. The file itself streams peer-to-peer over WebRTC (not governed
+# by connect-src). Everything else stays locked to 'self'.
+/send
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' wss: ws://localhost:* ws://127.0.0.1:*; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+/send.html
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' wss: ws://localhost:* ws://127.0.0.1:*; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 
 
 # Backend endpoints: Pages Functions set these headers themselves (Cloudflare applies _headers to static

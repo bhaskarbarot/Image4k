@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Free P2P File Transfer – Send Big Files Browser to Browser, No Upload | Professional Developer</title>
+  <meta name="description" content="Send a file straight from your browser to a friend's — share a short code, they type it in, the file streams device to device over an encrypted WebRTC connection. Up to 2 GB. No upload, no storage, no sign-up, no link to leak.">
+  <link rel="canonical" href="https://image4k.org/send">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Professional Developer">
+  <meta property="og:url" content="https://image4k.org/send">
+  <meta property="og:title" content="Free P2P File Transfer – browser to browser, no upload">
+  <meta property="og:description" content="Share a code, send a file directly device to device. Up to 2 GB. Private and free.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/send/send.css?v=send1">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"P2P File Transfer","url":"https://image4k.org/send","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Send files browser to browser over WebRTC with a short pairing code. No upload or storage."}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Professional Developer home"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/image">Image</a></li>
+        <li><a href="/qr">QR code</a></li>
+        <li><a href="/send" class="is-active" aria-current="page">Send file</a></li>
+        <li><a href="/mail">Temp mail</a></li>
+        <li><a href="/pdf">PDF</a></li>
+        <li><a href="/dev">Developer</a></li>
+        <li><a href="/api-tools">API</a></li>
+        <li><a href="/workbench">Workbench</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>Send a <span class="grad">File</span></h1>
+      <p class="lead">Straight from your browser to your friend's — no upload, no storage, no link to leak. Share a short code, they type it in, and the file streams directly between your two devices.</p>
+    </section>
+
+    <section class="send-wrap">
+      <div class="send-tabs" role="tablist" aria-label="Send or receive">
+        <button class="send-tab is-active" id="tab-send" role="tab" aria-selected="true" aria-controls="panel-send" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Send
+        </button>
+        <button class="send-tab" id="tab-receive" role="tab" aria-selected="false" aria-controls="panel-receive" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg> Receive
+        </button>
+      </div>
+
+      <!-- ============ SEND ============ -->
+      <section class="send-card" id="panel-send" role="tabpanel" aria-labelledby="tab-send">
+        <div id="sendPick">
+          <div class="send-drop" id="sendDrop">
+            <div class="send-drop-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            <h2>Drop a file here</h2>
+            <p>or choose one from your device</p>
+            <button class="btn btn-primary" id="sendBrowse" type="button">Choose a file</button>
+            <input type="file" id="sendFile" hidden>
+            <p class="send-limit">Up to <b>2 GB</b> · nothing is uploaded — it goes straight to your friend.</p>
+          </div>
+        </div>
+
+        <div id="sendActive" hidden>
+          <div class="send-file">
+            <div class="send-file-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <div class="send-file-meta"><strong id="sendFileName"></strong><span id="sendFileSize"></span></div>
+          </div>
+          <div class="send-code-box">
+            <p class="send-code-label">Give your friend this code, on the Receive tab:</p>
+            <strong class="send-code" id="sendCode"></strong>
+            <div class="send-code-actions"><button class="btn btn-ghost btn-sm" id="copyCode" type="button">Copy code</button></div>
+          </div>
+          <p class="send-status is-wait" id="sendStatus" role="status" aria-live="polite"></p>
+          <div class="send-prog" id="sendProgWrap" hidden>
+            <div class="send-prog-track"><div class="send-prog-bar" id="sendBar"></div></div>
+            <p class="send-prog-txt" id="sendProgTxt"></p>
+          </div>
+          <div class="send-done-row" id="sendDoneRow" hidden><button class="btn btn-ghost btn-sm" id="sendReset" type="button">Send another file</button></div>
+        </div>
+        <p class="send-err" id="sendErr" role="alert" hidden></p>
+      </section>
+
+      <!-- ============ RECEIVE ============ -->
+      <section class="send-card" id="panel-receive" role="tabpanel" aria-labelledby="tab-receive" hidden>
+        <div id="recvEnter">
+          <form class="recv-form" id="recvForm">
+            <p class="send-code-label" style="margin:0">Enter the code your friend gave you</p>
+            <input class="recv-input" id="recvCode" inputmode="latin" autocomplete="off" spellcheck="false" maxlength="10" placeholder="ABC123" aria-label="Transfer code">
+            <button class="btn btn-primary" type="submit">Connect &amp; receive</button>
+          </form>
+        </div>
+
+        <div id="recvActive" hidden>
+          <div class="send-file" id="recvFileRow" hidden>
+            <div class="send-file-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <div class="send-file-meta"><strong id="recvFileName"></strong><span id="recvFileSize"></span></div>
+          </div>
+          <p class="send-status is-connect" id="recvStatus" role="status" aria-live="polite"></p>
+          <div class="send-prog" id="recvProgWrap" hidden>
+            <div class="send-prog-track"><div class="send-prog-bar" id="recvBar"></div></div>
+            <p class="send-prog-txt" id="recvProgTxt"></p>
+          </div>
+          <div class="send-done-row" id="recvDoneRow" hidden><button class="btn btn-ghost btn-sm" id="recvReset" type="button">Receive another file</button></div>
+        </div>
+        <p class="send-err" id="recvErr" role="alert" hidden></p>
+      </section>
+
+      <div class="send-how">
+        <div class="send-how-item"><span class="n">1</span><strong>Pick a file</strong><span>Drop in or choose any file up to 2 GB. A one-time code appears.</span></div>
+        <div class="send-how-item"><span class="n">2</span><strong>Share the code</strong><span>Text, call or message the 6-character code to the person receiving it.</span></div>
+        <div class="send-how-item"><span class="n">3</span><strong>It transfers</strong><span>They enter it and the file streams device to device — you both stay online until it finishes.</span></div>
+      </div>
+
+      <p class="send-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        The file never touches our servers — it's sent over an encrypted browser-to-browser (WebRTC) connection. We only help the two browsers find each other. There's no stored copy and no download link.
+      </p>
+
+      <section class="qr-faq" style="max-width:720px;margin:48px auto 0">
+        <h2>Good to know</h2>
+        <details><summary>Where does the file go?</summary><p>Directly from your browser to theirs. A tiny server only passes the initial "handshake" so the two browsers can connect; after that the file streams peer-to-peer and we never see it. Nothing is saved and there is no link anyone could find later.</p></details>
+        <details><summary>Do we both need to be online?</summary><p>Yes. This is a live transfer — like a phone call for files. Keep both tabs open until the progress bar reaches 100%. There's no mailbox holding the file for later.</p></details>
+        <details><summary>How big a file can I send?</summary><p>Up to 2 GB. The receiver's browser reassembles the file in memory, so very large transfers work best on a computer rather than a phone.</p></details>
+        <details><summary>Is it secure?</summary><p>WebRTC data channels are encrypted (DTLS) end to end. The pairing code is one-time and random. Still, only share the code with the person you mean to — whoever enters it first receives the file.</p></details>
+        <details><summary>It won't connect — why?</summary><p>A small number of very restrictive networks (some corporate or mobile carriers) block direct connections. Try a different network, or both switch to Wi-Fi.</p></details>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/qr">QR code</a><a href="/send">Send file</a><a href="/mail">Temp mail</a><a href="/dev">Developer tools</a><a href="/api-tools">API tools</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Professional Developer</span>
+    </div>
+  </footer>
+
+  <script type="module" src="/assets/send/send.js?v=send1"></script>
+</body>
+</html>

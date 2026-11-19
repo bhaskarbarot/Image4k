@@ -55,6 +55,7 @@
       <ul class="nav-links">
         <li><a href="/image">Image</a></li>
         <li><a href="/qr">QR code</a></li>
+        <li><a href="/send">Send file</a></li>
         <li><a href="/mail">Temp mail</a></li>
         <li><a href="/pdf">PDF</a></li>
         <li><a href="/dev">Developer</a></li>
@@ -81,12 +82,13 @@
     <section id="tools" class="wrap hub-tools">
       <div class="hub-bar">
         <div class="hub-tabs" role="tablist" aria-label="Tool categories" id="hubTabs">
-          <button type="button" role="tab" data-tab="all" aria-selected="true">All <span>46</span></button>
+          <button type="button" role="tab" data-tab="all" aria-selected="true">All <span>47</span></button>
           <button type="button" role="tab" data-tab="image" aria-selected="false">Image <span>7</span></button>
           <button type="button" role="tab" data-tab="pdf" aria-selected="false">PDF <span>11</span></button>
           <button type="button" role="tab" data-tab="dev" aria-selected="false">Developer <span>17</span></button>
           <button type="button" role="tab" data-tab="api" aria-selected="false">API &amp; Backend <span>9</span></button>
           <button type="button" role="tab" data-tab="email" aria-selected="false">Email <span>1</span></button>
+          <button type="button" role="tab" data-tab="share" aria-selected="false">Share <span>1</span></button>
           <button type="button" role="tab" data-tab="data" aria-selected="false">Data <span>1</span></button>
         </div>
         <label class="hub-search">
@@ -197,6 +199,18 @@
         </div>
       </section>
 
+      <!-- ================= SHARE ================= -->
+      <section class="hub-cat" data-cat="share" aria-labelledby="cat-share">
+        <header class="hub-cat-head">
+          <span class="hub-ico" aria-hidden="true">📤</span>
+          <div><h2 id="cat-share">File sharing</h2><p>Send a file straight from your browser to someone else's — no upload, no stored link.</p></div>
+          <a class="hub-cat-link" href="/send">Open file transfer →</a>
+        </header>
+        <div class="hub-list">
+          <a class="hub-item is-new is-wide" href="/send" data-k="file transfer send share p2p peer to peer webrtc browser to browser no upload wetransfer snapdrop sharedrop big file"><strong>Send a File (P2P)</strong><span>Share a short code and stream any file up to 2 GB device to device over an encrypted WebRTC connection — nothing is uploaded or stored.</span></a>
+        </div>
+      </section>
+
       <!-- ================= DATA ================= -->
       <section class="hub-cat" data-cat="data" aria-labelledby="cat-data">
         <header class="hub-cat-head">
@@ -219,6 +233,7 @@
       <nav aria-label="Footer">
         <a href="/image">Image tools</a>
         <a href="/qr">QR code</a>
+        <a href="/send">Send file</a>
         <a href="/mail">Temp mail</a>
         <a href="/pdf">PDF tools</a>
         <a href="/dev">Developer tools</a>

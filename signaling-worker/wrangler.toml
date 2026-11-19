@@ -1,0 +1,15 @@
+# Standalone signaling server for the P2P file-transfer tool (/send).
+# Deploy:  cd signaling-worker && npx wrangler deploy
+# Then on the Pages project set env var SIGNAL_URL = wss://<this-worker>.workers.dev/ws
+name = "pd-signaling"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+# SQLite-backed Durable Object class (available on the Workers FREE plan).
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]

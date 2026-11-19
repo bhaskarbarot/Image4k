@@ -1,0 +1,1 @@
+{ "name": "pd-signaling", "private": true, "type": "module", "description": "WebRTC signaling (Durable Object) for the P2P file transfer. Deploy separately from the Pages site." }

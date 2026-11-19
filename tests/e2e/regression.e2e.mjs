@@ -47,7 +47,7 @@ test('all internal links on the hub and tool pages resolve', async () => {
 test('hub: category tabs filter, search spans categories, deep link #api', async () => {
   const page = await newPage(b.context);
   await page.goto(srv.url + '/');
-  assert.equal(await page.locator('.hub-item').count(), 46);
+  assert.equal(await page.locator('.hub-item').count(), 47);
   await page.click('[data-tab=dev]');
   assert.deepEqual(await page.locator('.hub-cat:not([hidden])').evaluateAll((e) => e.map((x) => x.dataset.cat)), ['dev']);
   assert.equal(await page.locator('.hub-cat[data-cat=dev] .hub-item:not([hidden])').count(), 17);

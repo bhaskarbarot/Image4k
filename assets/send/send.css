@@ -1,0 +1,107 @@
+/* P2P file transfer (/send) — transfermyfile.com-style layout in the Professional Developer theme. */
+
+.send-wrap { max-width: 720px; margin: 0 auto; padding: 0 16px 80px; }
+
+/* mode switch */
+.send-tabs {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 6px; margin-bottom: 22px;
+}
+.send-tab {
+  appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; color: var(--text-2);
+  background: transparent; border-radius: 11px; padding: 13px 10px; display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: background .18s ease, color .18s ease;
+}
+.send-tab svg { width: 19px; height: 19px; }
+.send-tab:hover { color: #fff; }
+.send-tab.is-active { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 20px rgba(244, 63, 245, .28); }
+
+/* card shell */
+.send-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 30px;
+}
+@media (max-width: 560px) { .send-card { padding: 22px 18px; } }
+
+/* ---- drop zone ---- */
+.send-drop {
+  border: 2px dashed var(--line-2); border-radius: 16px; padding: 48px 24px; text-align: center; cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease; background: var(--bg-2);
+}
+.send-drop:hover { border-color: var(--accent); background: var(--accent-soft); }
+.send-drop.is-drag { border-color: var(--accent); background: var(--accent-soft-2); transform: scale(1.01); }
+.send-drop-ico {
+  width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent);
+}
+.send-drop-ico svg { width: 30px; height: 30px; }
+.send-drop h2 { font-size: 20px; margin: 0 0 6px; }
+.send-drop p { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+.send-drop .btn { pointer-events: none; }
+.send-limit { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.send-limit b { color: var(--text-2); }
+
+/* ---- active / file row ---- */
+.send-file {
+  display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg-2);
+  border: 1px solid var(--line); border-radius: 14px; margin-bottom: 20px;
+}
+.send-file-ico { flex: none; width: 46px; height: 46px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.send-file-ico svg { width: 22px; height: 22px; }
+.send-file-meta { min-width: 0; flex: 1; }
+.send-file-meta strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.send-file-meta span { color: var(--muted); font-size: 13px; }
+
+/* ---- code block ---- */
+.send-code-box { text-align: center; padding: 8px 0 4px; }
+.send-code-label { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.send-code {
+  font-family: var(--mono, ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace);
+  font-size: clamp(34px, 9vw, 52px); font-weight: 800; letter-spacing: .14em; color: #fff;
+  background: var(--bg-2); border: 1px dashed var(--line-2); border-radius: 14px; padding: 16px 10px; display: block;
+}
+.send-code-actions { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+
+/* ---- status + spinner ---- */
+.send-status { text-align: center; font-size: 14px; margin: 18px 0 6px; color: var(--text-2); display: flex; align-items: center; justify-content: center; gap: 9px; }
+.send-status.is-wait::before,
+.send-status.is-connect::before {
+  content: ""; width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--accent-soft-2);
+  border-top-color: var(--accent); animation: send-spin .8s linear infinite; flex: none;
+}
+.send-status.is-live { color: var(--accent); font-weight: 600; }
+.send-status.is-done { color: var(--ok); font-weight: 600; }
+@keyframes send-spin { to { transform: rotate(360deg); } }
+
+/* ---- progress bar (smooth) ---- */
+.send-prog { margin-top: 10px; }
+.send-prog-track { height: 12px; border-radius: 99px; background: var(--card-3); overflow: hidden; }
+.send-prog-bar {
+  height: 100%; width: 0%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  transition: width .18s cubic-bezier(.4, 0, .2, 1);
+}
+.send-prog-txt { text-align: center; font-size: 13px; color: var(--muted); margin-top: 10px; font-variant-numeric: tabular-nums; }
+
+/* ---- receive form ---- */
+.recv-form { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.recv-input {
+  width: 100%; max-width: 360px; text-align: center; font-family: var(--mono, ui-monospace, Menlo, monospace);
+  font-size: 30px; font-weight: 800; letter-spacing: .3em; text-indent: .3em; text-transform: uppercase;
+  padding: 16px 12px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--bg-2); color: #fff;
+}
+.recv-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.recv-input::placeholder { letter-spacing: .2em; color: var(--card-3); }
+
+.send-done-row { display: flex; justify-content: center; gap: 10px; margin-top: 18px; }
+.send-err { margin-top: 18px; padding: 13px 15px; border-radius: 12px; background: rgba(255, 95, 109, .12); border: 1px solid rgba(255, 95, 109, .4); color: #ffb3ba; font-size: 14px; text-align: center; }
+
+/* steps / reassurance strip */
+.send-how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 34px; }
+@media (max-width: 560px) { .send-how { grid-template-columns: 1fr; } }
+.send-how-item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.send-how-item .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-weight: 800; font-size: 14px; margin-bottom: 10px; }
+.send-how-item strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.send-how-item span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+.send-note { margin-top: 26px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.send-note svg { width: 15px; height: 15px; vertical-align: -2px; color: var(--ok); margin-right: 4px; }

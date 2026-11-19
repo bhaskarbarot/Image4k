@@ -19,5 +19,6 @@ migrations
 package.json
 package-lock.json
 email-worker
+signaling-worker
 DEMON-PDF-Crack-main
 SECURITY.md
