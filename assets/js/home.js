@@ -76,3 +76,34 @@
   });
   setTimeout(markSeen, 900 + toasts.length * 750 + 200);
 })();
+
+/* Theme toggle */
+(function () {
+  'use strict';
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  try {
+    const saved = localStorage.getItem('image4k_theme');
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+
+  btn.addEventListener('click', () => {
+    const isLight = document.documentElement.dataset.theme === 'light';
+    const next = isLight ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('image4k_theme', next); } catch (e) {}
+  });
+})();
+
+/* Watch demo button */
+(function () {
+  'use strict';
+  const btn = document.getElementById('watchDemoBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const target = document.getElementById('featured-tools') || document.getElementById('tools');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+})();

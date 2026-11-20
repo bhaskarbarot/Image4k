@@ -43,7 +43,15 @@
 }
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; }
-body { margin: 0; font-family: var(--font); font-size: 15px; line-height: 1.5; color: #f6f1ff; background: #190f28; -webkit-font-smoothing: antialiased; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text, #ffffff);
+  background: var(--pdf-bg, #321617);
+  -webkit-font-smoothing: antialiased;
+}
 /* the editor keeps its light document surface; only the landing/chrome is dark */
 .peditor { color: var(--ink); }
 [hidden] { display: none !important; }
@@ -53,25 +61,46 @@ button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
 kbd { font-family: ui-monospace, monospace; font-size: 12px; background: var(--bg); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 
-/* ---------- top bar ---------- */
-.pbar {
-  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 18px;
-  height: 56px; padding: 0 16px; background: var(--wine); color: #fff;
-  box-shadow: 0 1px 0 rgba(0,0,0,.15);
+/* ---------- top bar / document header integration ---------- */
+body:not(.is-editing) .pbar-doc,
+body:not(.is-editing) .pbar-actions {
+  display: none !important;
 }
-.pbrand { display: inline-flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; font-size: 18px; white-space: nowrap; }
-.pbrand b { font-weight: 800; }
-.pmark { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: #fff; color: var(--wine); font-size: 11px; font-weight: 900; letter-spacing: .02em; }
-.pnav { display: flex; gap: 4px; }
-.pnav { display: flex; align-items: center; gap: 18px; }
-.pnav-link { color: rgba(255,255,255,.82); text-decoration: none; font-weight: 600; font-size: 15px; padding: 4px 0; border-bottom: 2px solid transparent; }
-.pnav-link:hover { color: #fff; }
-.pnav-link.is-active { color: var(--gold); border-bottom-color: var(--gold); }
-.pbar-doc { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 1; justify-content: center; }
-.pdoc-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
-.pdoc-state { font-size: 12px; opacity: .8; white-space: nowrap; }
-.pbar-actions { display: flex; gap: 8px; margin-left: auto; }
-@media (max-width: 760px) { .pnav, .pbar-doc { display: none; } }
+
+body.is-editing .site-header .nav-pill-wrapper {
+  display: none !important;
+}
+
+.pbar-doc {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
+}
+.pdoc-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40vw;
+  color: #ffffff;
+}
+.pdoc-state {
+  font-size: 12px;
+  color: #cfc4e0;
+  white-space: nowrap;
+}
+.pbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+@media (max-width: 760px) {
+  .pbar-doc { display: none; }
+}
 
 /* ---------- buttons ---------- */
 .pbtn {
