@@ -172,11 +172,18 @@ button { cursor: pointer; }
   height: 68px; gap: 16px;
 }
 .logo {
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center; gap: 8px;
   font-weight: 800; font-size: 22px; color: #fff; letter-spacing: -0.02em;
   text-decoration: none; flex: none;
 }
 .logo:hover { color: #fff; opacity: .95; }
+.logo-mark {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent, #6A4FB0), #f43ff5);
+  color: #fff; font-size: 13px; font-weight: 900; letter-spacing: 0;
+  box-shadow: 0 0 14px rgba(139, 61, 255, 0.45);
+}
+.logo small { font-size: 14px; color: var(--muted, #9d90b6); font-weight: 600; margin-left: -4px; }
 .logo-img {
   width: 32px; height: 32px; border-radius: 8px;
   box-shadow: 0 0 14px rgba(139, 61, 255, 0.45);

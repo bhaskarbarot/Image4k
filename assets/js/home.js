@@ -94,16 +94,3 @@
     try { localStorage.setItem('image4k_theme', next); } catch (e) {}
   });
 })();
-
-/* Watch demo button */
-(function () {
-  'use strict';
-  const btn = document.getElementById('watchDemoBtn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const target = document.getElementById('featured-tools') || document.getElementById('tools');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-})();

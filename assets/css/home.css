@@ -104,40 +104,356 @@
 .hero-visual {
   position: relative;
   width: 100%;
-  max-width: 560px;
+  max-width: 580px;
+  min-height: 420px;
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+.device-stage {
+  position: relative;
+  width: 100%;
+  height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.hero-svg-wrapper {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
+/* Ambient glow orbs */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+.glow-orb-1 {
+  width: 320px;
+  height: 320px;
+  top: 10px;
+  right: 20px;
+  background: radial-gradient(circle, rgba(106, 79, 176, 0.45) 0%, rgba(230, 74, 138, 0.2) 50%, transparent 70%);
+  filter: blur(50px);
+}
+.glow-orb-2 {
+  width: 240px;
+  height: 240px;
+  bottom: 20px;
+  left: 20px;
+  background: radial-gradient(circle, rgba(59, 91, 219, 0.35) 0%, rgba(0, 163, 173, 0.15) 50%, transparent 70%);
+  filter: blur(45px);
 }
 
-/* Floating animation on illustration elements */
-.float-tile-1 { animation: floatSlow 4s ease-in-out infinite; }
-.float-tile-2 { animation: floatFast 3.5s ease-in-out infinite 0.5s; }
-.float-tile-3 { animation: floatSlow 4.5s ease-in-out infinite 1s; }
-.float-tile-4 { animation: floatFast 3.8s ease-in-out infinite 1.5s; }
-.float-tile-5 { animation: floatSlow 4.2s ease-in-out infinite 0.8s; }
-.star-twinkle { animation: twinkle 3s ease-in-out infinite; }
+/* Realistic 3D Laptop Mockup */
+.laptop-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 380px;
+  transform: rotateX(6deg) rotateY(-8deg) rotateZ(1deg);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-visual:hover .laptop-wrapper {
+  transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1.02);
+}
+
+.laptop-screen {
+  background: #151720;
+  border-radius: 14px 14px 2px 2px;
+  padding: 10px 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(106, 79, 176, 0.25);
+  position: relative;
+}
+.laptop-camera {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #373b4e;
+  margin: 0 auto 6px;
+  box-shadow: 0 0 2px #5f6680;
+}
+.laptop-display {
+  background: #0d0915;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  aspect-ratio: 16 / 10;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mock App / Browser inside screen */
+.mock-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.mock-titlebar {
+  height: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 10px;
+}
+.mock-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.dot-red { width: 6px; height: 6px; border-radius: 50%; background: #EF4444; }
+.dot-yellow { width: 6px; height: 6px; border-radius: 50%; background: #F59E0B; }
+.dot-green { width: 6px; height: 6px; border-radius: 50%; background: #10B981; }
+
+.mock-address {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 9px;
+  color: #9d90b6;
+  font-weight: 500;
+}
+.mock-address svg { color: #52E0A8; }
+
+.mock-body {
+  flex: 1;
+  display: flex;
+  background: linear-gradient(145deg, #120b1d 0%, #090510 100%);
+  overflow: hidden;
+}
+.mock-sidebar {
+  width: 38px;
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 6px;
+  align-items: center;
+}
+.sb-item {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.sb-item.active {
+  background: #6A4FB0;
+  box-shadow: 0 0 8px rgba(106, 79, 176, 0.6);
+}
+
+.mock-content {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mock-hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge-pill {
+  width: 90px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #6A4FB0, #E64A8A);
+}
+.mock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 2px;
+}
+.mock-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-ico {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+.card-purple .card-ico { background: #6A4FB0; }
+.card-blue .card-ico { background: #3B5BDB; }
+.card-coral .card-ico { background: #F2654A; }
+.card-green .card-ico { background: #1F7A4D; }
+
+.card-line {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.w-70 { width: 70%; }
+.w-65 { width: 65%; }
+.w-60 { width: 60%; }
+.w-50 { width: 50%; }
+.w-45 { width: 45%; }
+.w-40 { width: 40%; }
+.w-30 { width: 30%; }
+
+/* Laptop Base (Keyboard Chassis) */
+.laptop-base {
+  height: 14px;
+  background: linear-gradient(180deg, #2a2d3c 0%, #161722 100%);
+  border-radius: 0 0 16px 16px;
+  margin: 0 -24px;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.8);
+}
+.laptop-notch {
+  width: 48px;
+  height: 4px;
+  background: #111218;
+  border-radius: 0 0 4px 4px;
+  margin: 0 auto;
+}
+.laptop-shadow {
+  position: absolute;
+  bottom: -24px;
+  left: -10%;
+  width: 120%;
+  height: 28px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75) 0%, transparent 75%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Floating Hovering Glass Tool Tiles */
+.floating-tile {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(22, 16, 36, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  user-select: none;
+}
+.floating-tile:hover {
+  transform: translateY(-8px) scale(1.08) !important;
+  z-index: 10;
+}
+
+/* Positions & animations */
+.float-img {
+  top: 14px;
+  left: -20px;
+  animation: floatSlow 4.5s ease-in-out infinite;
+  border-color: rgba(59, 91, 219, 0.35);
+}
+.float-img:hover {
+  border-color: #3B5BDB;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(59, 91, 219, 0.5);
+}
+
+.float-pdf {
+  bottom: 40px;
+  left: -25px;
+  animation: floatFast 3.8s ease-in-out infinite 0.6s;
+  border-color: rgba(242, 101, 74, 0.35);
+}
+.float-pdf:hover {
+  border-color: #F2654A;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(242, 101, 74, 0.5);
+}
+
+.float-dev {
+  top: 10px;
+  right: -15px;
+  animation: floatSlow 5s ease-in-out infinite 1.2s;
+  border-color: rgba(31, 122, 77, 0.35);
+}
+.float-dev:hover {
+  border-color: #1F7A4D;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(31, 122, 77, 0.5);
+}
+
+.float-api {
+  top: 135px;
+  right: -32px;
+  animation: floatFast 4.2s ease-in-out infinite 1.8s;
+  border-color: rgba(0, 163, 173, 0.35);
+}
+.float-api:hover {
+  border-color: #00A3AD;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 163, 173, 0.5);
+}
+
+.float-send {
+  bottom: 30px;
+  right: -10px;
+  animation: floatSlow 4.6s ease-in-out infinite 0.4s;
+  border-color: rgba(230, 74, 138, 0.35);
+}
+.float-send:hover {
+  border-color: #E64A8A;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(230, 74, 138, 0.5);
+}
+
+.ft-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  flex: none;
+}
+.ft-icon svg { width: 18px; height: 18px; }
+.ft-img-icon { background: linear-gradient(135deg, #3B5BDB, #2563EB); }
+.ft-pdf-icon { background: linear-gradient(135deg, #F2654A, #DC2626); }
+.ft-dev-icon { background: linear-gradient(135deg, #1F7A4D, #16A34A); }
+.ft-api-icon { background: linear-gradient(135deg, #00A3AD, #0891B2); }
+.ft-send-icon { background: linear-gradient(135deg, #E64A8A, #DB2777); }
+
+.ft-content {
+  display: flex;
+  flex-direction: column;
+}
+.ft-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+}
+.ft-desc {
+  font-size: 11px;
+  color: #CFC4E0;
+  line-height: 1.2;
+}
 
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+  50% { transform: translateY(-9px); }
 }
 
 @keyframes floatFast {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.35; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.15); }
+  50% { transform: translateY(-13px); }
 }
 
 @media (max-width: 960px) {
@@ -153,20 +469,51 @@
     justify-content: center;
   }
   .hero-visual {
-    margin-top: 24px;
-    max-width: 440px;
+    margin-top: 36px;
+    max-width: 480px;
   }
+  .laptop-wrapper {
+    width: 320px;
+    transform: rotateX(4deg) rotateY(0deg) rotateZ(0deg);
+  }
+  .float-img { left: -5px; }
+  .float-pdf { left: -10px; }
+  .float-dev { right: -5px; }
+  .float-api { right: -15px; }
+  .float-send { right: -5px; }
 }
 
-/* ---------- 8 Featured Category Cards ---------- */
+@media (max-width: 480px) {
+  .hero-visual {
+    min-height: 340px;
+  }
+  .laptop-wrapper {
+    width: 270px;
+  }
+  .floating-tile {
+    padding: 6px 10px;
+  }
+  .ft-desc { display: none; }
+  .ft-icon { width: 28px; height: 28px; }
+  .ft-icon svg { width: 14px; height: 14px; }
+  .float-api { display: none; }
+}
+
+/* ---------- 7 Featured Category Cards ---------- */
 .featured-section {
   padding: 16px 0 40px;
 }
 
 .featured-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+}
+
+@media (min-width: 1200px) {
+  .featured-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 1100px) {
