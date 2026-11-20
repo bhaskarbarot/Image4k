@@ -159,3 +159,7 @@ mark.dt-hit.alt { background: rgba(121, 192, 255, .3); box-shadow: 0 0 0 1px rgb
   .dt-code, .dt-pre { min-height: 200px; font-size: 13px; }
   .dt-kv-row { grid-template-columns: 18px minmax(0, 1fr) minmax(0, 1fr) 28px; }
 }
+
+/* light mode */
+html[data-theme="light"] .dt-ov-card strong { color: #171427; }
+html[data-theme="light"] .dt-ov-card { color: #58506e; }

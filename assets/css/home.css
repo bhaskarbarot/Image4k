@@ -1069,3 +1069,35 @@ html[data-theme="light"] .wn-link strong { color: #171427; }
 html[data-theme="light"] .wn-link span { color: #6e6680; }
 html[data-theme="light"] .wn-x { color: #6e6680; }
 html[data-theme="light"] .wn-x:hover { background: rgba(0,0,0,.06); color: #171427; }
+
+/* ===================== LIGHT MODE — home hub, laptop, cards ===================== */
+/* hub tab bar + search */
+html[data-theme="light"] .hub-bar { background: rgba(255,255,255,.9); border-color: rgba(0,0,0,.06); }
+html[data-theme="light"] .hub-tabs { background: rgba(0,0,0,.045); border-color: rgba(0,0,0,.08); }
+html[data-theme="light"] .hub-tabs button { color: #4a4360; }
+html[data-theme="light"] .hub-tabs button span { background: rgba(0,0,0,.28); color: #fff; }
+html[data-theme="light"] .hub-tabs button:hover { background: rgba(0,0,0,.06); color: #171427; }
+html[data-theme="light"] .hub-tabs button[aria-selected="true"] { color: #fff; }
+html[data-theme="light"] .hub-tabs button[aria-selected="true"] span { background: rgba(0,0,0,.22); }
+html[data-theme="light"] .hub-search { background: #ffffff; border-color: rgba(0,0,0,.12); }
+html[data-theme="light"] .hub-search input { color: #171427; }
+html[data-theme="light"] .hub-search input::placeholder { color: #9a93a8; }
+html[data-theme="light"] .hub-search svg { color: #9a93a8; }
+/* category sections + tool items */
+html[data-theme="light"] .hub-cat { background: #ffffff; border-color: rgba(0,0,0,.08); }
+html[data-theme="light"] .hub-cat-head h2 { color: #171427; }
+html[data-theme="light"] .hub-item { background: #ffffff; border-color: rgba(0,0,0,.1); color: #58506e; }
+html[data-theme="light"] .hub-item strong { color: #171427; }
+html[data-theme="light"] .hub-item:hover { border-color: var(--home-accent); background: #faf9fe; }
+html[data-theme="light"] .hub-empty { color: #58506e; }
+/* featured cards: stronger borders so white cards are distinct */
+html[data-theme="light"] .f-card { border-color: rgba(23,20,39,.13); box-shadow: 0 6px 20px rgba(23,20,39,.07); }
+/* laptop / computer mock → light device */
+html[data-theme="light"] .laptop-screen { background: #e8e6f1; }
+html[data-theme="light"] .laptop-display { background: #f4f3f9; }
+html[data-theme="light"] .mock-window { background: #ffffff; }
+html[data-theme="light"] .mock-titlebar { background: #eceaf4; border-bottom-color: rgba(0,0,0,.06); }
+html[data-theme="light"] .mock-address { background: rgba(0,0,0,.05); color: #58506e; }
+html[data-theme="light"] .mock-body { background: #ffffff; }
+html[data-theme="light"] .mock-sidebar { background: #f1eff8; }
+html[data-theme="light"] .mock-card { background: #f4f3f9; }
