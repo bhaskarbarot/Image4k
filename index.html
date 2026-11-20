@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css?v=20261120b">
-  <link rel="stylesheet" href="/assets/css/home.css?v=20261120a">
+  <link rel="stylesheet" href="/assets/css/home.css?v=20261120b">
 
   <script type="application/ld+json">
   {
@@ -268,16 +268,24 @@
       </ul>
     </div>
   </footer>
-  <aside class="whatsnew" id="whatsnew" role="dialog" aria-label="Recently added tools" tabindex="-1" hidden>
-    <button class="wn-x" id="wnClose" type="button" aria-label="Dismiss">&times;</button>
-    <div class="wn-head"><span class="wn-badge">New</span> Just added</div>
-    <ul class="wn-list">
-      <li><a href="/convert"><strong>Image Converter</strong><span>HEIC→JPG, PNG, WebP — no upload</span></a></li>
-      <li><a href="/metadata"><strong>Metadata Remover</strong><span>Strip GPS &amp; EXIF from photos</span></a></li>
-      <li><a href="/qr"><strong>QR Code Generator</strong><span>Logo, colours, scan-verified</span></a></li>
-    </ul>
-  </aside>
+  <div class="whatsnew" id="whatsnew" aria-live="polite" aria-label="Recently added tools">
+    <article class="wn-toast">
+      <button class="wn-x" type="button" aria-label="Dismiss">&times;</button>
+      <span class="wn-badge">New</span>
+      <a class="wn-link" href="/convert"><strong>Image Converter</strong><span>HEIC→JPG, PNG, WebP — no upload</span></a>
+    </article>
+    <article class="wn-toast">
+      <button class="wn-x" type="button" aria-label="Dismiss">&times;</button>
+      <span class="wn-badge">New</span>
+      <a class="wn-link" href="/metadata"><strong>Metadata Remover</strong><span>Strip GPS &amp; EXIF from photos</span></a>
+    </article>
+    <article class="wn-toast">
+      <button class="wn-x" type="button" aria-label="Dismiss">&times;</button>
+      <span class="wn-badge">New</span>
+      <a class="wn-link" href="/qr"><strong>QR Code Generator</strong><span>Logo, colours, scan-verified</span></a>
+    </article>
+  </div>
 
-  <script src="/assets/js/home.js?v=20261120a" defer></script>
+  <script src="/assets/js/home.js?v=20261120b" defer></script>
 </body>
 </html>

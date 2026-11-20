@@ -58,18 +58,21 @@
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VALID.has(h)) select(h); });
 })();
 
-/* "What's new" slide-in — shows recently added tools once per version; dismiss is remembered.
-   Bump VERSION whenever the list changes so returning visitors see it again. */
+/* "What's new" — recently added tools slide in one by one as separate gold toasts; shown once per
+   version (dismiss is remembered). Bump VERSION whenever the list changes so visitors see it again. */
 (function () {
   'use strict';
   const el = document.getElementById('whatsnew');
   if (!el) return;
-  const VERSION = '2026-11-20';
+  const VERSION = '2026-11-20b';
   let seen = null; try { seen = localStorage.getItem('pd_whatsnew'); } catch (e) { /* private mode */ }
-  if (seen === VERSION) return;
-  const close = () => { el.classList.remove('is-in'); try { localStorage.setItem('pd_whatsnew', VERSION); } catch (e) {} setTimeout(() => { el.hidden = true; }, 340); };
-  const btn = document.getElementById('wnClose');
-  if (btn) btn.addEventListener('click', close);
-  el.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-  setTimeout(() => { el.hidden = false; requestAnimationFrame(() => el.classList.add('is-in')); }, 1000);
+  if (seen === VERSION) { el.remove(); return; }
+  const markSeen = () => { try { localStorage.setItem('pd_whatsnew', VERSION); } catch (e) {} };
+  const toasts = Array.from(el.querySelectorAll('.wn-toast'));
+  toasts.forEach((t, i) => {
+    setTimeout(() => t.classList.add('is-in'), 900 + i * 750);      // appear one after another
+    const x = t.querySelector('.wn-x');
+    if (x) x.addEventListener('click', () => { t.classList.remove('is-in'); t.classList.add('is-out'); markSeen(); setTimeout(() => t.remove(), 320); });
+  });
+  setTimeout(markSeen, 900 + toasts.length * 750 + 200);
 })();

@@ -78,22 +78,27 @@
 .hub-popular a { display: inline-flex; align-items: center; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--text-2); font-size: 13.5px; font-weight: 600; transition: border-color .15s, color .15s, background .15s; }
 .hub-popular a:hover { border-color: var(--accent); color: #fff; background: var(--accent-soft); }
 
-/* ---- "What's new" slide-in ---- */
+/* ---- "What's new" — separate gold toasts, appearing one by one ---- */
 .whatsnew {
-  position: fixed; right: 18px; bottom: 18px; z-index: 60; width: 300px; max-width: calc(100vw - 36px);
-  background: var(--card); border: 1px solid var(--line-2); border-radius: 16px; padding: 15px 16px 14px;
-  box-shadow: 0 18px 50px rgba(0,0,0,.5); transform: translateX(120%); opacity: 0;
+  position: fixed; right: 18px; bottom: 18px; z-index: 60;
+  display: flex; flex-direction: column; gap: 10px;
+  width: 300px; max-width: calc(100vw - 36px); pointer-events: none;
+}
+.wn-toast {
+  position: relative; pointer-events: auto;
+  background: var(--card); border: 1px solid var(--line-2); border-left: 4px solid var(--gold);
+  border-radius: 14px; padding: 13px 34px 13px 14px; box-shadow: 0 14px 40px rgba(0,0,0,.5);
+  transform: translateX(125%); opacity: 0;
   transition: transform .42s cubic-bezier(.2,.8,.2,1), opacity .42s ease;
 }
-.whatsnew.is-in { transform: translateX(0); opacity: 1; }
-.wn-x { position: absolute; top: 9px; right: 10px; width: 26px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.wn-toast.is-in { transform: translateX(0); opacity: 1; }
+.wn-toast.is-out { transform: translateX(125%); opacity: 0; }
+.wn-x { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
 .wn-x:hover { background: var(--card-3); color: #fff; }
-.wn-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; margin-bottom: 12px; }
-.wn-badge { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 2px 8px; }
-.wn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.wn-list a { display: block; padding: 9px 11px; border-radius: 11px; background: var(--bg-2); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
-.wn-list a:hover { border-color: var(--accent); background: var(--accent-soft); }
-.wn-list strong { display: block; font-size: 13.5px; color: #fff; }
-.wn-list span { font-size: 12px; color: var(--muted); }
+.wn-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--gold-ink); background: var(--gold); border-radius: 999px; padding: 2px 8px; margin-bottom: 8px; }
+.wn-link { display: block; }
+.wn-link strong { display: block; font-size: 14px; color: #fff; }
+.wn-link span { font-size: 12px; color: var(--muted); }
+.wn-link:hover strong { color: var(--gold); }
 @media (max-width: 420px) { .whatsnew { right: 10px; left: 10px; bottom: 10px; width: auto; } }
-@media (prefers-reduced-motion: reduce) { .whatsnew { transition: opacity .2s ease; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .wn-toast { transition: opacity .2s ease; transform: none; } .wn-toast.is-out { transform: none; } }
