@@ -1026,3 +1026,46 @@
 @media (max-width: 420px) {
   .whatsnew { right: 10px; left: 10px; bottom: 10px; width: auto; }
 }
+
+/* Mobile: floating tiles are hidden, so shrink the illustration stage to remove dead space. */
+@media (max-width: 820px) {
+  .hero-visual { min-height: 320px; }
+  .device-stage { height: 320px; }
+}
+@media (max-width: 480px) {
+  .hero-visual { min-height: 250px; margin-top: 18px; }
+  .device-stage { height: 250px; }
+}
+
+/* ========================= LIGHT MODE ========================= */
+html[data-theme="light"] .hero-title { color: #171427; }
+html[data-theme="light"] .hero-lead { color: #58506e; }
+
+/* featured category cards → soft light tints with dark text (keep the colour identity) */
+html[data-theme="light"] .f-title { color: #171427; }
+html[data-theme="light"] .f-desc { color: #5c5472; }
+html[data-theme="light"] .f-card { border: 1px solid rgba(23,20,39,.09); box-shadow: 0 8px 26px rgba(23,20,39,.06); }
+html[data-theme="light"] .f-card:hover { box-shadow: 0 18px 42px rgba(23,20,39,.13); }
+html[data-theme="light"] .f-watermark { opacity: .08; }
+html[data-theme="light"] .f-card-home      { background: linear-gradient(160deg, #efe9fb 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-image     { background: linear-gradient(160deg, #e8effe 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-pdf       { background: linear-gradient(160deg, #fdeae7 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-dev       { background: linear-gradient(160deg, #e6f5ec 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-api       { background: linear-gradient(160deg, #e2f6f8 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-workbench { background: linear-gradient(160deg, #fceee4 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-send      { background: linear-gradient(160deg, #fde9f1 0%, #ffffff 82%); }
+html[data-theme="light"] .f-card-mail      { background: linear-gradient(160deg, #e4f8ee 0%, #ffffff 82%); }
+
+/* floating tiles → light cards */
+html[data-theme="light"] .floating-tile { background: rgba(255,255,255,.96); border-color: rgba(23,20,39,.1); box-shadow: 0 10px 30px rgba(23,20,39,.12); }
+html[data-theme="light"] .ft-title { color: #171427; }
+html[data-theme="light"] .ft-desc { color: #6e6680; }
+
+/* softer ambient glow + lighter section tints on light */
+html[data-theme="light"] .lp-hero::before { opacity: .5; }
+html[data-theme="light"] .lp-section-head p { color: #58506e; }
+html[data-theme="light"] .wn-toast { background: #ffffff; border-color: rgba(23,20,39,.1); box-shadow: 0 14px 40px rgba(23,20,39,.14); }
+html[data-theme="light"] .wn-link strong { color: #171427; }
+html[data-theme="light"] .wn-link span { color: #6e6680; }
+html[data-theme="light"] .wn-x { color: #6e6680; }
+html[data-theme="light"] .wn-x:hover { background: rgba(0,0,0,.06); color: #171427; }

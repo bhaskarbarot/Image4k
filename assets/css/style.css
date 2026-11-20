@@ -117,6 +117,13 @@ html[data-theme="light"] .nav-links {
 html[data-theme="light"] .nav-tab {
   color: #4b5568;
 }
+html[data-theme="light"] .logo { color: #171427; }
+html[data-theme="light"] .logo small { color: #6e6680; }
+html[data-theme="light"] .nav-tab a { color: #4b5568; }
+html[data-theme="light"] .nav-tab a:hover { color: #171427; background: rgba(0,0,0,.05); }
+html[data-theme="light"] .site-footer { background: #ffffff; border-top-color: rgba(0,0,0,.08); }
+html[data-theme="light"] .builder { border-top-color: rgba(0,0,0,.08); }
+html[data-theme="light"] .social a { background: #f1f0f6; border-color: rgba(0,0,0,.08); color: #4b5568; }
 html[data-theme="light"] .theme-toggle-btn {
   background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -767,4 +774,34 @@ dialog.speed p { color: var(--text-2); margin: 0 0 16px; font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ===================== Responsive navbar & hero (phone/tablet) ===================== */
+/* Tablet & phone: compact icon-only nav so all 8 categories fit without a cut-off strip. */
+@media (max-width: 1100px) {
+  .nav-tab a span { display: none; }
+  .nav-tab a { padding: 9px; justify-content: center; }
+  .nav-ico { width: 18px; height: 18px; }
+  .nav-links { gap: 4px; padding: 4px; }
+  .nav-pill-wrapper { max-width: 100%; }
+}
+/* Phones: drop the wordmark to just the logo mark so the icon nav fits a 360–400px screen. */
+@media (max-width: 600px) {
+  .logo { font-size: 0; gap: 0; }
+  .logo small { display: none; }
+  .logo-mark { font-size: 13px; }
+  .nav { gap: 6px; }
+  .nav-tab a { padding: 7px; }
+  .nav-ico { width: 17px; height: 17px; }
+}
+@media (max-width: 400px) {
+  .nav-links { gap: 1px; padding: 3px; }
+  .nav-tab a { padding: 6px; }
+  .nav-ico { width: 16px; height: 16px; }
+  .theme-toggle-btn { width: 36px; height: 36px; }
+  .logo-mark { width: 32px; height: 32px; }
+}
+/* Hide the decorative floating tiles on tablet/phone (they scatter); the colour cards below navigate. */
+@media (max-width: 820px) {
+  .floating-tile { display: none !important; }
 }

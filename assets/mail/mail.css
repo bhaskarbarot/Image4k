@@ -145,3 +145,8 @@ body.mail-page::after {
   .mail-row-subject { grid-column: 1 / -1; }
   .mail-view-btn { grid-row: 1; grid-column: 2; }
 }
+
+/* light mode */
+html[data-theme="light"] body.mail-page { background: #f7f4fb; }
+html[data-theme="light"] body.mail-page::before { opacity: .3; }
+html[data-theme="light"] body.mail-page::after { opacity: .35; }

@@ -41,7 +41,7 @@
   const picaInst = typeof window.pica === 'function' ? window.pica() : null;
 
   const TOOL_TEXT = {
-    hd:       { h1: 'Convert images to HD &amp; 4K for free', lead: 'Upscale photos to HD, 4K or 8K with crisp, sharp detail — up to 10 images at once, right in your browser.', dz: 'Convert Photo to HD', run: 'Make HD', size: 'Output shape', suffix: 'hd' },
+    hd:       { h1: 'Convert images to HD & 4K for free', lead: 'Upscale photos to HD, 4K or 8K with crisp, sharp detail — up to 10 images at once, right in your browser.', dz: 'Convert Photo to HD', run: 'Make HD', size: 'Output shape', suffix: 'hd' },
     resize:   { h1: 'Resize images for any platform', lead: 'Pick from 80+ sizes for Instagram, YouTube, Facebook, X, ads and print — or enter your own, with optional 4K quality.', dz: 'Resize Images', run: 'Resize', size: 'Choose size', suffix: 'resized' },
     compress: { h1: 'Compress images without losing quality', lead: 'Shrink JPG, PNG and WebP files by up to 90% — by quality or to an exact size in KB. Up to 10 images at once.', dz: 'Compress Images', run: 'Compress', size: 'Compression', suffix: 'compressed' },
     bg:       { h1: 'Remove image backgrounds for free', lead: 'AI cut-outs in seconds. Keep the background transparent, pick any color from the palette, or blur it.', dz: 'Remove Background', run: 'Remove background', size: 'Canvas size', suffix: 'no-bg' }
