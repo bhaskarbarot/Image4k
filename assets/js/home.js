@@ -57,3 +57,19 @@
   select(VALID.has(fromHash) ? fromHash : 'all');
   window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (VALID.has(h)) select(h); });
 })();
+
+/* "What's new" slide-in — shows recently added tools once per version; dismiss is remembered.
+   Bump VERSION whenever the list changes so returning visitors see it again. */
+(function () {
+  'use strict';
+  const el = document.getElementById('whatsnew');
+  if (!el) return;
+  const VERSION = '2026-11-20';
+  let seen = null; try { seen = localStorage.getItem('pd_whatsnew'); } catch (e) { /* private mode */ }
+  if (seen === VERSION) return;
+  const close = () => { el.classList.remove('is-in'); try { localStorage.setItem('pd_whatsnew', VERSION); } catch (e) {} setTimeout(() => { el.hidden = true; }, 340); };
+  const btn = document.getElementById('wnClose');
+  if (btn) btn.addEventListener('click', close);
+  el.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  setTimeout(() => { el.hidden = false; requestAnimationFrame(() => el.classList.add('is-in')); }, 1000);
+})();

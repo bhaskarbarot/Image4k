@@ -71,3 +71,29 @@
   .hub-tabs button { padding: 8px 12px; font-size: 14px; }
   .hub-list { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---- popular tools strip (hero) ---- */
+.hub-popular { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 26px; }
+.hub-popular-label { color: var(--muted); font-size: 13px; font-weight: 700; margin-right: 2px; }
+.hub-popular a { display: inline-flex; align-items: center; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--text-2); font-size: 13.5px; font-weight: 600; transition: border-color .15s, color .15s, background .15s; }
+.hub-popular a:hover { border-color: var(--accent); color: #fff; background: var(--accent-soft); }
+
+/* ---- "What's new" slide-in ---- */
+.whatsnew {
+  position: fixed; right: 18px; bottom: 18px; z-index: 60; width: 300px; max-width: calc(100vw - 36px);
+  background: var(--card); border: 1px solid var(--line-2); border-radius: 16px; padding: 15px 16px 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.5); transform: translateX(120%); opacity: 0;
+  transition: transform .42s cubic-bezier(.2,.8,.2,1), opacity .42s ease;
+}
+.whatsnew.is-in { transform: translateX(0); opacity: 1; }
+.wn-x { position: absolute; top: 9px; right: 10px; width: 26px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.wn-x:hover { background: var(--card-3); color: #fff; }
+.wn-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; margin-bottom: 12px; }
+.wn-badge { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: 2px 8px; }
+.wn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.wn-list a { display: block; padding: 9px 11px; border-radius: 11px; background: var(--bg-2); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
+.wn-list a:hover { border-color: var(--accent); background: var(--accent-soft); }
+.wn-list strong { display: block; font-size: 13.5px; color: #fff; }
+.wn-list span { font-size: 12px; color: var(--muted); }
+@media (max-width: 420px) { .whatsnew { right: 10px; left: 10px; bottom: 10px; width: auto; } }
+@media (prefers-reduced-motion: reduce) { .whatsnew { transition: opacity .2s ease; transform: none; } }

@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
-  <link rel="stylesheet" href="/assets/css/home.css?v=20261119a">
+  <link rel="stylesheet" href="/assets/css/home.css?v=20261120a">
 
   <script type="application/ld+json">
   {
@@ -71,11 +71,21 @@
       <div class="wrap">
         <span class="hub-kicker">Free · private · no sign-up</span>
         <h1>One home for your <span class="grad">image, PDF &amp; developer</span> work</h1>
-        <p class="lead">45+ fast tools in one place — upscale and edit images, make QR codes, work with PDFs, format and convert data, test APIs and receive webhooks. Free, with no account and no limits.</p>
+        <p class="lead">47+ fast tools in one place — upscale and edit images, make QR codes, work with PDFs, format and convert data, test APIs and receive webhooks. Free, with no account and no limits.</p>
         <span class="hub-privacy">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
           Files and data stay in your browser · only the API proxy &amp; webhook tester use our server
         </span>
+        <div class="hub-popular" aria-label="Most useful tools">
+          <span class="hub-popular-label">Most useful:</span>
+          <a href="/image#hd">Make HD / 4K</a>
+          <a href="/convert">HEIC → JPG</a>
+          <a href="/metadata">Remove Metadata</a>
+          <a href="/image#bg">Remove Background</a>
+          <a href="/qr">QR Code</a>
+          <a href="/dev#json-formatter">JSON Formatter</a>
+          <a href="/pdf">PDF Tools</a>
+        </div>
       </div>
     </section>
 
@@ -271,6 +281,16 @@
       </ul>
     </div>
   </footer>
-  <script src="/assets/js/home.js?v=20261116a" defer></script>
+  <aside class="whatsnew" id="whatsnew" role="dialog" aria-label="Recently added tools" tabindex="-1" hidden>
+    <button class="wn-x" id="wnClose" type="button" aria-label="Dismiss">&times;</button>
+    <div class="wn-head"><span class="wn-badge">New</span> Just added</div>
+    <ul class="wn-list">
+      <li><a href="/convert"><strong>Image Converter</strong><span>HEIC→JPG, PNG, WebP — no upload</span></a></li>
+      <li><a href="/metadata"><strong>Metadata Remover</strong><span>Strip GPS &amp; EXIF from photos</span></a></li>
+      <li><a href="/qr"><strong>QR Code Generator</strong><span>Logo, colours, scan-verified</span></a></li>
+    </ul>
+  </aside>
+
+  <script src="/assets/js/home.js?v=20261120a" defer></script>
 </body>
 </html>
