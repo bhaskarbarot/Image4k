@@ -408,26 +408,7 @@ body.is-editing .pfooter { display: none; }
 #cropDialog { text-align: center; }
 #cropDialog .pdialog-actions, #cropDialog h2, #cropDialog .pnote { text-align: left; }
 
-/* ---- site footer on the PDF landing (dark crimson, matches PDF service theme) ---- */
-.site-footer { border-top: 1px solid rgba(242, 101, 74, 0.22); padding: 40px 0; color: #cfc4e0; font-size: 14px; background: var(--pdf-bg, #321617); }
-.site-footer .wrap { width: 100%; max-width: 1320px; margin: 0 auto; padding: 0 16px; }
-@media (min-width: 768px) { .site-footer .wrap { padding: 0 32px; } }
-.foot { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; }
-.foot .logo { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 22px; color: #fff; text-decoration: none; }
-.foot .logo-mark { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, #F2654A, #e64a8a); color: #ffffff; font-weight: 900; font-size: 13px; }
-.foot .logo small { font-size: 13px; color: #cfc4e0; font-weight: 600; margin-left: -2px; }
-.foot nav { display: flex; flex-wrap: wrap; gap: 16px; }
-.foot nav a { color: #cfc4e0; text-decoration: none; }
-.foot nav a:hover { color: #F2654A; }
-.builder { display: flex; flex-wrap: wrap; gap: 16px 24px; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 22px; border-top: 1px solid rgba(242, 101, 74, 0.2); }
-.builder-info { display: flex; flex-direction: column; gap: 2px; }
-.builder-label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #cfc4e0; }
-.builder-name { font-size: 20px; font-weight: 800; background: linear-gradient(90deg, #F2654A, #ffd166); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.builder-role { color: #cfc4e0; font-size: 14px; }
-.social { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
-.social a { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #3d1c1e; color: #ffffff; border: 1px solid rgba(242, 101, 74, 0.25); text-decoration: none; transition: background .15s, transform .15s; }
-.social a:hover { background: #F2654A; border-color: #F2654A; color: #ffffff; transform: translateY(-2px); }
-.social svg { width: 19px; height: 19px; }
+/* The site footer uses the shared styles from style.css so it's identical to every other page. */
 
 /* ===================== LIGHT MODE (landing; editor keeps its light doc surface) ===================== */
 html[data-theme="light"] body { background: #f7f4fb; color: #1a1427; }
@@ -438,9 +419,3 @@ html[data-theme="light"] .ptool { background: #ffffff; border-color: rgba(23,20,
 html[data-theme="light"] .ptool b { color: #1a1427; }
 html[data-theme="light"] .ptool span:not(.ptool-ico) { color: #6e6680; }
 html[data-theme="light"] .ptool.is-ready:hover { border-color: var(--gold); box-shadow: 0 12px 30px rgba(23,20,39,.12); }
-html[data-theme="light"] .site-footer { background: #ffffff; border-top-color: rgba(0,0,0,.08); color: #6e6680; }
-html[data-theme="light"] .builder { border-top-color: rgba(0,0,0,.08); }
-html[data-theme="light"] .foot nav a { color: #58506e; }
-html[data-theme="light"] .foot .logo { color: #1a1427; }
-html[data-theme="light"] .builder-role { color: #58506e; }
-html[data-theme="light"] .social a { background: #f1f0f6; border-color: rgba(0,0,0,.08); color: #58506e; }

@@ -824,3 +824,7 @@ html[data-theme="light"] .steps h3 { color: #171427; }
 html[data-theme="light"] .steps p { color: #58506e; }
 html[data-theme="light"] .tool-card { border-color: rgba(0,0,0,.08); }
 html[data-theme="light"] .tool-card h3 { color: #171427; }
+
+/* ===== Sticky footer: keep the footer at the viewport bottom on short pages (no gap under it) ===== */
+body { display: flex; flex-direction: column; min-height: 100dvh; }
+body > .site-footer { margin-top: auto; }
