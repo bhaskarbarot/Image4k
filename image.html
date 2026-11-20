@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-service="image">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261120b">
 
   <script type="application/ld+json">
   {
@@ -66,33 +66,20 @@
 <body>
   <a class="sr-only" href="#app">Skip to the tool</a>
 
-  <div class="promo">100% free · No sign-up · No watermark · <b>Your images never leave your device</b></div>
-
-  <header class="site-header">
+    <header class="site-header">
     <div class="wrap nav">
-      <a class="logo" href="/" aria-label="Professional Developer home">
-        <span class="logo-mark" aria-hidden="true">4K</span>Image4k<small>.org</small>
-      </a>
+      <a class="logo" href="/" aria-label="Professional Developer home"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
       <ul class="nav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/convert">Convert</a></li>
-        <li><a href="/metadata">Remove metadata</a></li>
-        <li><a href="/ocr">Image to text</a></li>
-        <li><a href="/watermark">Watermark remover</a></li>
-        <li><a href="/qr">QR code</a></li>
+        <li><a href="/image">Image</a></li>
+        <li><a href="/pdf">PDF</a></li>
+        <li><a href="/dev">Developer</a></li>
+        <li><a href="/api-tools">API</a></li>
+        <li><a href="/workbench">Workbench</a></li>
         <li><a href="/send">Send file</a></li>
         <li><a href="/mail">Temp mail</a></li>
-        <li><a href="#app" data-goto="hd">Make HD</a></li>
-        <li><a href="#app" data-goto="resize">Resize</a></li>
-        <li><a href="#app" data-goto="compress">Compress</a></li>
-        <li><a href="#app" data-goto="bg">Remove BG</a></li>
-        <li><a href="#faq">FAQ</a></li>
       </ul>
-      <a class="nav-pdf" href="/pdf" title="Edit, sign and convert PDFs">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></svg>
-        PDF Tools <span class="nav-new">New</span>
-      </a>
-      <a class="btn btn-primary btn-sm nav-cta" href="#app">Start now</a>
+      <a class="btn btn-primary btn-sm nav-cta" href="/#tools">All tools</a>
     </div>
   </header>
 
@@ -100,7 +87,7 @@
     <!-- ================= HERO + UPLOAD ================= -->
     <section class="hero glow" id="app" aria-labelledby="hero-title">
       <div class="wrap">
-        <h1 id="hero-title" data-title><span class="grad">Image4k</span>: Convert images to HD &amp; 4K for free</h1>
+        <h1 id="hero-title" data-title>Convert images to <span class="grad">HD &amp; 4K</span> for free</h1>
         <p class="lead" data-lead>Upscale photos to HD, 4K or 8K, resize for 80+ platforms, compress, or remove the background — up to 10 images at once, right in your browser.</p>
 
         <div class="tools" role="tablist" aria-label="Choose a tool">
@@ -530,26 +517,11 @@
     </section>
   </main>
 
-  <footer class="site-footer">
+    <footer class="site-footer">
     <div class="wrap foot">
-      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">4K</span>Image4k<small>.org</small></a>
-      <nav aria-label="Footer">
-        <a href="#app" data-goto="hd">Make HD</a>
-        <a href="#app" data-goto="resize">Resize</a>
-        <a href="#app" data-goto="compress">Compress</a>
-        <a href="#app" data-goto="bg">Remove BG</a>
-        <a href="/convert">Image Converter</a>
-        <a href="/metadata">Remove Metadata</a>
-        <a href="/ocr">Image to Text</a>
-        <a href="/watermark">Watermark Remover</a>
-        <a href="/qr">QR Code Generator</a>
-        <a href="/pdf">PDF Tools</a>
-        <a href="/dev">Developer Tools</a>
-        <a href="/api-tools">API Tools</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </nav>
-      <span>© <span id="year">2026</span> Image4k.org</span>
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <nav aria-label="Footer"><a href="/image">Image</a><a href="/pdf">PDF</a><a href="/dev">Developer</a><a href="/api-tools">API</a><a href="/workbench">Workbench</a><a href="/send">Send file</a><a href="/mail">Temp mail</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Professional Developer</span>
     </div>
     <div class="wrap builder">
       <div class="builder-info">

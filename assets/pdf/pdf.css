@@ -17,11 +17,15 @@
 @font-face { font-family: 'Carlito'; src: url('/assets/vendor/carlito-1.103/Carlito-BoldItalic.ttf') format('truetype'); font-weight: 700; font-style: italic; font-display: swap; }
 
 :root {
-  --wine: #7B1F2E;
-  --wine-2: #651826;
-  --wine-3: #9A3445;
-  --wine-soft: #F6E9EB;
-  --wine-line: #E5C6CB;
+  /* Brand purple (matches the rest of Professional Developer); gold for primary actions. */
+  --wine: #2B1745;
+  --wine-2: #1f0f33;
+  --wine-3: #3d2560;
+  --wine-soft: #efe9f6;
+  --wine-line: #d9cde9;
+  --gold: #FFE07A;
+  --gold-hover: #FFE797;
+  --gold-ink: #2B1745;
   --ink: #1D1D1F;
   --ink-2: #4A4A50;
   --muted: #74747B;
@@ -75,8 +79,8 @@ kbd { font-family: ui-monospace, monospace; font-size: 12px; background: var(--b
 .pbtn svg { width: 17px; height: 17px; }
 .pbtn-wine { background: var(--wine); color: #fff; }
 .pbtn-wine:hover { background: var(--wine-2); }
-.pbtn-light { background: #fff; color: var(--wine); }
-.pbtn-light:hover { background: var(--wine-soft); }
+.pbtn-light { background: var(--gold); color: var(--gold-ink); font-weight: 800; }
+.pbtn-light:hover { background: var(--gold-hover); color: var(--gold-ink); }
 .pbtn-ghost-light { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
 .pbtn-ghost-light:hover { background: rgba(255,255,255,.12); }
 .pbtn-outline { background: #fff; color: var(--wine); border-color: var(--wine-line); }

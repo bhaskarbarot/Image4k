@@ -142,7 +142,7 @@
 .dt-del { background: var(--del-bg); color: #ffc9ce; }
 .dt-chg { background: var(--chg-bg); color: #ffe2b3; }
 ins.dt-add, del.dt-del { text-decoration: none; border-radius: 3px; }
-mark.dt-hit { background: rgba(244, 63, 245, .32); color: #fff; border-radius: 3px; box-shadow: 0 0 0 1px rgba(244, 63, 245, .6); }
+mark.dt-hit { background: color-mix(in srgb, var(--accent) 32%, transparent); color: #fff; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent); }
 mark.dt-hit.alt { background: rgba(121, 192, 255, .3); box-shadow: 0 0 0 1px rgba(121, 192, 255, .6); }
 
 .dt-stats { display: flex; flex-wrap: wrap; gap: 8px; }

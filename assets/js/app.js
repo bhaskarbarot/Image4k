@@ -1778,7 +1778,7 @@
     state.tool = tool;
     $$('.tool-btn').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tool === tool)));
     const tt = TOOL_TEXT[tool];
-    $('[data-title]').innerHTML = `<span class="grad">Image4k</span>: ${tt.h1}`;
+    $('[data-title]').textContent = tt.h1;
     $('[data-lead]').textContent = tt.lead;
     $('[data-dz-title]').textContent = tt.dz;
     $('[data-size-title]').textContent = tt.size;

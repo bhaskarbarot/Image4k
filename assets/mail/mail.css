@@ -7,7 +7,7 @@ body.mail-page { background: #171226; }
 body.mail-page::before {
   content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
   background:
-    radial-gradient(60% 55% at 12% -2%, rgba(244, 63, 245, .38), transparent 60%),
+    radial-gradient(60% 55% at 12% -2%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 60%),
     radial-gradient(55% 55% at 94% 6%, rgba(139, 61, 255, .42), transparent 60%),
     radial-gradient(70% 60% at 50% 112%, rgba(183, 123, 255, .30), transparent 60%),
     radial-gradient(45% 40% at 75% 55%, rgba(122, 208, 255, .14), transparent 60%),
@@ -25,7 +25,7 @@ body.mail-page::after {
 /* ---------- centered hero ---------- */
 .mail-hero { text-align: center; padding: clamp(10px, 3vw, 28px) 0 6px; }
 .mail-brand { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-.mail-brand-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--accent), var(--violet)); box-shadow: 0 8px 22px rgba(244,63,245,.45); }
+.mail-brand-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--accent), var(--violet)); box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 45%, transparent); }
 .mail-brand-ic svg { width: 24px; height: 24px; }
 .mail-brand-tx { font-size: 24px; font-weight: 800; letter-spacing: .14em; color: #fff; }
 .mail-brand-tx b { color: var(--accent); font-weight: 900; }
@@ -82,7 +82,7 @@ body.mail-page::after {
 .mail-empty { padding: 44px 20px 48px; text-align: center; }
 .mail-empty-ic { position: relative; width: 104px; height: 104px; margin: 0 auto 16px; display: grid; place-items: center; }
 .mail-empty-ring { position: absolute; inset: 0; width: 104px; height: 104px; color: var(--accent); opacity: .55; animation: spin 7s linear infinite; }
-.mail-empty-env { width: 46px; height: 46px; color: var(--text-2); filter: drop-shadow(0 4px 10px rgba(244,63,245,.35)); animation: envFloat 3.4s ease-in-out infinite; }
+.mail-empty-env { width: 46px; height: 46px; color: var(--text-2); filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent)); animation: envFloat 3.4s ease-in-out infinite; }
 @keyframes envFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .mail-empty-t { font-size: 18px; font-weight: 800; margin: 0; }
 .mail-empty-s { color: var(--muted); margin: 4px 0 0; }
@@ -103,7 +103,7 @@ body.mail-page::after {
 @keyframes shine { 0%,60%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
 .mail-otp-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .mail-otp-code { font-family: var(--mono); font-size: 28px; font-weight: 800; letter-spacing: .12em; color: #fff; animation: codePulse 2.4s ease-in-out infinite; }
-@keyframes codePulse { 0%,100%{text-shadow:0 0 0 rgba(244,63,245,0)} 50%{text-shadow:0 0 18px rgba(244,63,245,.6)} }
+@keyframes codePulse { 0%,100%{text-shadow:0 0 0 color-mix(in srgb, var(--accent) 0%, transparent)} 50%{text-shadow:0 0 18px color-mix(in srgb, var(--accent) 60%, transparent)} }
 .mail-subject { margin: 0 0 6px; font-size: 19px; }
 .mail-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 13px; margin-bottom: 14px; }
 .mail-meta #msgFrom { color: var(--text-2); }

@@ -14,7 +14,7 @@
 }
 .send-tab svg { width: 19px; height: 19px; }
 .send-tab:hover { color: #fff; }
-.send-tab.is-active { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 20px rgba(244, 63, 245, .28); }
+.send-tab.is-active { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 28%, transparent); }
 
 /* card shell */
 .send-card {
