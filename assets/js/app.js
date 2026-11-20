@@ -1059,22 +1059,80 @@
       if (tool === 'bg') {
         let base = toCanvas(src, sw, sh);
         if (base === src) base = toCanvas(src, sw, sh); // never mutate the source
-        const { mask, model } = await segmentMask(base, sw, sh, s.model, onProgress, !!s.fillHoles);
-        notes.push(model.label);
-        let m = mask;
+
+        let m;
+        let isAlreadyCutout = false;
         if (item.alpha) {
-          // the upload already had transparency: never make transparent pixels visible again
           const bd = getImageData(base).data;
-          const mctx = m.getContext('2d');
-          const mid = mctx.getImageData(0, 0, sw, sh);
-          const md = mid.data;
-          for (let i = 0; i < md.length; i += 4) {
-            const v = Math.round((md[i] * bd[i + 3]) / 255);
-            md[i] = md[i + 1] = md[i + 2] = v;
+          let transparentPx = 0;
+          for (let i = 3; i < bd.length; i += 4) {
+            if (bd[i] < 240) transparentPx++;
           }
-          mctx.putImageData(mid, 0, 0);
+          // If more than 3% of the image is transparent, the subject is already cut out
+          if (transparentPx > (sw * sh) * 0.03) {
+            isAlreadyCutout = true;
+            m = makeCanvas(sw, sh);
+            const mctx = m.getContext('2d');
+            const mid = mctx.createImageData(sw, sh);
+            const md = mid.data;
+            for (let i = 0, j = 3; i < md.length; i += 4, j += 4) {
+              md[i] = md[i + 1] = md[i + 2] = bd[j];
+              md[i + 3] = 255;
+            }
+            mctx.putImageData(mid, 0, 0);
+            notes.push('Preserved original transparency');
+          }
         }
-        refineMask(m, s.edge);
+
+        if (!isAlreadyCutout) {
+          const { mask, model } = await segmentMask(base, sw, sh, s.model, onProgress, !!s.fillHoles);
+          notes.push(model.label);
+          m = mask;
+          if (item.alpha) {
+            // the upload already had transparency: never make transparent pixels visible again
+            const bd = getImageData(base).data;
+            const mctx = m.getContext('2d');
+            const mid = mctx.getImageData(0, 0, sw, sh);
+            const md = mid.data;
+            for (let i = 0; i < md.length; i += 4) {
+              const v = Math.round((md[i] * bd[i + 3]) / 255);
+              md[i] = md[i + 1] = md[i + 2] = v;
+            }
+            mctx.putImageData(mid, 0, 0);
+          }
+          refineMask(m, s.edge);
+
+          // If AI model found no clear subject (e.g. flat text logo on solid background), try solid border keying
+          if (!maskBBox(m)) {
+            const bd = getImageData(base).data;
+            const corners = [0, (sw - 1) * 4, (sh - 1) * sw * 4, ((sh - 1) * sw + sw - 1) * 4];
+            const r0 = bd[corners[0]], g0 = bd[corners[0] + 1], b0 = bd[corners[0] + 2];
+            let uniform = true;
+            for (const c of corners) {
+              if (Math.abs(bd[c] - r0) > 18 || Math.abs(bd[c + 1] - g0) > 18 || Math.abs(bd[c + 2] - b0) > 18) {
+                uniform = false;
+                break;
+              }
+            }
+            if (uniform) {
+              const mctx = m.getContext('2d');
+              const mid = mctx.getImageData(0, 0, sw, sh);
+              const md = mid.data;
+              let foundCount = 0;
+              for (let i = 0; i < md.length; i += 4) {
+                const diff = Math.max(Math.abs(bd[i] - r0), Math.abs(bd[i + 1] - g0), Math.abs(bd[i + 2] - b0));
+                const alphaVal = diff < 18 ? 0 : diff > 38 ? 255 : Math.round(((diff - 18) / 20) * 255);
+                md[i] = md[i + 1] = md[i + 2] = alphaVal;
+                md[i + 3] = 255;
+                if (alphaVal > 0) foundCount++;
+              }
+              if (foundCount > 0 && foundCount < (sw * sh) * 0.98) {
+                mctx.putImageData(mid, 0, 0);
+                notes.push('Extracted graphic from solid background');
+              }
+            }
+          }
+        }
         if (s.cropSubject) {
           const bb = maskBBox(m);
           if (bb) {
