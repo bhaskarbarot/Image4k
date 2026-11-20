@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Free EXIF &amp; Metadata Remover – Strip GPS Location from Photos | Professional Developer</title>
+  <meta name="description" content="Remove hidden metadata from your photos — GPS location, camera model, date and software — before you share them. Free, in your browser, lossless for JPG and PNG. Nothing is uploaded.">
+  <link rel="canonical" href="https://image4k.org/metadata">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Professional Developer">
+  <meta property="og:url" content="https://image4k.org/metadata">
+  <meta property="og:title" content="Free EXIF &amp; Metadata Remover – strip GPS from photos">
+  <meta property="og:description" content="Delete GPS location, camera and date metadata from photos before sharing. Private and free.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/tools.css?v=ocr1">
+  <link rel="stylesheet" href="/assets/metadata/metadata.css?v=md1">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Metadata / EXIF Remover","url":"https://image4k.org/metadata","applicationCategory":"SecurityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Remove EXIF, GPS location and other metadata from photos in your browser. No upload."}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Professional Developer home"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <ul class="nav-links">
+        <li><a href="/image">Image tools</a></li>
+        <li><a href="/convert">Convert</a></li>
+        <li><a href="/metadata" class="is-active" aria-current="page">Remove metadata</a></li>
+        <li><a href="/ocr">Image to text</a></li>
+        <li><a href="/watermark">Watermark remover</a></li>
+        <li><a href="/qr">QR code</a></li>
+        <li><a href="/pdf">PDF tools</a></li>
+        <li><a href="/dev">Developer</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>Remove <span class="grad">Metadata</span></h1>
+      <p class="lead">Your photos carry hidden data — <strong>exactly where they were taken (GPS)</strong>, your camera or phone, the date and the software. Strip it all out before you share. JPG and PNG are cleaned losslessly; nothing is uploaded.</p>
+    </section>
+
+    <section class="md-wrap">
+      <div class="md-drop" id="drop" tabindex="0" role="button" aria-label="Choose images to clean">
+        <div class="md-drop-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h2>Drop photos here</h2>
+        <p>JPG, PNG, WebP — one or many</p>
+        <button class="btn btn-primary" id="browse" type="button">Choose photos</button>
+        <input type="file" id="file" accept="image/*" multiple hidden>
+        <small>Up to 40 images, 80&nbsp;MB each · nothing leaves your device</small>
+      </div>
+      <p class="md-flash" id="flash" role="alert" hidden></p>
+
+      <div class="md-bar" id="bar" hidden>
+        <button class="btn btn-ghost btn-sm" id="clearBtn" type="button" hidden>Clear all</button>
+        <button class="btn btn-primary btn-sm" id="downloadAll" type="button" hidden>Download all (.zip)</button>
+      </div>
+      <p class="md-flash" id="empty" hidden style="background:transparent;border:0;color:var(--muted)">Cleaned photos will appear here.</p>
+      <div class="md-results" id="results"></div>
+
+      <section class="md-faq">
+        <h2>Good to know</h2>
+        <details><summary>What metadata is in my photos?</summary><p>Most photos embed EXIF data: <strong>GPS coordinates of where it was taken</strong>, the camera/phone model, the date and time, and editing software. Sharing a photo online can therefore reveal your home or location.</p></details>
+        <details><summary>Does removing it change my photo's quality?</summary><p>No. JPG and PNG are cleaned <strong>losslessly</strong> — the pixels are untouched, only the hidden data blocks are removed. Other formats (WebP etc.) are re-encoded at high quality.</p></details>
+        <details><summary>Is it private?</summary><p>Completely. Everything happens in your browser — your photos are never uploaded to any server.</p></details>
+        <details><summary>Why does the file get a little smaller?</summary><p>Because the metadata (and sometimes an embedded thumbnail) is removed. The visible image is unchanged.</p></details>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/convert">Convert</a><a href="/metadata">Remove metadata</a><a href="/ocr">Image to text</a><a href="/qr">QR code</a><a href="/pdf">PDF tools</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Professional Developer</span>
+    </div>
+  </footer>
+
+  <script src="/assets/vendor/jszip.min.js" defer></script>
+  <script src="/assets/metadata/metadata.js?v=md1" defer></script>
+</body>
+</html>

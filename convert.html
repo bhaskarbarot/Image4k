@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Free HEIC to JPG Converter + Image Converter (PNG, WebP) – No Upload | Professional Developer</title>
+  <meta name="description" content="Convert HEIC/HEIF (iPhone photos), PNG, WebP, AVIF, GIF and BMP to JPG, PNG or WebP — free, in batches, right in your browser. Nothing is uploaded, no sign-up, no watermark.">
+  <link rel="canonical" href="https://image4k.org/convert">
+  <meta name="theme-color" content="#111111">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Professional Developer">
+  <meta property="og:url" content="https://image4k.org/convert">
+  <meta property="og:title" content="Free HEIC to JPG &amp; Image Converter – no upload">
+  <meta property="og:description" content="Convert iPhone HEIC photos and any image to JPG, PNG or WebP in your browser. Private and free.">
+  <meta property="og:image" content="https://image4k.org/assets/img/og-image.png">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20261114h">
+  <link rel="stylesheet" href="/assets/css/tools.css?v=ocr1">
+  <link rel="stylesheet" href="/assets/convert/convert.css?v=cv1">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Image Converter","url":"https://image4k.org/convert","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Convert HEIC, PNG, WebP, AVIF, GIF and BMP images to JPG, PNG or WebP in your browser. No upload."}</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="/" aria-label="Professional Developer home"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <ul class="nav-links">
+        <li><a href="/image">Image tools</a></li>
+        <li><a href="/convert" class="is-active" aria-current="page">Convert</a></li>
+        <li><a href="/metadata">Remove metadata</a></li>
+        <li><a href="/ocr">Image to text</a></li>
+        <li><a href="/watermark">Watermark remover</a></li>
+        <li><a href="/qr">QR code</a></li>
+        <li><a href="/pdf">PDF tools</a></li>
+        <li><a href="/dev">Developer</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="tool-main">
+    <section class="tool-hero">
+      <h1>Image <span class="grad">Converter</span></h1>
+      <p class="lead">Turn iPhone <strong>HEIC</strong> photos — or PNG, WebP, AVIF, GIF and BMP — into JPG, PNG or WebP. Convert a whole batch at once and download them together. Everything runs in your browser; your photos are never uploaded.</p>
+    </section>
+
+    <section class="cv-wrap">
+      <div class="cv-controls">
+        <label class="cv-field"><span>Convert to</span>
+          <select id="fmt">
+            <option value="jpg">JPG — smallest, universal</option>
+            <option value="png">PNG — lossless, transparency</option>
+            <option value="webp">WebP — modern, small</option>
+          </select>
+        </label>
+        <label class="cv-field" id="qualityWrap"><span>Quality: <b id="qualityOut">92%</b></span>
+          <input type="range" id="quality" min="40" max="100" step="1" value="92">
+        </label>
+      </div>
+
+      <div class="cv-drop" id="drop" tabindex="0" role="button" aria-label="Choose images to convert">
+        <div class="cv-drop-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <h2>Drop images here</h2>
+        <p>HEIC, PNG, JPG, WebP, AVIF, GIF, BMP — one or many</p>
+        <button class="btn btn-primary" id="browse" type="button">Choose images</button>
+        <input type="file" id="file" accept="image/*,.heic,.heif" multiple hidden>
+        <small>Up to 40 images, 80&nbsp;MB each · nothing leaves your device</small>
+      </div>
+      <p class="cv-flash" id="flash" role="alert" hidden></p>
+
+      <div class="cv-bar" id="bar" hidden>
+        <button class="btn btn-ghost btn-sm" id="clearBtn" type="button" hidden>Clear all</button>
+        <button class="btn btn-primary btn-sm" id="downloadAll" type="button" hidden>Download all (.zip)</button>
+      </div>
+      <p class="cv-flash" id="empty" hidden style="background:transparent;border:0;color:var(--muted)">Converted images will appear here.</p>
+      <div class="cv-results" id="results"></div>
+
+      <section class="cv-faq">
+        <h2>Good to know</h2>
+        <details><summary>What is HEIC and why won't it open?</summary><p>HEIC/HEIF is the format iPhones save photos in. It's efficient but many apps and Windows can't open it. Converting to JPG (or PNG/WebP) makes the photo work everywhere.</p></details>
+        <details><summary>Are my photos uploaded?</summary><p>No. The conversion happens entirely in your browser using WebAssembly — your images never leave your device, so it's completely private.</p></details>
+        <details><summary>Which should I choose — JPG, PNG or WebP?</summary><p><strong>JPG</strong> for photos you'll share or print (smallest, universal). <strong>PNG</strong> when you need lossless quality or transparency. <strong>WebP</strong> for the web — small files at high quality.</p></details>
+        <details><summary>Can I convert many at once?</summary><p>Yes — drop in up to 40 images and grab them all in one ZIP with “Download all”.</p></details>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <a class="logo" href="/"><span class="logo-mark" aria-hidden="true">PD</span>Professional<small>Developer</small></a>
+      <nav aria-label="Footer"><a href="/image">Image tools</a><a href="/convert">Convert</a><a href="/metadata">Remove metadata</a><a href="/ocr">Image to text</a><a href="/qr">QR code</a><a href="/pdf">PDF tools</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+      <span>© 2026 Professional Developer</span>
+    </div>
+  </footer>
+
+  <script src="/assets/vendor/heic2any.min.js" defer></script>
+  <script src="/assets/vendor/jszip.min.js" defer></script>
+  <script src="/assets/convert/convert.js?v=cv1" defer></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+/* Image Converter (/convert) */
+.cv-wrap { max-width: 820px; margin: 0 auto; padding: 0 16px 80px; }
+
+.cv-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 18px; }
+.cv-field { display: flex; flex-direction: column; gap: 6px; }
+.cv-field > span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.cv-field select { min-height: 42px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-2); color: #fff; font: inherit; }
+#qualityWrap input[type=range] { width: 170px; }
+#qualityOut { color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+/* drop zone */
+.cv-drop {
+  border: 2px dashed var(--line-2); border-radius: 18px; padding: 44px 24px; text-align: center; cursor: pointer;
+  background: var(--bg-2); transition: border-color .18s ease, background .18s ease, transform .15s ease;
+}
+.cv-drop:hover { border-color: var(--accent); background: var(--accent-soft); }
+.cv-drop.is-drag { border-color: var(--accent); background: var(--accent-soft-2); transform: scale(1.01); }
+.cv-drop-ico { width: 60px; height: 60px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.cv-drop-ico svg { width: 28px; height: 28px; }
+.cv-drop h2 { font-size: 19px; margin: 0 0 6px; }
+.cv-drop p { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
+.cv-drop .btn { pointer-events: none; }
+.cv-drop small { display: block; margin-top: 16px; color: var(--muted); font-size: 12.5px; }
+
+.cv-flash { margin: 14px 0 0; padding: 11px 14px; border-radius: 10px; background: rgba(255,181,71,.12); border: 1px solid rgba(255,181,71,.4); color: #ffd79a; font-size: 13.5px; text-align: center; }
+
+/* results */
+.cv-bar { display: flex; justify-content: flex-end; gap: 10px; margin: 22px 0 12px; }
+.cv-results { display: flex; flex-direction: column; gap: 10px; }
+.cv-item { display: flex; align-items: center; gap: 14px; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.cv-thumb { flex: none; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: var(--card-3); display: grid; place-items: center; }
+.cv-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.cv-meta { flex: 1; min-width: 0; }
+.cv-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; }
+.cv-sub { color: var(--muted); font-size: 12.5px; }
+.cv-sub b { color: var(--text); }
+.cv-save { color: var(--ok); font-weight: 700; }
+.cv-act { flex: none; display: flex; align-items: center; gap: 8px; }
+.cv-errmsg { color: var(--err); font-size: 12.5px; max-width: 180px; }
+.cv-err { color: var(--err); font-weight: 800; font-size: 22px; }
+
+.cv-spin { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--accent-soft-2); border-top-color: var(--accent); animation: cv-spin .8s linear infinite; }
+@keyframes cv-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 520px) {
+  .cv-item { flex-wrap: wrap; }
+  .cv-act { width: 100%; }
+  .cv-act .btn { flex: 1; }
+}
+
+/* FAQ reuse */
+.cv-faq { max-width: 820px; margin: 46px auto 0; }
+.cv-faq h2 { font-size: 22px; margin: 0 0 12px; text-align: center; }
+.cv-faq details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; }
+.cv-faq summary { cursor: pointer; font-weight: 700; }
+.cv-faq p { color: var(--text-2); margin: 8px 0 0; font-size: 14.5px; }
